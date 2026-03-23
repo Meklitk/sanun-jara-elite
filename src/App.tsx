@@ -3,23 +3,40 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import Index from "./pages/Index.tsx";
-import NotFound from "./pages/NotFound.tsx";
+import { I18nProvider } from "@/lib/i18n";
+import MainLayout from "@/components/MainLayout";
+import IntroductionPage from "./pages/IntroductionPage";
+import HistoryPage from "./pages/HistoryPage";
+import GovernancePage from "./pages/GovernancePage";
+import EconomyPage from "./pages/EconomyPage";
+import CommercePage from "./pages/CommercePage";
+import CulturePage from "./pages/CulturePage";
+import ResourcesPage from "./pages/ResourcesPage";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
+      <I18nProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <MainLayout>
+            <Routes>
+              <Route path="/" element={<IntroductionPage />} />
+              <Route path="/history" element={<HistoryPage />} />
+              <Route path="/governance" element={<GovernancePage />} />
+              <Route path="/economy" element={<EconomyPage />} />
+              <Route path="/commerce" element={<CommercePage />} />
+              <Route path="/culture" element={<CulturePage />} />
+              <Route path="/resources" element={<ResourcesPage />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </MainLayout>
+        </BrowserRouter>
+      </I18nProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
