@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
-import { ArrowDown } from "lucide-react";
+import { ArrowDown, Shield, AlertTriangle } from "lucide-react";
 
 export default function GovernancePage() {
   const { t } = useI18n();
@@ -108,6 +108,74 @@ export default function GovernancePage() {
         </div>
       </motion.section>
 
+      {/* Corruption & Risk Index */}
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="mb-16"
+      >
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Corruption Index */}
+          <div className="glass-panel gold-border-glow rounded-xl p-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full gold-gradient-bg flex items-center justify-center">
+                <Shield className="w-5 h-5 text-secondary-foreground" />
+              </div>
+              <h3 className="font-display text-lg text-gold">{t.corruptionIndex}</h3>
+            </div>
+            <div className="mb-4">
+              <div className="flex justify-between text-xs font-display text-muted-foreground mb-2">
+                <span>{t.leastCorrupt}</span>
+                <span>{t.mostCorrupt}</span>
+              </div>
+              <div className="w-full h-3 rounded-full bg-muted overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  whileInView={{ width: "8%" }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  className="h-full rounded-full gold-gradient-bg"
+                />
+              </div>
+              <p className="text-xs text-gold font-display mt-2">{t.rankLabel}: ~15 / 195</p>
+            </div>
+            <p className="text-sm text-foreground/70 font-body leading-relaxed">
+              {t.corruptionDesc}
+            </p>
+          </div>
+
+          {/* Risk Index */}
+          <div className="glass-panel gold-border-glow rounded-xl p-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full crimson-gradient-bg flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-foreground" />
+              </div>
+              <h3 className="font-display text-lg text-gold">{t.riskIndex}</h3>
+            </div>
+            <div className="mb-4">
+              <div className="flex justify-between text-xs font-display text-muted-foreground mb-2">
+                <span>{t.lowRisk}</span>
+                <span>{t.highRisk}</span>
+              </div>
+              <div className="w-full h-3 rounded-full bg-muted overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  whileInView={{ width: "12%" }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 1.5, ease: "easeOut" }}
+                  className="h-full rounded-full crimson-gradient-bg"
+                />
+              </div>
+              <p className="text-xs text-gold font-display mt-2">{t.stableGov}</p>
+            </div>
+            <p className="text-sm text-foreground/70 font-body leading-relaxed">
+              {t.riskDesc}
+            </p>
+          </div>
+        </div>
+      </motion.section>
+
       {/* Branches of Government */}
       <motion.section
         initial={{ opacity: 0, y: 30 }}
@@ -129,6 +197,19 @@ export default function GovernancePage() {
               <span className="text-muted-foreground font-body text-sm">{b.criteria}</span>
             </div>
           ))}
+        </div>
+      </motion.section>
+
+      {/* Tax Information */}
+      <motion.section
+        initial={{ opacity: 0, y: 30 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        className="mb-16"
+      >
+        <div className="glass-panel gold-border-glow rounded-xl p-8">
+          <h3 className="font-display text-lg text-gold mb-3">{t.taxInfo}</h3>
+          <p className="text-foreground/80 font-body">{t.taxInfoDesc}</p>
         </div>
       </motion.section>
 
@@ -156,11 +237,7 @@ export default function GovernancePage() {
                 }`}
               >
                 <span className="text-2xl mb-2 block">{step.icon}</span>
-                <span
-                  className={`font-display text-sm uppercase tracking-[0.15em] ${
-                    i === 0 || i === flowchartSteps.length - 1 ? "text-foreground" : "text-foreground"
-                  }`}
-                >
+                <span className="font-display text-sm uppercase tracking-[0.15em] text-foreground">
                   {step.label}
                 </span>
               </motion.div>
