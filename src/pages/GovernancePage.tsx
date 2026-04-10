@@ -1,259 +1,181 @@
 import { motion } from "framer-motion";
+
 import { useI18n } from "@/lib/i18n";
-import { ArrowDown, Shield, AlertTriangle } from "lucide-react";
+import {
+  PageErrorState,
+  PageLoadingState,
+  PageNotFoundState,
+  splitParagraphs,
+  useCmsPage,
+} from "@/features/pages/page-content";
+import {
+  resolveGovernanceData,
+  resolveGovernanceImages,
+  resolveGovernanceSources,
+} from "@/features/governance/governance-content";
 
 export default function GovernancePage() {
-  const { t } = useI18n();
+  const { t, localize } = useI18n();
+  const { page, title, content, isLoading, error } = useCmsPage("governance");
 
-  const leaders = [
-    { role: t.mandenMansa, name: "Mari Diata Keita V" },
-    { role: t.mandenDjeliba, name: "Mabougnata Djeliba Ibrahim Diabate" },
-    { role: t.mandenMory, name: "Mabougnata Alpha Oumar Kaba" },
-  ];
+  if (isLoading) return <PageLoadingState />;
+  if (error) return <PageErrorState />;
+  if (!page) return <PageNotFoundState />;
 
-  const govInfo = [
-    { label: t.govName, value: "Manden Empire" },
-    { label: t.constitution, value: "Kouroukan Fouga — 1236" },
-    { label: t.govType, value: t.monarchy },
-  ];
-
-  const branches = [
-    {
-      name: t.reflectionCommittee,
-      power: "Filters ideas based on alignment with Manden principles",
-      criteria: "Meritocratie",
-    },
-    {
-      name: t.generalAssembly,
-      power: "Obtention of consensus from within Manden community",
-      criteria: "Meritocratie",
-    },
-    {
-      name: t.legislativeCommittee,
-      power: "Formulation and promulgation of governing protocoles",
-      criteria: "Meritocratie",
-    },
-  ];
-
-  const flowchartSteps = [
-    { label: t.debut, icon: "🏁" },
-    { label: t.reflectionCommitteeShort, icon: "🔍" },
-    { label: t.generalAssemblyShort, icon: "🏛️" },
-    { label: t.protocolApproved, icon: "✅" },
-  ];
+  const paragraphs = splitParagraphs(content);
+  const governance = resolveGovernanceData(page);
+  const sources = resolveGovernanceSources(page);
+  const [flagImage, emblemImage] = resolveGovernanceImages(page);
+  const offices = [
+    { label: t.chiefdom, value: localize(governance.chiefdom) },
+    { label: t.mandenMansa, value: localize(governance.mandenMansa) },
+    { label: t.mandenDjeliba, value: localize(governance.mandenDjeliba) },
+    { label: t.mandenMory, value: localize(governance.mandenMory) },
+    { label: t.govName, value: localize(governance.governmentName) },
+    { label: t.constitution, value: localize(governance.constitution) },
+    { label: t.govType, value: localize(governance.governmentType) },
+  ].filter((item) => item.value);
 
   return (
-    <div className="max-w-5xl mx-auto px-8 py-16">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-16"
-      >
-        <p className="text-sm uppercase tracking-[0.4em] text-gold mb-3 font-display">
-          {t.governanceSubtitle}
-        </p>
-        <h1 className="text-5xl font-display font-bold gold-gradient-text">
-          {t.governanceTitle}
-        </h1>
-      </motion.div>
+    <div className="space-y-10">
+      <section className="rounded-[2rem] border border-gold/15 bg-[linear-gradient(145deg,rgba(0,0,0,0.95),rgba(35,23,9,0.88))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.35)] sm:p-8 lg:p-10">
+        <div className="grid gap-8 xl:grid-cols-[minmax(0,1.25fr)_300px]">
+          <div className="space-y-6">
+            <div className="space-y-4">
+              <p className="text-xs uppercase tracking-[0.34em] text-gold/72">{localize(governance.governmentName) || "Manden Empire"}</p>
+              <h1 className="text-4xl font-bold gold-gradient-text sm:text-5xl">{title || t.governance}</h1>
+              {paragraphs.length ? (
+                <div className="space-y-4 text-base leading-8 text-foreground/76">
+                  {paragraphs.map((paragraph, index) => (
+                    <p key={`${paragraph.slice(0, 24)}-${index}`}>{paragraph}</p>
+                  ))}
+                </div>
+              ) : null}
+            </div>
 
-      {/* Chiefdom Leaders */}
-      <motion.section
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="mb-16"
-      >
-        <h2 className="font-display text-2xl text-gold mb-8">{t.chiefdom}</h2>
-        <div className="grid md:grid-cols-3 gap-6">
-          {leaders.map((leader, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, y: 20 }}
+            <div className="rounded-[1.6rem] border border-gold/12 bg-black/28 p-5 shadow-[0_20px_70px_rgba(0,0,0,0.2)]">
+              <div className="grid gap-4 md:grid-cols-2">
+                {offices.map((item) => (
+                  <div key={item.label} className="rounded-[1.15rem] border border-white/6 bg-white/[0.03] px-4 py-3">
+                    <p className="text-[11px] uppercase tracking-[0.28em] text-gold/68">{item.label}</p>
+                    <p className="mt-2 text-sm font-semibold uppercase tracking-[0.08em] text-foreground">{item.value}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex justify-end">
+              <div className="overflow-hidden rounded-[1rem] border border-gold/15 bg-white/95 p-2 shadow-[0_14px_45px_rgba(0,0,0,0.18)]">
+                <img src={flagImage} alt={localize(governance.governmentName) || title} className="h-14 w-24 object-contain" />
+              </div>
+            </div>
+
+           
+          </div>
+        </div>
+      </section>
+
+      <section className="rounded-[2rem] border border-gold/15 bg-black/25 p-6 shadow-[0_30px_100px_rgba(0,0,0,0.25)] sm:p-8 lg:p-10">
+        <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
+          <div className="space-y-4">
+            <motion.article
+              initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.15 }}
-              className="glass-panel gold-border-glow rounded-xl p-6 text-center hover:bg-muted/30 transition-all duration-500"
+              viewport={{ once: true, margin: "-80px" }}
+              className="rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]"
             >
-              <p className="text-xs uppercase tracking-[0.2em] text-gold font-display mb-2">
-                {leader.role}
-              </p>
-              <p className="text-foreground font-body text-lg">{leader.name}</p>
-            </motion.div>
-          ))}
-        </div>
-      </motion.section>
+              <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.corruptionIndex}</p>
+              <div className="mt-5 flex items-center gap-4">
+                <div className="flex h-20 w-20 items-center justify-center rounded-full border-[10px] border-gold/70 border-b-gold/20 border-l-gold/20 bg-black/20 text-2xl font-display font-bold text-foreground">
+                  {governance.corruptionIndex}
+                </div>
+                <p className="text-sm leading-7 text-foreground/72">{localize(governance.corruptionSummary)}</p>
+              </div>
+            </motion.article>
 
-      {/* Government Info */}
-      <motion.section
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="mb-16"
-      >
-        <div className="glass-panel rounded-xl overflow-hidden">
-          {govInfo.map((item, i) => (
-            <div
-              key={i}
-              className={`flex items-center px-8 py-5 ${
-                i !== govInfo.length - 1 ? "border-b border-border" : ""
-              }`}
+            <motion.article
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ delay: 0.05 }}
+              className="rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]"
             >
-              <span className="text-xs uppercase tracking-[0.2em] text-gold font-display w-48 flex-shrink-0">
-                {item.label}
-              </span>
-              <span className="text-foreground font-body">{item.value}</span>
-            </div>
-          ))}
-        </div>
-      </motion.section>
-
-      {/* Corruption & Risk Index */}
-      <motion.section
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="mb-16"
-      >
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Corruption Index */}
-          <div className="glass-panel gold-border-glow rounded-xl p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full gold-gradient-bg flex items-center justify-center">
-                <Shield className="w-5 h-5 text-secondary-foreground" />
+              <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.riskIndex}</p>
+              <div className="mt-5 flex items-center gap-4">
+                <div className="flex h-20 w-20 items-center justify-center rounded-[1.2rem] bg-gold/85 text-4xl font-display font-bold text-black">
+                  {governance.riskIndex}
+                </div>
+                <p className="text-sm leading-7 text-foreground/72">{localize(governance.riskSummary)}</p>
               </div>
-              <h3 className="font-display text-lg text-gold">{t.corruptionIndex}</h3>
-            </div>
-            <div className="mb-4">
-              <div className="flex justify-between text-xs font-display text-muted-foreground mb-2">
-                <span>{t.leastCorrupt}</span>
-                <span>{t.mostCorrupt}</span>
-              </div>
-              <div className="w-full h-3 rounded-full bg-muted overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileInView={{ width: "8%" }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  className="h-full rounded-full gold-gradient-bg"
-                />
-              </div>
-              <p className="text-xs text-gold font-display mt-2">{t.rankLabel}: ~15 / 195</p>
-            </div>
-            <p className="text-sm text-foreground/70 font-body leading-relaxed">
-              {t.corruptionDesc}
-            </p>
+            </motion.article>
           </div>
 
-          {/* Risk Index */}
-          <div className="glass-panel gold-border-glow rounded-xl p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full crimson-gradient-bg flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-foreground" />
+          <div className="space-y-6">
+            <div className="rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]">
+              <h2 className="text-lg font-semibold text-foreground">{t.branchesTitle}</h2>
+              <div className="mt-4 overflow-hidden rounded-[1.25rem] border border-gold/12">
+                <table className="min-w-full divide-y divide-gold/10 text-left text-sm">
+                  <thead className="bg-gold/10 text-gold">
+                    <tr>
+                      <th className="px-4 py-3 font-semibold">{t.branch}</th>
+                      <th className="px-4 py-3 font-semibold">{t.mainPowers}</th>
+                      <th className="px-4 py-3 font-semibold">{t.selection}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gold/10 bg-black/20 text-foreground/78">
+                    {governance.branches.map((branch, index) => (
+                      <tr key={`${branch.name.en ?? "branch"}-${index}`}>
+                        <td className="px-4 py-3 font-medium text-foreground">{localize(branch.name)}</td>
+                        <td className="px-4 py-3">{localize(branch.powers)}</td>
+                        <td className="px-4 py-3">{localize(branch.selection)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <h3 className="font-display text-lg text-gold">{t.riskIndex}</h3>
             </div>
-            <div className="mb-4">
-              <div className="flex justify-between text-xs font-display text-muted-foreground mb-2">
-                <span>{t.lowRisk}</span>
-                <span>{t.highRisk}</span>
+
+            <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_260px]">
+              <div className="rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]">
+                <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.taxInfo}</p>
+                <p className="mt-3 text-base font-semibold text-foreground">{localize(governance.taxInformation)}</p>
               </div>
-              <div className="w-full h-3 rounded-full bg-muted overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  whileInView={{ width: "12%" }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 1.5, ease: "easeOut" }}
-                  className="h-full rounded-full crimson-gradient-bg"
-                />
+
+              <div className="rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]">
+                <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.phone}</p>
+                <p className="mt-3 text-base font-semibold text-foreground">{governance.phone}</p>
               </div>
-              <p className="text-xs text-gold font-display mt-2">{t.stableGov}</p>
             </div>
-            <p className="text-sm text-foreground/70 font-body leading-relaxed">
-              {t.riskDesc}
-            </p>
+
+            {sources.length ? (
+              <div className="rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]">
+                <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.sources}</p>
+                <ol className="mt-4 space-y-3 text-sm leading-7 text-foreground/74">
+                  {sources.map((source, index) => {
+                    const label = localize(source.label) || source.url;
+                    if (!label) return null;
+
+                    return (
+                      <li key={`${label}-${index}`} className="flex gap-3">
+                        <span className="font-display text-gold">{index + 1}.</span>
+                        {source.url ? (
+                          <a href={source.url} target="_blank" rel="noreferrer" className="transition hover:text-gold">
+                            {label}
+                          </a>
+                        ) : (
+                          <span>{label}</span>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ol>
+              </div>
+            ) : null}
           </div>
         </div>
-      </motion.section>
-
-      {/* Branches of Government */}
-      <motion.section
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="mb-16"
-      >
-        <h2 className="font-display text-2xl text-gold mb-8">{t.branchesTitle}</h2>
-        <div className="glass-panel rounded-xl overflow-hidden">
-          <div className="grid grid-cols-3 px-8 py-4 border-b border-border bg-muted/30">
-            <span className="text-xs uppercase tracking-[0.15em] text-gold font-display">Branch</span>
-            <span className="text-xs uppercase tracking-[0.15em] text-gold font-display">Main Powers</span>
-            <span className="text-xs uppercase tracking-[0.15em] text-gold font-display">Selection</span>
-          </div>
-          {branches.map((b, i) => (
-            <div key={i} className={`grid grid-cols-3 px-8 py-5 ${i !== branches.length - 1 ? "border-b border-border" : ""}`}>
-              <span className="text-foreground font-body font-medium">{b.name}</span>
-              <span className="text-foreground/80 font-body text-sm">{b.power}</span>
-              <span className="text-muted-foreground font-body text-sm">{b.criteria}</span>
-            </div>
-          ))}
-        </div>
-      </motion.section>
-
-      {/* Tax Information */}
-      <motion.section
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="mb-16"
-      >
-        <div className="glass-panel gold-border-glow rounded-xl p-8">
-          <h3 className="font-display text-lg text-gold mb-3">{t.taxInfo}</h3>
-          <p className="text-foreground/80 font-body">{t.taxInfoDesc}</p>
-        </div>
-      </motion.section>
-
-      {/* Interactive Flowchart */}
-      <motion.section
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-      >
-        <h2 className="font-display text-2xl text-gold mb-8">{t.flowchartTitle}</h2>
-        <div className="flex flex-col items-center gap-2">
-          {flowchartSteps.map((step, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.2 }}
-              className="flex flex-col items-center"
-            >
-              <motion.div
-                whileHover={{ scale: 1.05, y: -2 }}
-                className={`glass-panel gold-border-glow rounded-xl px-10 py-6 text-center cursor-default min-w-[280px] ${
-                  i === 0 ? "crimson-gradient-bg" : i === flowchartSteps.length - 1 ? "gold-gradient-bg" : ""
-                }`}
-              >
-                <span className="text-2xl mb-2 block">{step.icon}</span>
-                <span className="font-display text-sm uppercase tracking-[0.15em] text-foreground">
-                  {step.label}
-                </span>
-              </motion.div>
-              {i < flowchartSteps.length - 1 && (
-                <motion.div
-                  animate={{ y: [0, 6, 0] }}
-                  transition={{ repeat: Infinity, duration: 1.5, delay: i * 0.3 }}
-                  className="my-2"
-                >
-                  <ArrowDown className="w-5 h-5 text-gold/60" />
-                </motion.div>
-              )}
-            </motion.div>
-          ))}
-        </div>
-      </motion.section>
+      </section>
     </div>
   );
 }

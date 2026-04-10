@@ -1,15 +1,32 @@
-import { ReactNode } from "react";
-import SidebarNav from "./SidebarNav";
-import TopBar from "./TopBar";
+import { Outlet } from "react-router-dom";
 
-export default function MainLayout({ children }: { children: ReactNode }) {
+import SidebarNav from "@/components/SidebarNav";
+import TopBar from "@/components/TopBar";
+
+export default function MainLayout() {
   return (
-    <div className="min-h-screen bg-background">
-      <SidebarNav />
-      <TopBar />
-      <main className="ml-64 mt-14 min-h-[calc(100vh-3.5rem)]">
-        {children}
-      </main>
+    <div className="relative min-h-screen bg-background">
+      <div
+        className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center opacity-[0.2]"
+        style={{ backgroundImage: "url(/images/manden-texture-dark.png)" }}
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none fixed inset-0 z-0 bg-[radial-gradient(circle_at_top_left,hsl(var(--gold)/0.1),transparent_35%),radial-gradient(circle_at_top_right,hsl(var(--primary)/0.12),transparent_30%),linear-gradient(180deg,hsl(var(--background)/0.96),hsl(var(--background)))]"
+        aria-hidden
+      />
+
+      <div className="relative z-10">
+        <TopBar />
+
+        <div className="mx-auto flex max-w-[1700px] gap-4 px-3 pb-10 pt-6 sm:px-4 lg:px-6 xl:gap-6">
+          <SidebarNav mode="desktop" />
+
+          <main className="min-w-0 flex-1">
+            <Outlet />
+          </main>
+        </div>
+      </div>
     </div>
   );
 }

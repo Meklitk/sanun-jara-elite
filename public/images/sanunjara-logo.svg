@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="400" height="400">
+  <defs>
+    <!-- Gold gradient -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#FFA500;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFD700;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Dark gold gradient -->
+    <linearGradient id="darkGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#B8860B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#DAA520;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Glow filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+    
+    <!-- Shadow filter -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+  
+  <!-- Outer circle -->
+  <circle cx="200" cy="200" r="180" fill="none" stroke="url(#goldGrad)" stroke-width="8" filter="url(#glow)"/>
+  <circle cx="200" cy="200" r="170" fill="none" stroke="url(#goldGrad)" stroke-width="3"/>
+  <circle cx="200" cy="200" r="165" fill="none" stroke="url(#darkGold)" stroke-width="1.5" opacity="0.6"/>
+  
+  <!-- Inner circle -->
+  <circle cx="200" cy="200" r="140" fill="url(#goldGrad)" opacity="0.08"/>
+  
+  <!-- Lion head logo (simplified emblem) -->
+  <g transform="translate(200, 175) scale(1.1)" filter="url(#shadow)">
+    <!-- Lion mane -->
+    <circle cx="0" cy="-10" r="50" fill="url(#goldGrad)" opacity="0.85"/>
+    
+    <!-- Lion face -->
+    <ellipse cx="0" cy="-5" rx="35" ry="40" fill="url(#darkGold)"/>
+    
+    <!-- Eyes -->
+    <ellipse cx="-14" cy="-15" rx="6" ry="7" fill="#1a1a1a"/>
+    <ellipse cx="14" cy="-15" rx="6" ry="7" fill="#1a1a1a"/>
+    <circle cx="-13" cy="-16" r="2.5" fill="#FFD700"/>
+    <circle cx="15" cy="-16" r="2.5" fill="#FFD700"/>
+    
+    <!-- Nose -->
+    <ellipse cx="0" cy="2" rx="8" ry="6" fill="#1a1a1a"/>
+    <ellipse cx="0" cy="1" rx="6" ry="4" fill="#333"/>
+    
+    <!-- Mouth -->
+    <path d="M -12,12 Q 0,18 12,12" stroke="#1a1a1a" stroke-width="3" fill="none" stroke-linecap="round"/>
+    
+    <!-- Whiskers -->
+    <line x1="-20" y1="5" x2="-35" y2="0" stroke="url(#goldGrad)" stroke-width="2" opacity="0.7"/>
+    <line x1="-20" y1="10" x2="-35" y2="12" stroke="url(#goldGrad)" stroke-width="2" opacity="0.7"/>
+    <line x1="20" y1="5" x2="35" y2="0" stroke="url(#goldGrad)" stroke-width="2" opacity="0.7"/>
+    <line x1="20" y1="10" x2="35" y2="12" stroke="url(#goldGrad)" stroke-width="2" opacity="0.7"/>
+  </g>
+  
+  <!-- Text: SANUN JARA (top arc) -->
+  <path id="topArc" d="M 80,180 A 120,120 0 0,1 320,180" fill="none"/>
+  <text font-family="Georgia, 'Times New Roman', serif" font-size="26" font-weight="bold" fill="url(#goldGrad)" letter-spacing="5">
+    <textPath href="#topArc" startOffset="50%" text-anchor="middle">SANUN JARA</textPath>
+  </text>
+  
+  <!-- Text: MANDEN EMPIRE (bottom arc) -->
+  <path id="bottomArc" d="M 90,230 A 110,110 0 0,0 310,230" fill="none"/>
+  <text font-family="Georgia, 'Times New Roman', serif" font-size="18" fill="url(#goldGrad)" letter-spacing="4">
+    <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">MANDEN EMPIRE</textPath>
+  </text>
+  
+  <!-- Decorative elements: Small stars -->
+  <g fill="url(#goldGrad)">
+    <!-- Left star -->
+    <polygon points="95,195 97,200 102,200 98,203 99,208 95,205 91,208 92,203 88,200 93,200" />
+    <!-- Right star -->
+    <polygon points="305,195 307,200 312,200 308,203 309,208 305,205 301,208 302,203 298,200 303,200" />
+  </g>
+  
+  <!-- Center alignment lines (decorative) -->
+  <line x1="140" y1="310" x2="260" y2="310" stroke="url(#goldGrad)" stroke-width="2" opacity="0.5"/>
+  <line x1="160" y1="315" x2="240" y2="315" stroke="url(#goldGrad)" stroke-width="1.5" opacity="0.4"/>
+  
+  <!-- Establishment text -->
+  <text x="200" y="340" font-family="Georgia, 'Times New Roman', serif" font-size="14" fill="url(#goldGrad)" text-anchor="middle" letter-spacing="3" opacity="0.8">
+    EST. ANCIENT
+  </text>
+</svg>

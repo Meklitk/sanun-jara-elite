@@ -1,107 +1,119 @@
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
-import redFlag from "@/assets/red-flag.png";
-import heroLandscape from "@/assets/hero-landscape.jpg";
-import coatOfArms from "@/assets/coat-of-arms.jpg";
 
 export default function IntroductionPage() {
   const { t } = useI18n();
 
   return (
-    <div className="relative">
-      {/* Hero Section with red flag */}
-      <section className="relative h-[70vh] flex items-center justify-center overflow-hidden">
-        {/* Background landscape */}
-        <div className="absolute inset-0">
+    <div className="min-h-[calc(100vh-3.5rem)] pb-16">
+      
+      {/* HERO */}
+      <section className="relative mx-auto max-w-7xl px-6 pt-10">
+        <div className="relative overflow-hidden rounded-[2.5rem] border border-gold/10 bg-black shadow-[0_30px_100px_rgba(0,0,0,0.7)]">
+          
+          {/* Background */}
           <img
-            src={heroLandscape}
-            alt=""
-            className="w-full h-full object-cover opacity-30"
+            src="/images/manden-hero-wide.png"
+            alt="Manden Empire"
+            className="absolute inset-0 w-full h-full object-cover opacity-50"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/40 to-background" />
-        </div>
 
-        {/* Red flag */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1.2, ease: "easeOut" }}
-          className="absolute top-8 right-12 w-48 h-auto"
-        >
-          <img src={redFlag} alt="Flag of Manden" className="w-full drop-shadow-2xl" />
-        </motion.div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black" />
 
-        {/* Hero text */}
-        <div className="relative z-10 text-center max-w-3xl px-8">
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.8 }}
-            className="text-sm uppercase tracking-[0.4em] text-gold mb-4 font-display"
-          >
-            {t.introSubtitle}
-          </motion.p>
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="text-6xl md:text-7xl font-display font-bold gold-gradient-text mb-6 leading-tight"
-          >
-            {t.introTitle}
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.8 }}
-            className="text-lg text-muted-foreground italic font-body"
-          >
-            {t.introMotto}
-          </motion.p>
+          {/* CONTENT */}
+          <div className="relative px-10 py-16 lg:px-16 lg:py-20 grid lg:grid-cols-[1.6fr_1fr] gap-10">
+
+            {/* LEFT TEXT */}
+            <div className="flex flex-col justify-center">
+              
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+                className="text-xs uppercase tracking-[0.5em] text-gold/80 mb-6"
+              >
+                {t.introSubtitle}
+              </motion.p>
+
+              <motion.h1
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2, duration: 0.8 }}
+                className="text-5xl md:text-7xl font-display font-bold text-gold leading-tight drop-shadow-[0_20px_40px_rgba(0,0,0,0.8)]"
+              >
+                {t.introTitle}
+              </motion.h1>
+
+              <motion.p
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="mt-6 text-lg text-foreground/70 max-w-xl italic"
+              >
+                {t.introMotto}
+              </motion.p>
+
+            </div>
+
+            {/* RIGHT VISUAL */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.7 }}
+              className="flex flex-col items-center justify-center gap-6"
+            >
+              
+              {/* Coat of Arms */}
+              <div className="relative group">
+                <div className="absolute inset-0 bg-gold/10 blur-2xl opacity-40 group-hover:opacity-60 transition" />
+                
+                <img
+                  src="/images/coat-of-arms-manden.png"
+                  alt="Coat of Arms"
+                  className="relative h-56 rounded-2xl border border-gold/20 bg-black/60 p-4 shadow-2xl"
+                />
+              </div>
+
+              <p className="text-xs uppercase tracking-[0.3em] text-gold/70 text-center">
+                {t.coatOfArms}
+              </p>
+
+            </motion.div>
+          </div>
+
+          
+
         </div>
       </section>
 
-      {/* Content */}
-      <section className="max-w-4xl mx-auto px-8 py-16 space-y-12">
-        {/* Coat of Arms + Text */}
-        <div className="flex flex-col md:flex-row gap-12 items-start">
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="flex-1 space-y-6"
-          >
-            <p className="text-lg leading-relaxed text-foreground/90 font-body">
-              {t.introP1}
-            </p>
-            <p className="text-lg leading-relaxed text-foreground/90 font-body">
-              {t.introP2}
-            </p>
-            <div className="h-px bg-gradient-to-r from-gold/40 via-gold/20 to-transparent" />
-            <p className="text-base leading-relaxed text-gold/80 italic font-body">
-              {t.introP3}
-            </p>
-          </motion.div>
+      {/* CONTENT */}
+      <section className="mx-auto max-w-5xl px-6 mt-14 space-y-8">
+        
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          className="text-lg leading-8 text-foreground/80"
+        >
+          {t.introP1}
+        </motion.p>
 
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="flex-shrink-0"
-          >
-            <div className="glass-panel gold-border-glow rounded-xl p-4">
-              <img
-                src={coatOfArms}
-                alt={t.coatOfArms}
-                className="w-56 h-auto rounded-lg"
-              />
-              <p className="text-center text-xs text-muted-foreground mt-3 font-display">
-                {t.coatOfArms}
-              </p>
-            </div>
-          </motion.div>
-        </div>
+        <motion.p
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          className="text-lg leading-8 text-foreground/80"
+        >
+          {t.introP2}
+        </motion.p>
+
+        {/* Highlight Quote */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.98 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          className="border-l-4 border-gold/60 pl-6 py-4 text-gold italic text-lg bg-gradient-to-r from-gold/5 to-transparent"
+        >
+          {t.introP3}
+        </motion.div>
+
       </section>
     </div>
   );

@@ -8,14 +8,13 @@ import MainLayout from "@/components/MainLayout";
 import IntroductionPage from "./pages/IntroductionPage";
 import HistoryPage from "./pages/HistoryPage";
 import GovernancePage from "./pages/GovernancePage";
-import EconomyPage from "./pages/EconomyPage";
-import CommercePage from "./pages/CommercePage";
-import CulturePage from "./pages/CulturePage";
-import ResourcesPage from "./pages/ResourcesPage";
 import GlobalPerspectivesPage from "./pages/GlobalPerspectivesPage";
 import ReferenceBureauPage from "./pages/ReferenceBureauPage";
 import AcademyPage from "./pages/AcademyPage";
 import IntranetPage from "./pages/IntranetPage";
+import PageView from "@/features/pages/PageView";
+import AdminLoginPage from "@/features/admin/AdminLoginPage";
+import AdminDashboardPage from "@/features/admin/AdminDashboardPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,22 +26,24 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <MainLayout>
-            <Routes>
+          <Routes>
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route element={<MainLayout />}>
               <Route path="/" element={<IntroductionPage />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/governance" element={<GovernancePage />} />
-              <Route path="/economy" element={<EconomyPage />} />
-              <Route path="/commerce" element={<CommercePage />} />
-              <Route path="/culture" element={<CulturePage />} />
-              <Route path="/resources" element={<ResourcesPage />} />
+              <Route path="/economy" element={<PageView pageKey="economy" />} />
+              <Route path="/commerce" element={<PageView pageKey="commerce" />} />
+              <Route path="/culture" element={<PageView pageKey="culture" />} />
+              <Route path="/resources" element={<PageView pageKey="resources" />} />
               <Route path="/global-perspectives" element={<GlobalPerspectivesPage />} />
               <Route path="/reference-bureau" element={<ReferenceBureauPage />} />
               <Route path="/academy" element={<AcademyPage />} />
               <Route path="/intranet" element={<IntranetPage />} />
               <Route path="*" element={<NotFound />} />
-            </Routes>
-          </MainLayout>
+            </Route>
+          </Routes>
         </BrowserRouter>
       </I18nProvider>
     </TooltipProvider>

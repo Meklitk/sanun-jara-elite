@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun *)",
+      "Bash(npm install)",
+      "Bash(npm run *)",
+      "Bash(type *)",
+      "Bash(powershell *)",
+      "Bash(node *)",
+      "Bash(tasklist *)",
+      "Bash(taskkill *)",
+      "Bash(dir *)",
+      "Bash(findstr *)",
+      "Read(C:\\Users\\MAKI\\Pictures\\Screenshots/**)",
+      "Bash(move *)",
+      "Bash(curl *)"
+    ]
+  },
+  "$version": 3
+}

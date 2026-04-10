@@ -1,88 +1,160 @@
 import { motion } from "framer-motion";
-import { useI18n } from "@/lib/i18n";
 
-const timelineEvents = {
-  en: [
-    { year: "3000 B.C.", title: "Arrival of Mandenkas", side: "right" as const },
-    { year: "980 A.D.", title: "First University in the World", side: "left" as const },
-    { year: "1236 A.D.", title: "World's first constitution of human rights, abolished slavery", side: "right" as const },
-    { year: "1312 A.D.", title: "Discovery of America", side: "left" as const },
-    { year: "1324 A.D.", title: "The richest man in history", side: "right" as const },
-    { year: "1351 A.D.", title: "Named most honest people on earth", side: "left" as const },
-    { year: "1455 A.D.", title: "Manden wins war against Portugal", side: "right" as const },
-    { year: "2020 A.D.", title: "Return of the Empire", side: "left" as const },
-    { year: "2023 A.D.", title: "Creation of Manden Calendar", side: "right" as const },
-  ],
-  fr: [
-    { year: "3000 av. J.-C.", title: "Arrivée des Mandénkas", side: "right" as const },
-    { year: "980 apr. J.-C.", title: "Première université au monde", side: "left" as const },
-    { year: "1236 apr. J.-C.", title: "Première constitution des droits de l'homme, abolition de l'esclavage", side: "right" as const },
-    { year: "1312 apr. J.-C.", title: "Découverte de l'Amérique", side: "left" as const },
-    { year: "1324 apr. J.-C.", title: "L'homme le plus riche de l'histoire", side: "right" as const },
-    { year: "1351 apr. J.-C.", title: "Nommé peuple le plus honnête de la terre", side: "left" as const },
-    { year: "1455 apr. J.-C.", title: "Le Manden remporte la guerre contre le Portugal", side: "right" as const },
-    { year: "2020 apr. J.-C.", title: "Retour de l'Empire", side: "left" as const },
-    { year: "2023 apr. J.-C.", title: "Création du calendrier Manden", side: "right" as const },
-  ],
-};
+import {
+  PageErrorState,
+  PageLoadingState,
+  PageNotFoundState,
+  splitParagraphs,
+  useCmsPage,
+} from "@/features/pages/page-content";
 
 export default function HistoryPage() {
-  const { t, lang } = useI18n();
-  const events = timelineEvents[lang];
+  const { page, title, content, isLoading, error, localize } = useCmsPage("history");
+
+  if (isLoading) return <PageLoadingState />;
+  if (error) return <PageErrorState />;
+  if (!page) return <PageNotFoundState />;
+
+  const paragraphs = splitParagraphs(content);
+  const intro = paragraphs[0] ?? "";
+  const narrative = paragraphs.slice(1);
+  const events = (page.timeline || []).map((item, index) => ({
+    ...item,
+    side: index % 2 === 0 ? "right" : "left",
+    title: localize(item.title),
+    description: localize(item.description),
+  }));
+  const heroImage = page.images?.[0];
+  const galleryImages = heroImage ? page.images.slice(1) : page.images ?? [];
+  const hasContent = Boolean(title || paragraphs.length || events.length || page.images?.length);
+
+  if (!hasContent) return <PageNotFoundState />;
 
   return (
-    <div className="max-w-5xl mx-auto px-8 py-16">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-20"
-      >
-        <p className="text-sm uppercase tracking-[0.4em] text-gold mb-3 font-display">
-          {t.historySubtitle}
-        </p>
-        <h1 className="text-5xl font-display font-bold gold-gradient-text">
-          {t.historyTitle}
-        </h1>
-      </motion.div>
+    <div className="space-y-10">
+      <section className="overflow-hidden rounded-[2rem] border border-gold/15 bg-[linear-gradient(145deg,rgba(0,0,0,0.92),rgba(38,23,7,0.86))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.35)] sm:p-8 lg:p-10">
+        <div className="space-y-6">
+          <div className="space-y-4">
+            <h1 className="text-4xl font-bold gold-gradient-text sm:text-5xl">{title || page.key}</h1>
+            {intro ? (
+              <p className="max-w-4xl text-base leading-8 text-foreground/76 sm:text-lg">{intro}</p>
+            ) : null}
+          </div>
 
-      {/* Timeline */}
-      <div className="relative">
-        {/* Central line */}
-        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-gold/60 via-gold/30 to-transparent" />
+          {heroImage ? (
+            <div className="overflow-hidden rounded-[1.75rem] border border-gold/15 bg-black/25 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+              <img src={heroImage} alt={title || page.key} className="h-[260px] w-full object-cover sm:h-[340px]" />
+            </div>
+          ) : null}
+        </div>
+      </section>
 
-        {events.map((event, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, x: event.side === "left" ? -60 : 60 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.7, delay: i * 0.1 }}
-            className={`relative flex items-center mb-12 ${
-              event.side === "left" ? "flex-row-reverse" : ""
-            }`}
-          >
-            {/* Content card */}
-            <div className={`w-5/12 ${event.side === "left" ? "text-right pl-8" : "pr-8"}`}>
-              <div className="glass-panel gold-border-glow rounded-xl p-6 hover:bg-muted/30 transition-all duration-500 group">
-                <span className="text-xs font-display uppercase tracking-[0.2em] text-gold group-hover:text-gold-light transition-colors">
-                  {event.year}
-                </span>
-                <p className="mt-2 text-foreground font-body leading-relaxed">
-                  {event.title}
-                </p>
+      {narrative.length ? (
+        <section className="grid gap-4 lg:grid-cols-2">
+          {narrative.map((paragraph, index) => (
+            <motion.article
+              key={`${paragraph.slice(0, 24)}-${index}`}
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ delay: index * 0.06, duration: 0.4 }}
+              className="rounded-[1.75rem] border border-gold/12 bg-black/28 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
+            >
+              <p className="text-base leading-8 text-foreground/76">{paragraph}</p>
+            </motion.article>
+          ))}
+        </section>
+      ) : null}
+
+      {events.length ? (
+        <section className="relative overflow-hidden rounded-[2rem] border border-gold/15 bg-black/28 p-6 shadow-[0_30px_100px_rgba(0,0,0,0.25)] sm:p-8 lg:p-10">
+          <div className="pointer-events-none absolute bottom-0 left-1/2 top-10 hidden w-px -translate-x-1/2 bg-gradient-to-b from-gold/45 via-gold/25 to-transparent md:block" />
+
+          <div className="space-y-7">
+            {events.map((event, index) => (
+              <div
+                key={`${event.year}-${index}`}
+                className="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-center md:gap-6"
+              >
+                {event.side === "left" ? (
+                  <>
+                    <motion.article
+                      initial={{ opacity: 0, x: -42, y: 18 }}
+                      whileInView={{ opacity: 1, x: 0, y: 0 }}
+                      viewport={{ once: true, margin: "-80px" }}
+                      transition={{ delay: index * 0.05, duration: 0.45 }}
+                      className="rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-5 shadow-[0_20px_70px_rgba(0,0,0,0.18)] md:col-start-1 md:mr-6 md:text-right"
+                    >
+                      {event.year ? (
+                        <p className="text-xs uppercase tracking-[0.28em] text-gold/72">{event.year}</p>
+                      ) : null}
+                      {event.title ? <h2 className="mt-3 text-xl font-semibold text-foreground">{event.title}</h2> : null}
+                      {event.description ? (
+                        <p className="mt-3 text-sm leading-7 text-foreground/70">{event.description}</p>
+                      ) : null}
+                    </motion.article>
+                    <div className="relative z-10 hidden md:flex md:col-start-2 md:justify-center">
+                      <motion.div
+                        initial={{ scale: 0.6, opacity: 0 }}
+                        whileInView={{ scale: 1, opacity: 1 }}
+                        viewport={{ once: true, margin: "-80px" }}
+                        transition={{ delay: index * 0.05 + 0.1, duration: 0.35 }}
+                        className="h-4 w-4 rounded-full bg-gold shadow-[0_0_20px_hsl(var(--gold)/0.45)]"
+                      />
+                    </div>
+                    <div className="hidden md:block md:col-start-3" />
+                  </>
+                ) : (
+                  <>
+                    <div className="hidden md:block md:col-start-1" />
+                    <div className="relative z-10 hidden md:flex md:col-start-2 md:justify-center">
+                      <motion.div
+                        initial={{ scale: 0.6, opacity: 0 }}
+                        whileInView={{ scale: 1, opacity: 1 }}
+                        viewport={{ once: true, margin: "-80px" }}
+                        transition={{ delay: index * 0.05 + 0.1, duration: 0.35 }}
+                        className="h-4 w-4 rounded-full bg-gold shadow-[0_0_20px_hsl(var(--gold)/0.45)]"
+                      />
+                    </div>
+                    <motion.article
+                      initial={{ opacity: 0, x: 42, y: 18 }}
+                      whileInView={{ opacity: 1, x: 0, y: 0 }}
+                      viewport={{ once: true, margin: "-80px" }}
+                      transition={{ delay: index * 0.05, duration: 0.45 }}
+                      className="rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-5 shadow-[0_20px_70px_rgba(0,0,0,0.18)] md:col-start-3 md:ml-6"
+                    >
+                      {event.year ? (
+                        <p className="text-xs uppercase tracking-[0.28em] text-gold/72">{event.year}</p>
+                      ) : null}
+                      {event.title ? <h2 className="mt-3 text-xl font-semibold text-foreground">{event.title}</h2> : null}
+                      {event.description ? (
+                        <p className="mt-3 text-sm leading-7 text-foreground/70">{event.description}</p>
+                      ) : null}
+                    </motion.article>
+                  </>
+                )}
               </div>
-            </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
 
-            {/* Center dot */}
-            <div className="w-2/12 flex justify-center">
-              <div className="w-4 h-4 rounded-full gold-gradient-bg shadow-lg shadow-gold/30 relative z-10" />
-            </div>
-
-            {/* Empty space */}
-            <div className="w-5/12" />
-          </motion.div>
-        ))}
-      </div>
+      {galleryImages.length ? (
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          {galleryImages.map((src, index) => (
+            <motion.div
+              key={src}
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ delay: index * 0.05, duration: 0.35 }}
+              className="overflow-hidden rounded-[1.6rem] border border-gold/12 bg-black/28 shadow-[0_24px_70px_rgba(0,0,0,0.2)]"
+            >
+              <img src={src} alt={title || page.key} className="h-60 w-full object-cover" />
+            </motion.div>
+          ))}
+        </section>
+      ) : null}
     </div>
   );
 }
