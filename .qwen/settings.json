@@ -14,7 +14,8 @@
       "Read(C:\\Users\\MAKI\\Pictures\\Screenshots/**)",
       "Bash(move *)",
       "Bash(curl *)",
-      "Bash(npx *)"
+      "Bash(npx *)",
+      "Bash(timeout *)"
     ]
   },
   "$version": 3

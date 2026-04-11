@@ -176,9 +176,9 @@ export default function AdminDashboardPage() {
           }
         : current.directory;
       const utilityCards = (current.utilityCards ?? []).filter(isUtilityCardMeaningful);
-      // Save French as primary content - English will be auto-translated on public site
-      const title = { fr: current.title?.fr ?? "" };
-      const content = { fr: current.content?.fr ?? "" };
+      // Save both English and French content
+      const title = { en: current.title?.en ?? "", fr: current.title?.fr ?? "" };
+      const content = { en: current.content?.en ?? "", fr: current.content?.fr ?? "" };
       await updatePage.mutateAsync({
         id: current._id,
         token,
@@ -549,30 +549,30 @@ export default function AdminDashboardPage() {
                                   ? "Academy title"
                           : "Title"}
                   </Label>
-                  <Input
-                    className="glass-panel border-gold/20 bg-black/20 transition-all duration-300 focus:border-gold/50 focus:ring-gold/20"
-                    placeholder={
-                      isHistorySection
-                        ? "Enter the public History page title..."
-                        : isGovernanceSection
-                          ? "Enter the public Governance page title..."
-                        : isGlobalPerspectivesSection
-                            ? "Enter the public Global Perspectives page title..."
-                            : isCultureSection
-                              ? "Enter the public Culture page title..."
-                              : isResourcesSection
-                                ? "Enter the public Resources page title..."
-                                : isReferenceBureauSection
-                                  ? "Enter the public Reference Bureau title..."
-                                  : isAcademySection
-                                    ? "Enter the public Academy title..."
-                          : "Enter page title..."
-                    }
-                    value={current.title?.fr ?? ""}
-                    onChange={(e) =>
-                      setDraft({ ...current, title: { ...(current.title ?? {}), fr: e.target.value } })
-                    }
-                  />
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-gold/60 font-semibold">English</span>
+                      <Input
+                        className="glass-panel border-gold/20 bg-black/20 transition-all duration-300 focus:border-gold/50 focus:ring-gold/20"
+                        placeholder="English title..."
+                        value={current.title?.en ?? ""}
+                        onChange={(e) =>
+                          setDraft({ ...current, title: { ...(current.title ?? {}), en: e.target.value } })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-gold/60 font-semibold">Français</span>
+                      <Input
+                        className="glass-panel border-gold/20 bg-black/20 transition-all duration-300 focus:border-gold/50 focus:ring-gold/20"
+                        placeholder="Titre en français..."
+                        value={current.title?.fr ?? ""}
+                        onChange={(e) =>
+                          setDraft({ ...current, title: { ...(current.title ?? {}), fr: e.target.value } })
+                        }
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 <div className="group">
@@ -594,30 +594,30 @@ export default function AdminDashboardPage() {
                                   ? "Academy introduction"
                           : "Content"}
                   </Label>
-                  <Textarea
-                    className="min-h-48 glass-panel border-gold/20 bg-black/20 resize-y leading-relaxed transition-all duration-300 focus:border-gold/50 focus:ring-gold/20"
-                    placeholder={
-                      isHistorySection
-                        ? "Write the public historical overview. Separate paragraphs with a blank line."
-                        : isGovernanceSection
-                          ? "Write the governance introduction. Separate paragraphs with a blank line."
-                          : isGlobalPerspectivesSection
-                            ? "Write the introductory text for the country and organization directories."
-                            : isCultureSection
-                              ? "Write the introductory text for the Culture page. Separate paragraphs with a blank line."
-                              : isResourcesSection
-                                ? "Write the introduction for the Resources page. Separate paragraphs with a blank line."
-                                : isReferenceBureauSection
-                                  ? "Write the introduction for the Reference Bureau page."
-                                  : isAcademySection
-                                    ? "Write the introduction for the Academy page."
-                          : "Enter page content..."
-                    }
-                    value={current.content?.fr ?? ""}
-                    onChange={(e) =>
-                      setDraft({ ...current, content: { ...(current.content ?? {}), fr: e.target.value } })
-                    }
-                  />
+                  <div className="grid gap-3 md:grid-cols-2">
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-gold/60 font-semibold">English</span>
+                      <Textarea
+                        className="min-h-48 glass-panel border-gold/20 bg-black/20 resize-y leading-relaxed transition-all duration-300 focus:border-gold/50 focus:ring-gold/20"
+                        placeholder="English content..."
+                        value={current.content?.en ?? ""}
+                        onChange={(e) =>
+                          setDraft({ ...current, content: { ...(current.content ?? {}), en: e.target.value } })
+                        }
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <span className="text-[10px] uppercase tracking-[0.2em] text-gold/60 font-semibold">Français</span>
+                      <Textarea
+                        className="min-h-48 glass-panel border-gold/20 bg-black/20 resize-y leading-relaxed transition-all duration-300 focus:border-gold/50 focus:ring-gold/20"
+                        placeholder="Contenu en français..."
+                        value={current.content?.fr ?? ""}
+                        onChange={(e) =>
+                          setDraft({ ...current, content: { ...(current.content ?? {}), fr: e.target.value } })
+                        }
+                      />
+                    </div>
+                  </div>
                   <p className="mt-2 text-xs text-muted-foreground/80">
                     {isHistorySection
                       ? "Each paragraph becomes a clean content block on the public History page. Text auto-translates to English."

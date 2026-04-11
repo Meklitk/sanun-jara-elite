@@ -383,39 +383,20 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const localize = useCallback((value: { en?: string; fr?: string } | undefined) => {
     if (!value) return "";
 
+    if (lang === "en") {
+      // English mode: prefer en, fallback to fr
+      const text = (value.en || value.fr || "").trim();
+      return text;
+    }
+
     if (lang === "fr") {
       // French mode: prefer fr, fallback to en
       const text = (value.fr || value.en || "").trim();
       return text;
     }
 
-    if (lang === "en") {
-      // English mode: prefer en, fallback to fr
-      if (value.en && value.en.trim() !== "") {
-        return value.en.trim();
-      }
-      
-      if (value.fr && value.fr.trim() !== "") {
-        const frText = value.fr.trim();
-        const cacheKey = `fr:en:${frText}`;
-
-        if (autoTranslations[cacheKey]) {
-          return autoTranslations[cacheKey];
-        }
-
-        translateText(frText, "fr", "en").then((translated) => {
-          setAutoTranslations((prev) => ({
-            ...prev,
-            [cacheKey]: translated,
-          }));
-        });
-
-        return frText;
-      }
-    }
-
     return (value.fr || value.en || "").trim();
-  }, [lang, autoTranslations]);
+  }, [lang]);
 
   const contextValue = useMemo(() => ({
     lang,

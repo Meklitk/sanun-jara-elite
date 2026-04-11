@@ -69,16 +69,16 @@ export default function HistoryPage() {
     <div className="space-y-12">
 
       {/* ✅ HERO - Logo + Content Side by Side */}
-      <section className="max-w-6xl mx-auto overflow-hidden rounded-[2rem] border border-gold/15 bg-[linear-gradient(145deg,rgba(0,0,0,0.92),rgba(38,23,7,0.86))] p-6 sm:p-8 lg:p-10 shadow-[0_30px_100px_rgba(0,0,0,0.35)]">
-        <div className="grid gap-8 lg:grid-cols-[1fr_360px] items-start">
+      <section className="max-w-6xl mx-auto overflow-hidden rounded-[1.25rem] sm:rounded-[2rem] border border-gold/15 bg-[linear-gradient(145deg,rgba(0,0,0,0.92),rgba(38,23,7,0.86))] p-4 sm:p-6 sm:p-8 lg:p-10 shadow-[0_30px_100px_rgba(0,0,0,0.35)]">
+        <div className="grid gap-4 sm:gap-8 lg:grid-cols-[1fr_360px] items-start">
           {/* Content Left */}
-          <div className="space-y-6">
-            <h1 className="text-4xl font-bold gold-gradient-text sm:text-5xl">
+          <div className="space-y-3 sm:space-y-6">
+            <h1 className="text-2xl sm:text-4xl font-bold gold-gradient-text sm:text-5xl">
               {title || page.key}
             </h1>
 
             {intro && (
-              <p className="max-w-4xl text-base leading-8 text-foreground/76 sm:text-lg">
+              <p className="max-w-4xl text-sm sm:text-base leading-7 sm:leading-8 text-foreground/76 sm:text-lg">
                 {intro}
               </p>
             )}
@@ -120,22 +120,27 @@ export default function HistoryPage() {
       {events.length > 0 && (
         <section
           id="timeline"
-          className="w-full px-4 sm:px-6 lg:px-12"
+          className="w-full px-2 sm:px-4 sm:px-6 lg:px-12"
         >
-          <div className="relative rounded-[2rem] border border-gold/15 bg-black/30 p-6 sm:p-10 shadow-[0_30px_100px_rgba(0,0,0,0.25)]">
+          <div className="relative rounded-[1.25rem] sm:rounded-[2rem] border border-gold/15 bg-black/30 p-4 sm:p-6 sm:p-10 shadow-[0_30px_100px_rgba(0,0,0,0.25)]">
 
-            {/* center line */}
-            <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-gradient-to-b from-gold/40 via-gold/20 to-transparent hidden md:block" />
+            {/* center line - hidden on mobile */}
+            <div className="absolute left-4 sm:left-1/2 top-0 bottom-0 w-px sm:-translate-x-1/2 bg-gradient-to-b from-gold/40 via-gold/20 to-transparent" />
 
-            <div className="space-y-10">
+            <div className="space-y-6 sm:space-y-10">
               {events.map((event, index) => (
                 <div
                   key={index}
                   id={event.slug}
-                  className="grid md:grid-cols-[1fr_auto_1fr] gap-6 items-center"
+                  className="grid grid-cols-[auto_1fr] sm:grid-cols-[1fr_auto_1fr] gap-3 sm:gap-6 items-start sm:items-center"
                 >
 
-                  {/* LEFT */}
+                  {/* Mobile: Dot first, then card */}
+                  <div className="flex sm:hidden flex-col items-center pt-2">
+                    <Dot index={index} />
+                  </div>
+
+                  {/* LEFT - Desktop only */}
                   {event.side === "left" ? (
                     <>
                       <TimelineCard
@@ -145,13 +150,17 @@ export default function HistoryPage() {
                         onActivate={() => navigateToEvent(event.href)}
                         onKeyDown={(keyboardEvent) => handleEventKeyDown(keyboardEvent, event.href)}
                       />
-                      <Dot index={index} />
-                      <div />
+                      <div className="hidden sm:block">
+                        <Dot index={index} />
+                      </div>
+                      <div className="hidden sm:block" />
                     </>
                   ) : (
                     <>
-                      <div />
-                      <Dot index={index} />
+                      <div className="hidden sm:block" />
+                      <div className="hidden sm:block">
+                        <Dot index={index} />
+                      </div>
                       <TimelineCard
                         event={event}
                         index={index}
@@ -171,16 +180,16 @@ export default function HistoryPage() {
 
       {/* ✅ GALLERY - Full Width */}
       {galleryImages.length > 0 && (
-        <section className="w-full px-4 sm:px-6 lg:px-12 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        <section className="w-full px-2 sm:px-4 sm:px-6 lg:px-12 grid gap-2 sm:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
           {galleryImages.map((src, index) => (
             <motion.div
               key={src}
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
-              className="overflow-hidden rounded-[1.6rem] border border-gold/12"
+              className="overflow-hidden rounded-[1.25rem] sm:rounded-[1.6rem] border border-gold/12"
             >
-              <img src={src} className="h-60 w-full object-cover" />
+              <img src={src} className="h-48 sm:h-60 w-full object-cover" />
             </motion.div>
           ))}
         </section>
@@ -220,18 +229,18 @@ function TimelineCard({
       tabIndex={0}
       onClick={onActivate}
       onKeyDown={onKeyDown}
-      className={`cursor-pointer rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-5 shadow transition hover:border-gold/30 hover:bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-gold/40 ${
-        align === "right" ? "text-right" : ""
+      className={`cursor-pointer rounded-[1.25rem] sm:rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-3 sm:p-5 shadow transition hover:border-gold/30 hover:bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-gold/40 ${
+        align === "right" ? "sm:text-right" : ""
       }`}
     >
       {event.year && (
-        <p className="text-xs uppercase tracking-[0.28em] text-gold/72">
+        <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.28em] text-gold/72">
           {event.year}
         </p>
       )}
-      <h2 className="mt-3 text-xl font-semibold">{event.title}</h2>
-      <p className="mt-3 text-sm text-foreground/70">{event.description}</p>
-      <p className={`mt-4 text-xs font-semibold uppercase tracking-[0.22em] text-gold/75 ${align === "right" ? "text-right" : ""}`}>
+      <h2 className="mt-2 sm:mt-3 text-lg sm:text-xl font-semibold">{event.title}</h2>
+      <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-foreground/70">{event.description}</p>
+      <p className={`mt-3 sm:mt-4 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.22em] text-gold/75 ${align === "right" ? "sm:text-right" : ""}`}>
         {t.openTimelineEntry}
       </p>
     </motion.article>

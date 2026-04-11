@@ -69,19 +69,19 @@ export default function GovernancePage() {
   const governmentName = localize(governance.governmentName) || "Manden Empire";
 
   return (
-    <div className="space-y-10">
-      <section className="rounded-[2rem] border border-gold/15 bg-[linear-gradient(145deg,rgba(0,0,0,0.95),rgba(35,23,9,0.88))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.35)] sm:p-8 lg:p-10">
-        <div className="grid gap-8 xl:grid-cols-[minmax(0,1.2fr)_260px]">
-          <div className="space-y-6">
-            <div className="space-y-4">
+    <div className="space-y-8 sm:space-y-10">
+      <section className="rounded-[1.25rem] sm:rounded-[2rem] border border-gold/15 bg-[linear-gradient(145deg,rgba(0,0,0,0.95),rgba(35,23,9,0.88))] p-4 sm:p-6 sm:p-8 lg:p-10 shadow-[0_30px_100px_rgba(0,0,0,0.35)]">
+        <div className="grid gap-4 sm:gap-8 xl:grid-cols-[minmax(0,1.2fr)_260px]">
+          <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-3 sm:space-y-4">
               <LinkedValue
                 value={governmentName}
                 url={governance.governmentNameUrl}
-                className="inline-flex text-xs uppercase tracking-[0.34em] text-gold/72 transition hover:text-gold"
+                className="inline-flex text-[10px] sm:text-xs uppercase tracking-[0.25em] sm:tracking-[0.34em] text-gold/72 transition hover:text-gold"
               />
-              <h1 className="text-4xl font-bold gold-gradient-text sm:text-5xl">{title || t.governance}</h1>
+              <h1 className="text-2xl sm:text-4xl font-bold gold-gradient-text sm:text-5xl">{title || t.governance}</h1>
               {paragraphs.length ? (
-                <div className="space-y-4 text-base leading-8 text-foreground/76">
+                <div className="space-y-3 sm:space-y-4 text-sm sm:text-base leading-7 sm:leading-8 text-foreground/76">
                   {paragraphs.map((paragraph, index) => (
                     <p key={`${paragraph.slice(0, 24)}-${index}`}>{paragraph}</p>
                   ))}
@@ -89,15 +89,15 @@ export default function GovernancePage() {
               ) : null}
             </div>
 
-            <div className="rounded-[2.6rem] border border-gold/12 bg-black/28 p-5 shadow-[0_20px_70px_rgba(0,0,0,0.2)]">
-              <div className="grid gap-4 md:grid-cols-2">
+            <div className="rounded-[1.5rem] sm:rounded-[2.6rem] border border-gold/12 bg-black/28 p-3 sm:p-5 shadow-[0_20px_70px_rgba(0,0,0,0.2)]">
+              <div className="grid gap-3 sm:gap-4 sm:grid-cols-2">
                 {offices.map((item) => (
-                  <div key={item.label} className="rounded-[1.15rem] border border-white/6 bg-white/[0.03] px-4 py-3">
-                    <p className="text-[11px] uppercase tracking-[0.28em] text-gold/68">{item.label}</p>
+                  <div key={item.label} className="rounded-[1rem] sm:rounded-[1.15rem] border border-white/6 bg-white/[0.03] px-3 sm:px-4 py-2 sm:py-3">
+                    <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.28em] text-gold/68">{item.label}</p>
                     <LinkedValue
                       value={item.value}
                       url={item.url}
-                      className="mt-2 inline-flex text-sm font-semibold uppercase tracking-[0.08em] text-foreground transition hover:text-gold"
+                      className="mt-1 sm:mt-2 inline-flex text-xs sm:text-sm font-semibold uppercase tracking-[0.06em] sm:tracking-[0.08em] text-foreground transition hover:text-gold"
                     />
                   </div>
                 ))}
@@ -115,37 +115,37 @@ export default function GovernancePage() {
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-gold/15 bg-black/25 p-6 shadow-[0_30px_100px_rgba(0,0,0,0.25)] sm:p-8 lg:p-10">
-        <div className="space-y-6">
-          <div className="grid gap-4 lg:grid-cols-2">
+      <section className="rounded-[1.25rem] sm:rounded-[2rem] border border-gold/15 bg-black/25 p-4 sm:p-6 sm:p-8 lg:p-10 shadow-[0_30px_100px_rgba(0,0,0,0.25)]">
+        <div className="space-y-4 sm:space-y-6">
+          <div className="grid gap-3 sm:gap-4 lg:grid-cols-2">
             <motion.article
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              className="rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]"
+              viewport={{ once: true, margin: "-40px" }}
+              className="rounded-[1.25rem] sm:rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-3 sm:p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]"
             >
-              <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.corruptionIndex}</p>
-              <div className="mt-5 flex items-center gap-4">
-                <div className="flex h-20 w-20 items-center justify-center rounded-full border-[10px] border-gold/70 border-b-gold/20 border-l-gold/20 bg-black/20 text-2xl font-display font-bold text-foreground">
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.28em] text-gold/72">{t.corruptionIndex}</p>
+              <div className="mt-3 sm:mt-5 flex items-center gap-3 sm:gap-4">
+                <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-full border-[6px] sm:border-[10px] border-gold/70 border-b-gold/20 border-l-gold/20 bg-black/20 text-lg sm:text-2xl font-display font-bold text-foreground">
                   {governance.corruptionIndex}
                 </div>
-                <p className="text-sm leading-7 text-foreground/72">{localize(governance.corruptionSummary)}</p>
+                <p className="text-xs sm:text-sm leading-6 sm:leading-7 text-foreground/72">{localize(governance.corruptionSummary)}</p>
               </div>
             </motion.article>
 
             <motion.article
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
+              viewport={{ once: true, margin: "-40px" }}
               transition={{ delay: 0.05 }}
-              className="rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]"
+              className="rounded-[1.25rem] sm:rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-3 sm:p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]"
             >
-              <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.riskIndex}</p>
-              <div className="mt-5 flex items-center gap-4">
-                <div className="flex h-20 w-20 items-center justify-center rounded-[1.2rem] bg-gold/85 text-4xl font-display font-bold text-black">
+              <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] sm:tracking-[0.28em] text-gold/72">{t.riskIndex}</p>
+              <div className="mt-3 sm:mt-5 flex items-center gap-3 sm:gap-4">
+                <div className="flex h-14 w-14 sm:h-20 sm:w-20 items-center justify-center rounded-[1rem] sm:rounded-[1.2rem] bg-gold/85 text-2xl sm:text-4xl font-display font-bold text-black">
                   {governance.riskIndex}
                 </div>
-                <p className="text-sm leading-7 text-foreground/72">{localize(governance.riskSummary)}</p>
+                <p className="text-xs sm:text-sm leading-6 sm:leading-7 text-foreground/72">{localize(governance.riskSummary)}</p>
               </div>
             </motion.article>
           </div>

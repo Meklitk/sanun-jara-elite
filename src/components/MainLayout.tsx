@@ -23,10 +23,10 @@ export default function MainLayout() {
       <div className="relative z-10">
         <TopBar />
 
-        <div className="mx-auto flex max-w-[1700px] gap-4 px-3 pb-10 pt-6 sm:px-4 lg:px-6 xl:gap-6">
+        <div className="mx-auto flex max-w-[1700px] gap-4 px-3 pb-10 pt-4 sm:pt-6 sm:px-4 lg:px-6 xl:gap-6">
           <SidebarNav mode="desktop" />
 
-          <main className="relative min-w-0 flex-1">
+          <main className="relative min-w-0 flex-1 w-full">
             {showFloatingCoatOfArms ? (
               <div className="pointer-events-none absolute right-0 top-4 z-20 hidden xl:block">
                 <div className="pointer-events-auto">
