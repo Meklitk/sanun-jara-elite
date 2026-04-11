@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useState, useMemo, useCallback, type ReactNode } from "react";
 
 const translationCache = new Map<string, string>();
 
@@ -107,6 +107,7 @@ const translations = {
     searchPlaceholder: "Search by name, product, or region...",
     commerceComingSoon: "Full merchant directory coming soon...",
     cultureDesc: "Videos and interventions of Djelis, Donsos, and journalists of Manden.",
+    culturalArchive: "Cultural Archive",
     djelisVideos: "Djelis",
     djelisVideosDesc:
       "Traditional griots preserving oral history and cultural heritage.",
@@ -116,6 +117,12 @@ const translations = {
     journalistsOfManden: "Journalists",
     journalistsOfMandenDesc: "News and reportage from journalists across the Manden region.",
     mediaGalleryComingSoon: "Cultural media gallery coming soon...",
+    gallery: "Gallery",
+    videosAndMedia: "Videos & Media",
+    images: "images",
+    videos: "videos",
+    image: "image",
+    item: "item",
     organizationalRubric: "Organizational Rubric",
     organizationalRubricDesc: "Structured framework for Manden organizations.",
     statistics: "Statistics",
@@ -259,6 +266,7 @@ const translations = {
     searchPlaceholder: "Rechercher par nom, produit ou région...",
     commerceComingSoon: "Répertoire complet des commerçants à venir...",
     cultureDesc: "Vidéos et interventions des Djelis, Donsos et journalistes du Manden.",
+    culturalArchive: "Archive Culturelle",
     djelisVideos: "Djelis",
     djelisVideosDesc:
       "Griots traditionnels préservant l'histoire orale et le patrimoine culturel.",
@@ -268,6 +276,12 @@ const translations = {
     journalistsOfManden: "Journalistes",
     journalistsOfMandenDesc: "Nouvelles et reportages des journalistes de la région du Manden.",
     mediaGalleryComingSoon: "Galerie de médias culturels à venir...",
+    gallery: "Galerie",
+    videosAndMedia: "Vidéos et Médias",
+    images: "images",
+    videos: "vidéos",
+    image: "image",
+    item: "élément",
     organizationalRubric: "Rubrique organisationnelle",
     organizationalRubricDesc: "Cadre structuré pour les organisations du Manden.",
     statistics: "Statistiques",
@@ -363,43 +377,55 @@ async function translateText(text: string, from: string, to: string): Promise<st
 }
 
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>("en");
+  const [lang, setLang] = useState<Lang>("fr");
   const [autoTranslations, setAutoTranslations] = useState<Record<string, string>>({});
 
-  function localize(value: { en?: string; fr?: string } | undefined) {
+  const localize = useCallback((value: { en?: string; fr?: string } | undefined) => {
     if (!value) return "";
 
+    if (lang === "fr") {
+      // French mode: prefer fr, fallback to en
+      const text = (value.fr || value.en || "").trim();
+      return text;
+    }
+
     if (lang === "en") {
-      return (value.en || value.fr || "").trim();
-    }
-
-    if (lang === "fr" && value.fr && value.fr.trim() !== "") {
-      return value.fr.trim();
-    }
-
-    if (lang === "fr" && value.en && value.en.trim() !== "") {
-      const enText = value.en.trim();
-      const cacheKey = `en:fr:${enText}`;
-
-      if (autoTranslations[cacheKey]) {
-        return autoTranslations[cacheKey];
+      // English mode: prefer en, fallback to fr
+      if (value.en && value.en.trim() !== "") {
+        return value.en.trim();
       }
+      
+      if (value.fr && value.fr.trim() !== "") {
+        const frText = value.fr.trim();
+        const cacheKey = `fr:en:${frText}`;
 
-      translateText(enText, "en", "fr").then((translated) => {
-        setAutoTranslations((prev) => ({
-          ...prev,
-          [cacheKey]: translated,
-        }));
-      });
+        if (autoTranslations[cacheKey]) {
+          return autoTranslations[cacheKey];
+        }
 
-      return enText;
+        translateText(frText, "fr", "en").then((translated) => {
+          setAutoTranslations((prev) => ({
+            ...prev,
+            [cacheKey]: translated,
+          }));
+        });
+
+        return frText;
+      }
     }
 
-    return (value.en || value.fr || "").trim();
-  }
+    return (value.fr || value.en || "").trim();
+  }, [lang, autoTranslations]);
+
+  const contextValue = useMemo(() => ({
+    lang,
+    setLang,
+    t: translations[lang],
+    localize,
+  }), [lang, localize]);
 
   return (
-    <I18nContext.Provider value={{ lang, setLang, t: translations[lang], localize }}>
+    <I18nContext.Provider value={contextValue}>
       {children}
     </I18nContext.Provider>
   );

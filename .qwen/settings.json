@@ -13,7 +13,8 @@
       "Bash(findstr *)",
       "Read(C:\\Users\\MAKI\\Pictures\\Screenshots/**)",
       "Bash(move *)",
-      "Bash(curl *)"
+      "Bash(curl *)",
+      "Bash(npx *)"
     ]
   },
   "$version": 3

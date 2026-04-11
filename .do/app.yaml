@@ -1,0 +1,63 @@
+name: sanunjara
+region: nyc  # or sfo, fra, sgp, blr, tor, lon, ams
+services:
+  - name: backend
+    source_dir: /server
+    github:
+      repo: your-username/sanun-jara-elite  # UPDATE THIS
+      branch: main
+    build_command: npm install
+    run_command: npm start
+    environment_slug: node-js
+    instance_count: 1
+    instance_size_slug: basic-xxs  # $5/month
+    routes:
+      - path: /api
+      - path: /uploads
+    envs:
+      - key: PORT
+        value: "5050"
+      - key: MONGODB_URI
+        value: "mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/sanunjara?retryWrites=true&w=majority"  # UPDATE THIS
+        type: SECRET
+      - key: JWT_SECRET
+        value: "your-super-secret-key-change-this"
+        type: SECRET
+      - key: ADMIN_USERNAME
+        value: "admin"
+      - key: ADMIN_PASSWORD_HASH
+        value: "$2a$10$..."  # UPDATE THIS - bcrypt hash
+        type: SECRET
+      - key: CORS_ORIGIN
+        value: "https://www.sanunjara.com"
+    health_check:
+      path: /api/pages
+      port: 5050
+      initial_delay_seconds: 30
+      period_seconds: 10
+      timeout_seconds: 5
+      success_threshold: 1
+      failure_threshold: 3
+
+static_sites:
+  - name: frontend
+    source_dir: /
+    github:
+      repo: your-username/sanun-jara-elite  # UPDATE THIS
+      branch: main
+    build_command: npm install && npm run build
+    output_dir: dist
+    catchall_document: index.html
+    routes:
+      - path: /
+    envs:
+      - key: VITE_API_URL
+        value: ""  # Empty because we use relative URLs
+
+domains:
+  - domain: www.sanunjara.com
+    type: PRIMARY
+    zone: sanunjara.com
+  - domain: sanunjara.com
+    type: ALIAS
+    zone: sanunjara.com

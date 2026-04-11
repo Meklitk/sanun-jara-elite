@@ -43,32 +43,32 @@ import {
 
 function isLinkMeaningful(l: PageLink): boolean {
   return Boolean(
-    l.url?.trim() || l.label?.en?.trim()
+    l.url?.trim() || l.label?.fr?.trim()
   );
 }
 
 function isTimelineMeaningful(t: TimelineItem): boolean {
   return Boolean(
     t.year?.trim() ||
-      t.title?.en?.trim() ||
-      t.description?.en?.trim()
+      t.title?.fr?.trim() ||
+      t.description?.fr?.trim()
   );
 }
 
 function isGovernanceBranchMeaningful(branch: GovernanceBranch): boolean {
   return Boolean(
-    branch.name?.en?.trim() ||
-      branch.powers?.en?.trim() ||
-      branch.selection?.en?.trim()
+    branch.name?.fr?.trim() ||
+      branch.powers?.fr?.trim() ||
+      branch.selection?.fr?.trim()
   );
 }
 
 function isDirectoryItemMeaningful(item: DirectoryItem): boolean {
-  return Boolean(item.name?.en?.trim() || item.description?.en?.trim());
+  return Boolean(item.name?.fr?.trim() || item.description?.fr?.trim());
 }
 
 function isUtilityCardMeaningful(card: UtilityCard): boolean {
-  return Boolean(card.title?.en?.trim() || card.description?.en?.trim() || card.url?.trim());
+  return Boolean(card.title?.fr?.trim() || card.description?.fr?.trim() || card.url?.trim());
 }
 
 /** Same order as the public site sidebar — Introduction is always first. */
@@ -148,7 +148,7 @@ export default function AdminDashboardPage() {
     "reference-bureau": <FileText className="w-4 h-4" />,
     academy: <BookOpen className="w-4 h-4" />,
   };
-  const historyParagraphs = splitEditorParagraphs(current?.content?.en ?? "");
+  const historyParagraphs = splitEditorParagraphs(current?.content?.fr ?? "");
   const historyEventCount = current?.timeline?.filter(isTimelineMeaningful).length ?? 0;
   const historyImageCount = current?.images?.length ?? 0;
   const governanceData = resolveGovernanceData(current ?? undefined);
@@ -176,9 +176,9 @@ export default function AdminDashboardPage() {
           }
         : current.directory;
       const utilityCards = (current.utilityCards ?? []).filter(isUtilityCardMeaningful);
-      // Only save English content - French will be auto-translated on public site
-      const title = { en: current.title?.en ?? "" };
-      const content = { en: current.content?.en ?? "" };
+      // Save French as primary content - English will be auto-translated on public site
+      const title = { fr: current.title?.fr ?? "" };
+      const content = { fr: current.content?.fr ?? "" };
       await updatePage.mutateAsync({
         id: current._id,
         token,
@@ -568,9 +568,9 @@ export default function AdminDashboardPage() {
                                     ? "Enter the public Academy title..."
                           : "Enter page title..."
                     }
-                    value={current.title?.en ?? ""}
+                    value={current.title?.fr ?? ""}
                     onChange={(e) =>
-                      setDraft({ ...current, title: { ...(current.title ?? {}), en: e.target.value } })
+                      setDraft({ ...current, title: { ...(current.title ?? {}), fr: e.target.value } })
                     }
                   />
                 </div>
@@ -613,27 +613,27 @@ export default function AdminDashboardPage() {
                                     ? "Write the introduction for the Academy page."
                           : "Enter page content..."
                     }
-                    value={current.content?.en ?? ""}
+                    value={current.content?.fr ?? ""}
                     onChange={(e) =>
-                      setDraft({ ...current, content: { ...(current.content ?? {}), en: e.target.value } })
+                      setDraft({ ...current, content: { ...(current.content ?? {}), fr: e.target.value } })
                     }
                   />
                   <p className="mt-2 text-xs text-muted-foreground/80">
                     {isHistorySection
-                      ? "Each paragraph becomes a clean content block on the public History page. Text auto-translates to French."
+                      ? "Each paragraph becomes a clean content block on the public History page. Text auto-translates to English."
                       : isGovernanceSection
-                        ? "These paragraphs appear at the top of the public Governance page. Text auto-translates to French."
+                        ? "These paragraphs appear at the top of the public Governance page. Text auto-translates to English."
                         : isGlobalPerspectivesSection
-                          ? "This introduction appears above the country and organization lists. Text auto-translates to French."
+                          ? "This introduction appears above the country and organization lists. Text auto-translates to English."
                           : isCultureSection
-                            ? "This introduction appears above the culture gallery and video sections. Text auto-translates to French."
+                            ? "This introduction appears above the culture gallery and video sections. Text auto-translates to English."
                             : isResourcesSection
-                              ? "This introduction appears above the resource links and document library. Text auto-translates to French."
+                              ? "This introduction appears above the resource links and document library. Text auto-translates to English."
                               : isReferenceBureauSection
-                                ? "This introduction appears above the join, questions, and entrepreneur sections. Text auto-translates to French."
+                                ? "This introduction appears above the join, questions, and entrepreneur sections. Text auto-translates to English."
                                 : isAcademySection
-                                  ? "This introduction appears above the course sections. Text auto-translates to French."
-                        : "Content auto-translates to French on the public site."}
+                                  ? "This introduction appears above the course sections. Text auto-translates to English."
+                        : "Content auto-translates to English on the public site."}
                   </p>
                 </div>
               </div>
