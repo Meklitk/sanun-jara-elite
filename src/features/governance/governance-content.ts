@@ -8,26 +8,35 @@ const defaultGovernanceBranches: GovernanceBranch[] = [
     name: { en: "Reflection Committee" },
     powers: { en: "Filters ideas based on alignment with Manden principles." },
     selection: { en: "Meritocratic" },
+    url: "/governance/biographies/reflection-committee",
   },
   {
     name: { en: "General Assembly" },
     powers: { en: "Obtains consensus from within the Manden community." },
     selection: { en: "Meritocratic" },
+    url: "/governance/biographies/general-assembly",
   },
   {
     name: { en: "Legislative Committee" },
     powers: { en: "Handles the promulgation of governing protocols." },
     selection: { en: "Meritocratic" },
+    url: "/governance/biographies/legislative-committee",
   },
 ];
 
 export const defaultGovernanceData: GovernanceData = {
   chiefdom: { en: "Manden Mansaya" },
+  chiefdomUrl: "/governance/biographies/manden-mansaya",
   mandenMansa: { en: "Mari Djata Keita V" },
+  mandenMansaUrl: "/governance/biographies/mari-djata-keita-v",
   mandenDjeliba: { en: "Mabougnata Dibla Ibrahim Diabate" },
+  mandenDjelibaUrl: "/governance/biographies/mabougnata-dibla-ibrahim-diabate",
   mandenMory: { en: "Mabougnata Alpha Omar Kaba" },
+  mandenMoryUrl: "/governance/biographies/mabougnata-alpha-omar-kaba",
   governmentName: { en: "Manden Empire" },
+  governmentNameUrl: "/governance/biographies/manden-empire",
   constitution: { en: "Kouroukan Fouga, adopted in 1236" },
+  constitutionUrl: "/governance/biographies/kouroukan-fouga",
   governmentType: { en: "Monarchy" },
   corruptionIndex: "05",
   corruptionSummary: {
@@ -71,11 +80,17 @@ export function resolveGovernanceData(page?: Page): GovernanceData {
 
   return {
     chiefdom: mergeLocalized(defaultGovernanceData.chiefdom, governance?.chiefdom),
+    chiefdomUrl: governance?.chiefdomUrl ?? defaultGovernanceData.chiefdomUrl,
     mandenMansa: mergeLocalized(defaultGovernanceData.mandenMansa, governance?.mandenMansa),
+    mandenMansaUrl: governance?.mandenMansaUrl ?? defaultGovernanceData.mandenMansaUrl,
     mandenDjeliba: mergeLocalized(defaultGovernanceData.mandenDjeliba, governance?.mandenDjeliba),
+    mandenDjelibaUrl: governance?.mandenDjelibaUrl ?? defaultGovernanceData.mandenDjelibaUrl,
     mandenMory: mergeLocalized(defaultGovernanceData.mandenMory, governance?.mandenMory),
+    mandenMoryUrl: governance?.mandenMoryUrl ?? defaultGovernanceData.mandenMoryUrl,
     governmentName: mergeLocalized(defaultGovernanceData.governmentName, governance?.governmentName),
+    governmentNameUrl: governance?.governmentNameUrl ?? defaultGovernanceData.governmentNameUrl,
     constitution: mergeLocalized(defaultGovernanceData.constitution, governance?.constitution),
+    constitutionUrl: governance?.constitutionUrl ?? defaultGovernanceData.constitutionUrl,
     governmentType: mergeLocalized(defaultGovernanceData.governmentType, governance?.governmentType),
     corruptionIndex: governance?.corruptionIndex ?? defaultGovernanceData.corruptionIndex,
     corruptionSummary: mergeLocalized(defaultGovernanceData.corruptionSummary, governance?.corruptionSummary),
@@ -84,11 +99,12 @@ export function resolveGovernanceData(page?: Page): GovernanceData {
     taxInformation: mergeLocalized(defaultGovernanceData.taxInformation, governance?.taxInformation),
     branches:
       governance?.branches?.length
-        ? governance.branches.map((branch, index) => ({
-            name: mergeLocalized(defaultGovernanceBranches[index]?.name ?? { en: "" }, branch.name),
-            powers: mergeLocalized(defaultGovernanceBranches[index]?.powers ?? { en: "" }, branch.powers),
-            selection: mergeLocalized(defaultGovernanceBranches[index]?.selection ?? { en: "" }, branch.selection),
-          }))
+          ? governance.branches.map((branch, index) => ({
+              name: mergeLocalized(defaultGovernanceBranches[index]?.name ?? { en: "" }, branch.name),
+              powers: mergeLocalized(defaultGovernanceBranches[index]?.powers ?? { en: "" }, branch.powers),
+              selection: mergeLocalized(defaultGovernanceBranches[index]?.selection ?? { en: "" }, branch.selection),
+              url: branch.url ?? defaultGovernanceBranches[index]?.url ?? "",
+            }))
         : defaultGovernanceBranches,
     phone: governance?.phone ?? defaultGovernanceData.phone,
   };

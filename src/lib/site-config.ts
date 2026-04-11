@@ -8,6 +8,7 @@ export type CoreNavItem = {
 export type UtilityNavChild = {
   id: string;
   key: TranslationKey;
+  path?: string;
 };
 
 export type UtilityNavItem = {
@@ -31,35 +32,33 @@ export const utilityNavItems: UtilityNavItem[] = [
     key: "globalPerspectives",
     path: "/global-perspectives",
     children: [
-      { id: "country", key: "byCountry" },
-      { id: "organization", key: "byOrganization" },
+      { id: "country", key: "byCountry", path: "/global-perspectives/country" },
+      { id: "organization", key: "byOrganization", path: "/global-perspectives/organization" },
     ],
   },
   {
     key: "referenceBureau",
     path: "/reference-bureau",
     children: [
-      { id: "join", key: "wantToJoin" },
-      { id: "questions", key: "haveQuestions" },
-      { id: "entrepreneur", key: "iAmEntrepreneur" },
+      { id: "join", key: "wantToJoin", path: "/reference-bureau/join" },
+      { id: "questions", key: "haveQuestions", path: "/reference-bureau/questions" },
+      { id: "entrepreneur", key: "iAmEntrepreneur", path: "/reference-bureau/entrepreneur" },
     ],
   },
   {
     key: "academy",
     path: "/academy",
     children: [
-      { id: "nko", key: "coursesNko" },
-      { id: "history-courses", key: "historyCourses" },
-      { id: "others", key: "otherCourses" },
+      { id: "nko", key: "coursesNko", path: "/academy/nko" },
+      { id: "history-courses", key: "historyCourses", path: "/academy/history-courses" },
+      { id: "others", key: "otherCourses", path: "/academy/others" },
     ],
   },
   {
     key: "intranet",
     path: "/intranet",
     children: [
-      { id: "login", key: "connection" },
-      { id: "membership", key: "notYetMember" },
-      { id: "recommendation", key: "recommendSomeone" },
+      { id: "login", key: "connection", path: "/admin/login" },
     ],
   },
 ];

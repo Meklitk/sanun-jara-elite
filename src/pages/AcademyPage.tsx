@@ -1,40 +1,60 @@
-import { BookOpen, GraduationCap, History } from "lucide-react";
-
 import UtilityLandingPage from "@/features/pages/UtilityLandingPage";
+import {
+  PageErrorState,
+  PageLoadingState,
+  PageNotFoundState,
+  useCmsPage,
+} from "@/features/pages/page-content";
+import { academyCardDefinitions, findUtilityCard } from "@/features/pages/utility-page-config";
 import { useI18n } from "@/lib/i18n";
 
-export default function AcademyPage() {
-  const { t } = useI18n();
+type AcademyPageProps = {
+  section?: "nko" | "history-courses" | "others";
+};
+
+export default function AcademyPage({ section }: AcademyPageProps) {
+  const { t, localize } = useI18n();
+  const { page, title, content, isLoading, error } = useCmsPage("academy");
+
+  if (isLoading) return <PageLoadingState />;
+  if (error) return <PageErrorState />;
+  if (!page) return <PageNotFoundState />;
+
+  const allCards = academyCardDefinitions
+    .map((definition) => {
+      const card = findUtilityCard(page.utilityCards, definition.id);
+      const resolvedTitle = localize(card?.title) || t[definition.titleKey];
+      const resolvedDescription = localize(card?.description) || t[definition.descriptionKey];
+      const href = card?.url?.trim() || "";
+
+      if (!resolvedTitle && !resolvedDescription && !href) return null;
+
+      return {
+        id: definition.id,
+        icon: definition.icon,
+        title: resolvedTitle,
+        description: resolvedDescription,
+        ctaLabel: t.learnMore,
+        accent: definition.accent,
+        href,
+      };
+    })
+    .filter((card): card is NonNullable<typeof card> => Boolean(card));
+
+  const filteredCards = section
+    ? allCards.filter((card) => card.id === section)
+    : allCards;
 
   return (
     <UtilityLandingPage
       eyebrow={t.academy}
-      title={t.academy}
-      intro="The Academy is structured around N'ko courses, history courses, and additional programs. Some course links can stay as placeholders until the lesson materials are ready."
-      cards={[
-        {
-          id: "nko",
-          icon: BookOpen,
-          title: t.coursesNko,
-          description: t.coursesNkoDesc,
-          ctaLabel: t.learnMore,
-        },
-        {
-          id: "history-courses",
-          icon: History,
-          title: t.historyCourses,
-          description: t.historyCoursesDesc,
-          ctaLabel: t.learnMore,
-          accent: "crimson",
-        },
-        {
-          id: "others",
-          icon: GraduationCap,
-          title: t.otherCourses,
-          description: t.otherCoursesDesc,
-          ctaLabel: t.learnMore,
-        },
-      ]}
+      title={title || t.academy}
+      intro={
+        !section
+          ? content || "The Academy is structured around N'ko courses, history courses, and additional programs."
+          : ""
+      }
+      cards={filteredCards}
     />
   );
 }

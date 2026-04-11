@@ -2,7 +2,6 @@ import type { MediaItem } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Plus, Trash2, ChevronUp, ChevronDown, Film, Mic, FileText, Play } from "lucide-react";
 import { uploadFile } from "@/api/upload";
 import { toast } from "sonner";
@@ -60,6 +59,45 @@ export function MediaEditor({ media, onChange, token }: MediaEditorProps) {
     category: "other",
   });
 
+  function titleFromFileName(fileName: string) {
+    return fileName
+      .replace(/\.[^/.]+$/, "")
+      .replace(/[_-]+/g, " ")
+      .trim();
+  }
+
+  async function handleBulkVideoUpload(files: File[]) {
+    const uploadedItems: MediaItem[] = [];
+    let failedCount = 0;
+
+    for (const file of files) {
+      try {
+        const res = await uploadFile(file, token);
+        uploadedItems.push({
+          url: res.media.url,
+          title: titleFromFileName(file.name),
+          type: "video",
+          category: "other",
+        });
+      } catch {
+        failedCount += 1;
+      }
+    }
+
+    if (uploadedItems.length > 0) {
+      onChange([...list, ...uploadedItems]);
+      toast.success(
+        uploadedItems.length === 1 ? "1 video added" : `${uploadedItems.length} videos added`
+      );
+    }
+
+    if (failedCount > 0) {
+      toast.error(
+        failedCount === 1 ? "1 video failed to upload" : `${failedCount} videos failed to upload`
+      );
+    }
+  }
+
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-end justify-between gap-3 p-4 rounded-xl bg-gradient-to-r from-gold/5 to-transparent border border-gold/10">
@@ -68,10 +106,10 @@ export function MediaEditor({ media, onChange, token }: MediaEditorProps) {
             <div className="w-8 h-8 rounded-lg gold-gradient-bg flex items-center justify-center">
               <Film className="h-4 w-4 text-black" aria-hidden />
             </div>
-            Media Gallery
+            Culture Videos
           </Label>
           <p className="mt-2 text-xs text-muted-foreground max-w-xl">
-            Upload videos, audio files, and documents. Organize by category: Djelis, Donsos, or Journalists.
+            Add as many video entries as you want for the public culture page. You can upload them one by one or add several videos at once.
           </p>
         </div>
         <Button
@@ -81,15 +119,36 @@ export function MediaEditor({ media, onChange, token }: MediaEditorProps) {
           onClick={() => onChange([...list, emptyMedia()])}
         >
           <Plus className="mr-1.5 h-4 w-4" />
-          Add Media
+          Add Video Card
         </Button>
+      </div>
+
+      <div className="rounded-xl border border-gold/10 bg-black/15 p-4">
+        <Label className="flex items-center gap-2 text-sm font-medium text-foreground/90">
+          <span className="h-4 w-1 rounded-full bg-gradient-to-b from-gold to-gold/50"></span>
+          Quick Add Multiple Videos
+        </Label>
+        <p className="mt-2 text-xs text-muted-foreground">
+          Select many video files and they will be added to the culture page as separate video cards.
+        </p>
+        <Input
+          type="file"
+          accept="video/*"
+          multiple
+          className="mt-3 border-gold/20 bg-black/20 text-xs"
+          onChange={(e) => {
+            const files = Array.from(e.target.files ?? []);
+            if (files.length > 0) void handleBulkVideoUpload(files);
+            e.currentTarget.value = "";
+          }}
+        />
       </div>
 
       {list.length === 0 ? (
         <div className="rounded-xl border border-dashed border-gold/20 bg-gradient-to-b from-gold/5 to-transparent px-6 py-12 text-center">
           <Film className="h-8 w-8 text-gold/40 mx-auto mb-3" />
           <p className="text-sm text-muted-foreground">
-            No media yet. Click <span className="text-gold font-semibold">Add Media</span> to upload videos, audio, or documents.
+            No culture videos yet. Click <span className="text-gold font-semibold">Add Video Card</span> or use the bulk uploader above.
           </p>
         </div>
       ) : (
@@ -150,17 +209,17 @@ export function MediaEditor({ media, onChange, token }: MediaEditorProps) {
 
                   <div className="grid grid-cols-2 gap-3 pl-3">
                     <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
-                        Type
-                      </Label>
-                      <select
+                    <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
+                      Type
+                    </Label>
+                    <select
                         className="w-full h-9 px-3 rounded-md border border-gold/20 bg-black/20 text-sm focus:border-gold/50 focus:ring-gold/20"
-                        value={item.type}
-                        onChange={(e) => setAt(i, { ...item, type: e.target.value as MediaItem["type"] })}
-                      >
-                        {TYPES.map((t) => (
-                          <option key={t.value} value={t.value}>
+                      value={item.type}
+                      onChange={(e) => setAt(i, { ...item, type: e.target.value as MediaItem["type"] })}
+                    >
+                      {TYPES.map((t) => (
+                        <option key={t.value} value={t.value}>
                             {t.label}
                           </option>
                         ))}
@@ -206,7 +265,7 @@ export function MediaEditor({ media, onChange, token }: MediaEditorProps) {
                     {item.url ? (
                       <div className="flex items-center gap-3 p-3 rounded-lg bg-black/20 border border-gold/20">
                         {item.type === "video" && (
-                          <video className="w-24 h-16 rounded object-cover" src={item.url} />
+                          <video className="w-24 h-16 rounded object-cover" src={item.url} muted />
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="text-xs text-gold truncate">{item.url}</p>

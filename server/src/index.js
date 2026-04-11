@@ -38,12 +38,18 @@ const storage = multer.diskStorage({
     cb(null, `${unique}_${safeBase}`);
   }
 });
-const upload = multer({ storage });
+const upload = multer({
+  storage,
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB max for PDFs
+});
 
 const PAGE_ORDER = [
   "introduction",
   "history",
   "governance",
+  "global-perspectives",
+  "reference-bureau",
+  "academy",
   "economy",
   "commerce",
   "culture",
@@ -108,18 +114,25 @@ app.put("/api/pages/:id", requireAdmin(JWT_SECRET), async (req, res) => {
         z.object({
           year: z.string().optional(),
           title: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
-          description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional()
+          description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          url: z.string().optional()
         })
       )
       .optional(),
     governance: z
       .object({
         chiefdom: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        chiefdomUrl: z.string().optional(),
         mandenMansa: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        mandenMansaUrl: z.string().optional(),
         mandenDjeliba: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        mandenDjelibaUrl: z.string().optional(),
         mandenMory: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        mandenMoryUrl: z.string().optional(),
         governmentName: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        governmentNameUrl: z.string().optional(),
         constitution: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        constitutionUrl: z.string().optional(),
         governmentType: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
         corruptionIndex: z.string().optional(),
         corruptionSummary: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
@@ -131,7 +144,8 @@ app.put("/api/pages/:id", requireAdmin(JWT_SECRET), async (req, res) => {
             z.object({
               name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
               powers: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
-              selection: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional()
+              selection: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+              url: z.string().optional()
             })
           )
           .optional(),
@@ -146,6 +160,37 @@ app.put("/api/pages/:id", requireAdmin(JWT_SECRET), async (req, res) => {
           title: z.string().optional(),
           type: z.enum(["video", "audio", "document"]),
           category: z.enum(["djelis", "donsos", "journalists", "other"]).optional()
+        })
+      )
+      .optional(),
+    directory: z
+      .object({
+        countries: z
+          .array(
+            z.object({
+              name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+              description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional()
+            })
+          )
+          .optional(),
+        organizations: z
+          .array(
+            z.object({
+              name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+              description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional()
+            })
+          )
+          .optional()
+      })
+      .partial()
+      .optional(),
+    utilityCards: z
+      .array(
+        z.object({
+          id: z.string(),
+          title: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          url: z.string().optional()
         })
       )
       .optional()

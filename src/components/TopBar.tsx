@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Menu } from "lucide-react";
+import { ChevronDown, Menu, Languages } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import SidebarNav from "@/components/SidebarNav";
@@ -17,11 +17,13 @@ import { cn } from "@/lib/utils";
 import { utilityNavItems } from "@/lib/site-config";
 
 export default function TopBar() {
-  const { t } = useI18n();
+  const { t, lang, setLang } = useI18n();
   const navigate = useNavigate();
   const location = useLocation();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const toggleLang = () => setLang(lang === "en" ? "fr" : "en");
 
   return (
     <header className="sticky top-0 z-50 border-b border-gold/10 bg-background/88 backdrop-blur-2xl">
@@ -52,6 +54,21 @@ export default function TopBar() {
                 includeUtilityNav
                 onNavigate={() => setMobileOpen(false)}
               />
+              <div className="mt-6 pt-6 border-t border-gold/10">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    toggleLang();
+                    setMobileOpen(false);
+                  }}
+                  className="w-full rounded-xl border-gold/20 bg-black/20 text-gold hover:bg-gold/10 hover:text-gold"
+                >
+                  <Languages className="mr-2 h-4 w-4" />
+                  {lang === "en" ? "Français" : "English"}
+                </Button>
+              </div>
             </SheetContent>
           </Sheet>
 
@@ -86,7 +103,7 @@ export default function TopBar() {
               >
                 <button
                   type="button"
-                  onClick={() => navigate(item.path)}
+                  onClick={() => setActiveMenu(isOpen ? null : item.path)}
                   className={cn(
                     "inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition",
                     isActive
@@ -106,6 +123,7 @@ export default function TopBar() {
                 <div
                   className={cn(
                     "pointer-events-none absolute left-0 top-[calc(100%+0.75rem)] w-72 rounded-[1.5rem] border border-gold/15 bg-background/96 p-3 opacity-0 shadow-[0_26px_70px_rgba(0,0,0,0.45)] backdrop-blur-xl transition duration-200",
+                    "before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-['']",
                     isOpen && "pointer-events-auto opacity-100",
                   )}
                 >
@@ -113,7 +131,7 @@ export default function TopBar() {
                     <button
                       key={child.id}
                       type="button"
-                      onClick={() => navigate(`${item.path}#${child.id}`)}
+                      onClick={() => navigate(child.path || `${item.path}#${child.id}`)}
                       className="block w-full rounded-xl px-4 py-3 text-left text-sm text-foreground/80 transition hover:bg-white/5 hover:text-foreground"
                     >
                       {t[child.key]}
@@ -126,6 +144,16 @@ export default function TopBar() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={toggleLang}
+            className="rounded-xl border border-gold/15 bg-black/20 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gold/80 hover:bg-gold/10 hover:text-gold"
+          >
+            <Languages className="mr-2 h-4 w-4" />
+            {lang === "en" ? "FR" : "EN"}
+          </Button>
           <img
             src="/images/manden-flag-lion.svg"
             alt="Manden flag"

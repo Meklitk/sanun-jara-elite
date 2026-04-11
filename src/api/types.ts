@@ -14,6 +14,7 @@ export type TimelineItem = {
   year: string;
   title: Partial<LocalizedString>;
   description: Partial<LocalizedString>;
+  url?: string;
 };
 
 export type MediaItem = {
@@ -27,15 +28,22 @@ export type GovernanceBranch = {
   name: Partial<LocalizedString>;
   powers: Partial<LocalizedString>;
   selection: Partial<LocalizedString>;
+  url?: string;
 };
 
 export type GovernanceData = {
   chiefdom: Partial<LocalizedString>;
+  chiefdomUrl?: string;
   mandenMansa: Partial<LocalizedString>;
+  mandenMansaUrl?: string;
   mandenDjeliba: Partial<LocalizedString>;
+  mandenDjelibaUrl?: string;
   mandenMory: Partial<LocalizedString>;
+  mandenMoryUrl?: string;
   governmentName: Partial<LocalizedString>;
+  governmentNameUrl?: string;
   constitution: Partial<LocalizedString>;
+  constitutionUrl?: string;
   governmentType: Partial<LocalizedString>;
   corruptionIndex: string;
   corruptionSummary: Partial<LocalizedString>;
@@ -44,6 +52,43 @@ export type GovernanceData = {
   taxInformation: Partial<LocalizedString>;
   branches: GovernanceBranch[];
   phone: string;
+};
+
+export type DirectoryItem = {
+  name: Partial<LocalizedString>;
+  description: Partial<LocalizedString>;
+};
+
+export type DirectoryData = {
+  countries: DirectoryItem[];
+  organizations: DirectoryItem[];
+};
+
+export type UtilityCard = {
+  id: string;
+  title: Partial<LocalizedString>;
+  description: Partial<LocalizedString>;
+  url?: string;
+};
+
+export type EconomyTableRow = {
+  label: Partial<LocalizedString>;
+  value: Partial<LocalizedString>;
+  description?: Partial<LocalizedString>;
+};
+
+export type EconomyTable = {
+  title: Partial<LocalizedString>;
+  description?: Partial<LocalizedString>;
+  rows: EconomyTableRow[];
+};
+
+export type EconomyData = {
+  transferServices?: EconomyTable;
+  recommendationLetters?: EconomyTable;
+  duesSystem?: EconomyTable;
+  currencyInfo?: Partial<LocalizedString>;
+  bankInfo?: Partial<LocalizedString>;
 };
 
 export type Page = {
@@ -56,5 +101,7 @@ export type Page = {
   timeline?: TimelineItem[];
   governance?: GovernanceData;
   media?: MediaItem[];
+  directory?: DirectoryData;
+  economy?: EconomyData;
+  utilityCards?: UtilityCard[];
 };
-

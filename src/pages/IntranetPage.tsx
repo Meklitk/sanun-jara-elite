@@ -1,4 +1,4 @@
-import { LogIn, UserCheck, UserPlus } from "lucide-react";
+import { LogIn, UserCheck, UserPlus, Shield } from "lucide-react";
 
 import UtilityLandingPage from "@/features/pages/UtilityLandingPage";
 import { useI18n } from "@/lib/i18n";
@@ -33,6 +33,15 @@ export default function IntranetPage() {
           description: "Submit recommendations or trusted referrals into the network.",
           ctaLabel: t.recommendBtn,
           accent: "crimson",
+        },
+        {
+          id: "admin",
+          icon: Shield,
+          title: "Admin Login",
+          description: "Administrator access to manage site content.",
+          ctaLabel: "Login",
+          href: "/admin",
+          accent: "gold",
         },
       ]}
     />

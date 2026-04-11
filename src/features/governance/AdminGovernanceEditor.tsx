@@ -10,6 +10,7 @@ function emptyBranch(): GovernanceBranch {
     name: { en: "" },
     powers: { en: "" },
     selection: { en: "" },
+    url: "",
   };
 }
 
@@ -27,6 +28,22 @@ type Props = {
 };
 
 export default function AdminGovernanceEditor({ governance, onChange }: Props) {
+  function updateUrlField(
+    field:
+      | "chiefdomUrl"
+      | "mandenMansaUrl"
+      | "mandenDjelibaUrl"
+      | "mandenMoryUrl"
+      | "governmentNameUrl"
+      | "constitutionUrl",
+    value: string
+  ) {
+    onChange({
+      ...governance,
+      [field]: value,
+    });
+  }
+
   function updateLocalizedField(
     field:
       | "chiefdom"
@@ -92,7 +109,7 @@ export default function AdminGovernanceEditor({ governance, onChange }: Props) {
           <div>
             <p className="font-display text-lg font-semibold text-foreground">Leadership</p>
             <p className="mt-1 text-xs leading-6 text-muted-foreground">
-              These fields drive the key governance facts in the upper public layout.
+              These fields drive the key governance facts in the upper public layout. Add a biography URL to make a name clickable on the public page.
             </p>
           </div>
 
@@ -101,6 +118,12 @@ export default function AdminGovernanceEditor({ governance, onChange }: Props) {
             <Input
               value={governance.chiefdom.en ?? ""}
               onChange={(e) => updateLocalizedField("chiefdom", e.target.value)}
+              className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
+            />
+            <Input
+              value={governance.chiefdomUrl ?? ""}
+              onChange={(e) => updateUrlField("chiefdomUrl", e.target.value)}
+              placeholder="/governance/biographies/manden-mansaya"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
           </div>
@@ -112,6 +135,12 @@ export default function AdminGovernanceEditor({ governance, onChange }: Props) {
               onChange={(e) => updateLocalizedField("mandenMansa", e.target.value)}
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
+            <Input
+              value={governance.mandenMansaUrl ?? ""}
+              onChange={(e) => updateUrlField("mandenMansaUrl", e.target.value)}
+              placeholder="/governance/biographies/mari-djata-keita-v"
+              className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
+            />
           </div>
 
           <div className="space-y-2">
@@ -119,6 +148,12 @@ export default function AdminGovernanceEditor({ governance, onChange }: Props) {
             <Input
               value={governance.mandenDjeliba.en ?? ""}
               onChange={(e) => updateLocalizedField("mandenDjeliba", e.target.value)}
+              className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
+            />
+            <Input
+              value={governance.mandenDjelibaUrl ?? ""}
+              onChange={(e) => updateUrlField("mandenDjelibaUrl", e.target.value)}
+              placeholder="/governance/biographies/mabougnata-dibla-ibrahim-diabate"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
           </div>
@@ -130,6 +165,12 @@ export default function AdminGovernanceEditor({ governance, onChange }: Props) {
               onChange={(e) => updateLocalizedField("mandenMory", e.target.value)}
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
+            <Input
+              value={governance.mandenMoryUrl ?? ""}
+              onChange={(e) => updateUrlField("mandenMoryUrl", e.target.value)}
+              placeholder="/governance/biographies/mabougnata-alpha-omar-kaba"
+              className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
+            />
           </div>
         </section>
 
@@ -137,7 +178,7 @@ export default function AdminGovernanceEditor({ governance, onChange }: Props) {
           <div>
             <p className="font-display text-lg font-semibold text-foreground">State Structure</p>
             <p className="mt-1 text-xs leading-6 text-muted-foreground">
-              Use these entries for the government name, constitution, and structural notes displayed beside the leadership block.
+              Use these entries for the government name, constitution, and structural notes displayed beside the leadership block. Institution names can also point to biography pages.
             </p>
           </div>
 
@@ -148,6 +189,12 @@ export default function AdminGovernanceEditor({ governance, onChange }: Props) {
               onChange={(e) => updateLocalizedField("governmentName", e.target.value)}
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
+            <Input
+              value={governance.governmentNameUrl ?? ""}
+              onChange={(e) => updateUrlField("governmentNameUrl", e.target.value)}
+              placeholder="/governance/biographies/manden-empire"
+              className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
+            />
           </div>
 
           <div className="space-y-2">
@@ -155,6 +202,12 @@ export default function AdminGovernanceEditor({ governance, onChange }: Props) {
             <Input
               value={governance.constitution.en ?? ""}
               onChange={(e) => updateLocalizedField("constitution", e.target.value)}
+              className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
+            />
+            <Input
+              value={governance.constitutionUrl ?? ""}
+              onChange={(e) => updateUrlField("constitutionUrl", e.target.value)}
+              placeholder="/governance/biographies/kouroukan-fouga"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
           </div>
@@ -249,7 +302,7 @@ export default function AdminGovernanceEditor({ governance, onChange }: Props) {
           <div>
             <p className="font-display text-lg font-semibold text-foreground">Branches of Government</p>
             <p className="mt-1 text-xs leading-6 text-muted-foreground">
-              These rows are shown in the public governance table with branch name, main powers, and selection criteria.
+              These rows are shown in the public governance table with branch name, main powers, and selection criteria. When a branch URL is filled, the branch name links to that institution profile.
             </p>
           </div>
           <Button
@@ -353,6 +406,21 @@ export default function AdminGovernanceEditor({ governance, onChange }: Props) {
                     className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
                   />
                 </div>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                <Label>Branch Biography URL</Label>
+                <Input
+                  value={branch.url ?? ""}
+                  onChange={(e) =>
+                    updateBranch(index, {
+                      ...branch,
+                      url: e.target.value,
+                    })
+                  }
+                  placeholder="/governance/biographies/reflection-committee"
+                  className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
+                />
               </div>
             </div>
           ))}

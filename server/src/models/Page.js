@@ -31,7 +31,8 @@ const TimelineItemSchema = new mongoose.Schema(
     description: {
       en: { type: String, default: "" },
       fr: { type: String, default: "" }
-    }
+    },
+    url: { type: String, default: "" }
   },
   { _id: false }
 );
@@ -49,7 +50,8 @@ const GovernanceBranchSchema = new mongoose.Schema(
     selection: {
       en: { type: String, default: "" },
       fr: { type: String, default: "" }
-    }
+    },
+    url: { type: String, default: "" }
   },
   { _id: false }
 );
@@ -60,26 +62,32 @@ const GovernanceSchema = new mongoose.Schema(
       en: { type: String, default: "" },
       fr: { type: String, default: "" }
     },
+    chiefdomUrl: { type: String, default: "" },
     mandenMansa: {
       en: { type: String, default: "" },
       fr: { type: String, default: "" }
     },
+    mandenMansaUrl: { type: String, default: "" },
     mandenDjeliba: {
       en: { type: String, default: "" },
       fr: { type: String, default: "" }
     },
+    mandenDjelibaUrl: { type: String, default: "" },
     mandenMory: {
       en: { type: String, default: "" },
       fr: { type: String, default: "" }
     },
+    mandenMoryUrl: { type: String, default: "" },
     governmentName: {
       en: { type: String, default: "" },
       fr: { type: String, default: "" }
     },
+    governmentNameUrl: { type: String, default: "" },
     constitution: {
       en: { type: String, default: "" },
       fr: { type: String, default: "" }
     },
+    constitutionUrl: { type: String, default: "" },
     governmentType: {
       en: { type: String, default: "" },
       fr: { type: String, default: "" }
@@ -104,6 +112,94 @@ const GovernanceSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const DirectoryItemSchema = new mongoose.Schema(
+  {
+    name: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    description: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    }
+  },
+  { _id: false }
+);
+
+const DirectorySchema = new mongoose.Schema(
+  {
+    countries: [DirectoryItemSchema],
+    organizations: [DirectoryItemSchema]
+  },
+  { _id: false }
+);
+
+const UtilityCardSchema = new mongoose.Schema(
+  {
+    id: { type: String, required: true },
+    title: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    description: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    url: { type: String, default: "" }
+  },
+  { _id: false }
+);
+
+const EconomyTableRowSchema = new mongoose.Schema(
+  {
+    label: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    value: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    description: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    }
+  },
+  { _id: false }
+);
+
+const EconomyTableSchema = new mongoose.Schema(
+  {
+    title: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    description: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    rows: [EconomyTableRowSchema]
+  },
+  { _id: false }
+);
+
+const EconomySchema = new mongoose.Schema(
+  {
+    currencyInfo: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    bankInfo: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    transferServices: EconomyTableSchema,
+    recommendationLetters: EconomyTableSchema,
+    duesSystem: EconomyTableSchema
+  },
+  { _id: false }
+);
+
 const PageSchema = new mongoose.Schema(
   {
     key: { type: String, required: true, unique: true, index: true }, // introduction, history...
@@ -119,10 +215,12 @@ const PageSchema = new mongoose.Schema(
     links: [LinkSchema],
     timeline: [TimelineItemSchema],
     governance: GovernanceSchema,
-    media: [MediaItemSchema]
+    media: [MediaItemSchema],
+    directory: DirectorySchema,
+    economy: EconomySchema,
+    utilityCards: [UtilityCardSchema]
   },
   { timestamps: true }
 );
 
 export const Page = mongoose.model("Page", PageSchema);
-

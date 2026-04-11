@@ -24,11 +24,13 @@ export function PageLoadingState() {
 }
 
 export function PageErrorState() {
-  return <MessageCard message="Failed to load content for this section." />;
+  const { t } = useI18n();
+  return <MessageCard message={t.pageError} />;
 }
 
 export function PageNotFoundState() {
-  return <MessageCard message="This section has not been configured yet." />;
+  const { t } = useI18n();
+  return <MessageCard message={t.pageNotFound} />;
 }
 
 export function splitParagraphs(text: string) {

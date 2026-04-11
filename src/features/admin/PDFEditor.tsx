@@ -36,7 +36,12 @@ export function PDFEditor({ pdfs, onChange, token }: PDFEditorProps) {
     }
     try {
       const res = await uploadFile(file, token);
-      setAt(index, { ...list[index], url: res.media.url });
+      setAt(index, { 
+        url: res.media.url, 
+        title: list[index].title || res.media.originalName, 
+        type: "document", 
+        category: "other" 
+      });
       toast.success("PDF uploaded");
     } catch {
       toast.error("Upload failed");

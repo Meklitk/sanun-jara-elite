@@ -1,5 +1,5 @@
 import { useDeferredValue, useState } from "react";
-import { Search, Shield } from "lucide-react";
+import { Search } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -139,7 +139,13 @@ export default function SidebarNav({
                     <button
                       key={child.id}
                       type="button"
-                      onClick={() => goTo(`${item.path}#${child.id}`)}
+                      onClick={() => {
+                        if (item.key === "intranet" && child.id === "login") {
+                          goTo("/admin/login");
+                        } else {
+                          goTo(`${item.path}#${child.id}`);
+                        }
+                      }}
                       className="w-full rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
                     >
                       {t[child.key]}
@@ -201,16 +207,6 @@ export default function SidebarNav({
             FR
           </button>
         </div>
-
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={() => goTo("/admin")}
-          className="w-full justify-start rounded-2xl border border-gold/12 bg-black/20 px-4 py-6 text-xs font-semibold uppercase tracking-[0.22em] text-foreground/72 hover:bg-white/5 hover:text-foreground"
-        >
-          <Shield className="mr-2 h-4 w-4 text-gold/70" />
-          Admin
-        </Button>
       </div>
     </aside>
   );

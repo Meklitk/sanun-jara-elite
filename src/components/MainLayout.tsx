@@ -1,9 +1,13 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
+import SiteCoatOfArms from "@/components/SiteCoatOfArms";
 import SidebarNav from "@/components/SidebarNav";
 import TopBar from "@/components/TopBar";
 
 export default function MainLayout() {
+  const location = useLocation();
+  const showFloatingCoatOfArms = location.pathname !== "/governance";
+
   return (
     <div className="relative min-h-screen bg-background">
       <div
@@ -22,8 +26,18 @@ export default function MainLayout() {
         <div className="mx-auto flex max-w-[1700px] gap-4 px-3 pb-10 pt-6 sm:px-4 lg:px-6 xl:gap-6">
           <SidebarNav mode="desktop" />
 
-          <main className="min-w-0 flex-1">
-            <Outlet />
+          <main className="relative min-w-0 flex-1">
+            {showFloatingCoatOfArms ? (
+              <div className="pointer-events-none absolute right-0 top-4 z-20 hidden xl:block">
+                <div className="pointer-events-auto">
+                  <SiteCoatOfArms />
+                </div>
+              </div>
+            ) : null}
+
+            <div className={showFloatingCoatOfArms ? "xl:pr-[280px]" : ""}>
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>

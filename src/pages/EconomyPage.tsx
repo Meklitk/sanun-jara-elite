@@ -1,92 +1,114 @@
 import { motion } from "framer-motion";
 import { useI18n } from "@/lib/i18n";
-import { useState } from "react";
-import { Heart } from "lucide-react";
+import { useMemo } from "react";
+import { usePages } from "@/api/pages";
+import { Card } from "@/components/ui/card";
+import type { Page } from "@/api/types";
 
-const donationAmounts = [10, 25, 50, 100, 250];
-
-export default function EconomyPage() {
-  const { t } = useI18n();
-  const [selectedAmount, setSelectedAmount] = useState<number | null>(25);
-  const [customAmount, setCustomAmount] = useState("");
+function Paragraphs({ text }: { text: string }) {
+  const parts = text
+    .split(/\n\s*\n/g)
+    .map((p) => p.trim())
+    .filter(Boolean);
 
   return (
-    <div className="max-w-5xl mx-auto px-8 py-16">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-16"
-      >
-        <h1 className="text-5xl font-display font-bold gold-gradient-text mb-4">
-          {t.economyTitle}
-        </h1>
-        <p className="text-lg text-foreground/80 font-body max-w-2xl mx-auto">
-          {t.economyDesc}
-        </p>
-      </motion.div>
+    <div className="space-y-5">
+      {parts.map((p, idx) => (
+        <motion.p
+          key={idx}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: idx * 0.1 }}
+          className="text-lg leading-relaxed text-foreground/80"
+        >
+          {p}
+        </motion.p>
+      ))}
+    </div>
+  );
+}
 
-      {/* Donation Section */}
-      <motion.section
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="max-w-xl mx-auto"
-      >
-        <div className="glass-panel gold-border-glow rounded-2xl p-8">
-          <div className="text-center mb-8">
-            <div className="w-14 h-14 rounded-full crimson-gradient-bg flex items-center justify-center mx-auto mb-4">
-              <Heart className="w-7 h-7 text-foreground" />
-            </div>
-            <h2 className="font-display text-2xl text-gold mb-2">{t.donationsTitle}</h2>
-            <p className="text-sm text-muted-foreground font-body">{t.donationsDesc}</p>
-          </div>
+export default function EconomyPage() {
+  const { localize } = useI18n();
+  const { data, isLoading, error } = usePages();
 
-          {/* Amount buttons */}
-          <div className="grid grid-cols-5 gap-3 mb-6">
-            {donationAmounts.map((amount) => (
-              <motion.button
-                key={amount}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => {
-                  setSelectedAmount(amount);
-                  setCustomAmount("");
-                }}
-                className={`py-3 rounded-lg font-display text-sm transition-all duration-300 ${
-                  selectedAmount === amount
-                    ? "gold-gradient-bg text-secondary-foreground font-semibold shadow-lg shadow-gold/20"
-                    : "glass-panel text-foreground/70 hover:text-foreground"
-                }`}
-              >
-                ${amount}
-              </motion.button>
-            ))}
-          </div>
+  const page = useMemo<Page | undefined>(
+    () => data?.pages.find((p) => p.key === "economy"),
+    [data]
+  );
 
-          {/* Custom amount */}
-          <div className="mb-6">
-            <input
-              type="number"
-              placeholder={t.donateAmount}
-              value={customAmount}
-              onChange={(e) => {
-                setCustomAmount(e.target.value);
-                setSelectedAmount(null);
-              }}
-              className="w-full bg-muted/50 border border-border rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground font-body focus:outline-none focus:ring-2 focus:ring-gold/50 transition-all"
-            />
-          </div>
-
-          {/* Donate button */}
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full py-4 rounded-xl crimson-gradient-bg text-foreground font-display uppercase tracking-[0.2em] text-sm hover:opacity-90 transition-opacity shadow-lg shadow-crimson/30"
-          >
-            {t.donate}
-          </motion.button>
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background px-6">
+        <div className="w-full max-w-4xl space-y-6">
+          <div className="h-10 w-1/3 animate-pulse rounded-lg bg-muted/40" />
+          <div className="h-40 animate-pulse rounded-2xl bg-muted/20" />
         </div>
-      </motion.section>
+      </div>
+    );
+  }
+
+  if (error || !page) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-6">
+        <Card className="glass-panel p-10 text-center">
+          <p className="text-lg text-destructive">
+            Failed to load economy information.
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
+  const title = localize(page.title);
+  const content = localize(page.content);
+
+  return (
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-6 py-16">
+      {/* Background glow */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute left-1/2 top-1/3 h-[400px] w-[400px] -translate-x-1/2 rounded-full bg-gold/20 blur-3xl" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-4xl"
+      >
+        <Card className="relative overflow-hidden rounded-[2rem] border border-gold/20 bg-[linear-gradient(145deg,rgba(10,10,10,0.95),rgba(40,30,10,0.85))] p-10 shadow-[0_25px_80px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+          {/* Decorative top line */}
+          <div className="mb-6 flex items-center gap-3">
+            <div className="h-[3px] w-16 rounded-full bg-gradient-to-r from-gold to-transparent" />
+            <span className="text-xs uppercase tracking-[0.3em] text-gold/70">
+              Financial Services
+            </span>
+          </div>
+
+          {/* Title */}
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="mb-6 text-4xl font-bold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-200 to-gold md:text-5xl"
+          >
+            {title || "Economy"}
+          </motion.h1>
+
+          {/* Divider */}
+          <div className="mb-8 h-px w-full bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+
+          {/* Content */}
+          {content && (
+            <div className="max-w-3xl">
+              <Paragraphs text={content} />
+            </div>
+          )}
+
+          {/* Bottom glow line */}
+          <div className="mt-10 h-[2px] w-full bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+        </Card>
+      </motion.div>
     </div>
   );
 }

@@ -1,9 +1,9 @@
-import type { PageLink, TimelineItem } from "@/api/types";
+import type { PageLink, TimelineItem, EconomyData, EconomyTable, EconomyTableRow } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, ChevronUp, ChevronDown, Link2, Clock } from "lucide-react";
+import { Plus, Trash2, ChevronUp, ChevronDown, Link2, Clock, DollarSign, Table, Landmark, ArrowRightLeft, FileCheck, Users } from "lucide-react";
 
 const emptyLink = (): PageLink => ({
   label: { en: "" },
@@ -14,6 +14,7 @@ const emptyTimelineItem = (): TimelineItem => ({
   year: "",
   title: { en: "" },
   description: { en: "" },
+  url: "",
 });
 
 function moveItem<T>(arr: T[], from: number, to: number): T[] {
@@ -388,6 +389,24 @@ export function AdminTimelineEditor({ timeline, onChange }: TimelineEditorProps)
                           }
                         />
                       </div>
+
+                      <div className="mt-4 space-y-2">
+                        <Label htmlFor={`tl-url-${i}`} className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
+                          Link URL <span className="text-muted-foreground font-normal">(optional)</span>
+                        </Label>
+                        <Input
+                          id={`tl-url-${i}`}
+                          type="url"
+                          placeholder="e.g., /history/timeline/arrival-of-mandenkas or https://example.com"
+                          className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
+                          value={item.url ?? ""}
+                          onChange={(e) => setAt(i, { ...item, url: e.target.value })}
+                        />
+                        <p className="text-[11px] text-muted-foreground">
+                          When set, clicking this event on the History page will navigate to this URL. Leave it blank to use the default internal timeline page.
+                        </p>
+                      </div>
                     </div>
                   </li>
                 ))}
@@ -396,6 +415,222 @@ export function AdminTimelineEditor({ timeline, onChange }: TimelineEditorProps)
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Economy Table Editor
+const emptyTableRow = (): EconomyTableRow => ({
+  label: { en: "" },
+  value: { en: "" },
+  description: { en: "" },
+});
+
+const emptyTable = (): EconomyTable => ({
+  title: { en: "" },
+  description: { en: "" },
+  rows: [],
+});
+
+const emptyEconomyData = (): EconomyData => ({
+  currencyInfo: { en: "" },
+  bankInfo: { en: "" },
+  transferServices: emptyTable(),
+  recommendationLetters: emptyTable(),
+  duesSystem: emptyTable(),
+});
+
+type EconomyEditorProps = {
+  economy: EconomyData | undefined;
+  onChange: (economy: EconomyData) => void;
+};
+
+function TableEditor({
+  table,
+  onChange,
+  title,
+  icon: Icon,
+}: {
+  table: EconomyTable | undefined;
+  onChange: (table: EconomyTable) => void;
+  title: string;
+  icon: React.ElementType;
+}) {
+  const current = table ?? emptyTable();
+  const rows = current.rows ?? [];
+
+  function setRowAt(i: number, next: EconomyTableRow) {
+    const newRows = [...rows];
+    newRows[i] = next;
+    onChange({ ...current, rows: newRows });
+  }
+
+  return (
+    <div className="overflow-hidden rounded-[1.5rem] border border-gold/15 bg-black/20">
+      <div className="p-4 border-b border-gold/10 bg-gradient-to-r from-gold/5 to-transparent">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg gold-gradient-bg flex items-center justify-center">
+            <Icon className="h-4 w-4 text-black" />
+          </div>
+          <Label className="text-sm font-semibold text-foreground">{title}</Label>
+        </div>
+      </div>
+
+      <div className="p-4 space-y-4">
+        <div className="space-y-2">
+          <Label className="text-xs text-muted-foreground">Table Title</Label>
+          <Input
+            placeholder="e.g., Money Transfer Services"
+            className="border-gold/20 bg-black/20"
+            value={current.title?.en ?? ""}
+            onChange={(e) => onChange({ ...current, title: { en: e.target.value } })}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs text-muted-foreground">Description</Label>
+          <Input
+            placeholder="Brief description of this table..."
+            className="border-gold/20 bg-black/20"
+            value={current.description?.en ?? ""}
+            onChange={(e) => onChange({ ...current, description: { en: e.target.value } })}
+          />
+        </div>
+
+        {rows.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-gold/20 bg-gold/5 p-4 text-center">
+            <p className="text-sm text-muted-foreground">No rows yet. Click Add Row to create one.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {rows.map((row, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-gold/15 bg-gold/5 p-3 space-y-3"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-gold">Row {i + 1}</span>
+                  <Button
+                    type="button"
+                    size="icon"
+                    variant="ghost"
+                    className="h-7 w-7 text-destructive/80 hover:text-destructive"
+                    onClick={() => onChange({ ...current, rows: rows.filter((_, j) => j !== i) })}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+                <div className="grid gap-2">
+                  <Input
+                    placeholder="Label (e.g., Domestic Transfers)"
+                    className="border-gold/20 bg-black/20 text-sm"
+                    value={row.label?.en ?? ""}
+                    onChange={(e) => setRowAt(i, { ...row, label: { en: e.target.value } })}
+                  />
+                  <Input
+                    placeholder="Value (e.g., 0.5% fee)"
+                    className="border-gold/20 bg-black/20 text-sm"
+                    value={row.value?.en ?? ""}
+                    onChange={(e) => setRowAt(i, { ...row, value: { en: e.target.value } })}
+                  />
+                  <Input
+                    placeholder="Description (optional)"
+                    className="border-gold/20 bg-black/20 text-sm"
+                    value={row.description?.en ?? ""}
+                    onChange={(e) => setRowAt(i, { ...row, description: { en: e.target.value } })}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          className="w-full border-gold/20 hover:bg-gold/10"
+          onClick={() => onChange({ ...current, rows: [...rows, emptyTableRow()] })}
+        >
+          <Plus className="mr-1.5 h-4 w-4" />
+          Add Row
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+export function AdminEconomyEditor({ economy, onChange }: EconomyEditorProps) {
+  const current = economy ?? emptyEconomyData();
+
+  return (
+    <div className="space-y-6">
+      <div className="overflow-hidden rounded-[1.75rem] border border-gold/15 bg-[linear-gradient(140deg,rgba(255,205,86,0.08),rgba(255,205,86,0.02))] shadow-[0_24px_70px_rgba(0,0,0,0.14)]">
+        <div className="flex flex-wrap items-end justify-between gap-3 p-5">
+          <div>
+            <Label className="flex items-center gap-2 text-base font-display font-semibold text-foreground">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl gold-gradient-bg shadow-lg shadow-gold/20">
+                <DollarSign className="h-4 w-4 text-black" aria-hidden />
+              </div>
+              Economy Data
+            </Label>
+            <p className="mt-2 max-w-2xl text-xs leading-6 text-muted-foreground">
+              Configure financial tables for transfer services, recommendation letters, and membership dues.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* General Info */}
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2 text-sm">
+            <Landmark className="h-4 w-4 text-gold" />
+            Currency Information
+          </Label>
+          <Textarea
+            placeholder="Describe the currency system..."
+            className="min-h-[80px] border-gold/20 bg-black/20"
+            value={current.currencyInfo?.en ?? ""}
+            onChange={(e) => onChange({ ...current, currencyInfo: { en: e.target.value } })}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2 text-sm">
+            <Table className="h-4 w-4 text-gold" />
+            Banking Information
+          </Label>
+          <Textarea
+            placeholder="Bank details, SWIFT codes, etc."
+            className="min-h-[80px] border-gold/20 bg-black/20"
+            value={current.bankInfo?.en ?? ""}
+            onChange={(e) => onChange({ ...current, bankInfo: { en: e.target.value } })}
+          />
+        </div>
+      </div>
+
+      {/* Tables */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <TableEditor
+          table={current.transferServices}
+          onChange={(transferServices) => onChange({ ...current, transferServices })}
+          title="Transfer Services"
+          icon={ArrowRightLeft}
+        />
+        <TableEditor
+          table={current.recommendationLetters}
+          onChange={(recommendationLetters) => onChange({ ...current, recommendationLetters })}
+          title="Recommendation Letters"
+          icon={FileCheck}
+        />
+      </div>
+
+      <TableEditor
+        table={current.duesSystem}
+        onChange={(duesSystem) => onChange({ ...current, duesSystem })}
+        title="Dues System"
+        icon={Users}
+      />
     </div>
   );
 }

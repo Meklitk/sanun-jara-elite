@@ -6,201 +6,227 @@ import { useState } from "react";
 import type { MediaItem } from "@/api/types";
 
 const CATEGORY_CONFIG = {
-  djelis: { icon: Play, title: "Djelis Videos", color: "from-amber-500 to-yellow-600" },
-  donsos: { icon: Mic, title: "Donsos Interventions", color: "from-red-600 to-red-700" },
-  journalists: { icon: Newspaper, title: "Journalists of Manden", color: "from-blue-600 to-blue-700" },
-  other: { icon: FileText, title: "Other Media", color: "from-gold to-amber-600" },
+  djelis: { icon: Play, title: "Djelis", color: "from-amber-500 to-yellow-600" },
+  donsos: { icon: Mic, title: "Donsos", color: "from-red-600 to-red-700" },
+  journalists: { icon: Newspaper, title: "Journalists", color: "from-blue-600 to-blue-700" },
+  other: { icon: FileText, title: "Media", color: "from-yellow-600 to-amber-700" },
 };
 
-function MediaCard({ item, index }: { item: MediaItem; index: number }) {
-  const [isPlaying, setIsPlaying] = useState(false);
+function splitParagraphs(text: string) {
+  return text
+    .split(/\n\s*\n/g)
+    .map((p) => p.trim())
+    .filter(Boolean);
+}
+
+/* ================= MEDIA CARD ================= */
+
+function MediaCard({ item }: { item: MediaItem }) {
+  const [play, setPlay] = useState(false);
   const category = CATEGORY_CONFIG[item.category] || CATEGORY_CONFIG.other;
   const Icon = category.icon;
 
   if (item.type === "video") {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: index * 0.1 }}
-        className="glass-panel rounded-xl overflow-hidden hover:border-gold/40 transition-all duration-300 group"
-      >
-        {isPlaying ? (
-          <video
-            src={item.url}
-            controls
-            autoPlay
-            className="w-full aspect-video bg-black"
-            onEnded={() => setIsPlaying(false)}
-          />
+      <div className="rounded-xl overflow-hidden bg-black/30 border border-white/10">
+        {play ? (
+          <video src={item.url} controls autoPlay className="w-full aspect-video" />
         ) : (
-          <div className="relative aspect-video bg-gradient-to-br from-black/60 to-black/40 flex items-center justify-center">
+          <div className="relative aspect-video">
             <video src={item.url} className="absolute inset-0 w-full h-full object-cover opacity-60" />
             <button
-              onClick={() => setIsPlaying(true)}
-              className="relative z-10 w-16 h-16 rounded-full bg-gold/90 hover:bg-gold text-black flex items-center justify-center transition-all duration-300 hover:scale-110 shadow-lg shadow-gold/30"
+              onClick={() => setPlay(true)}
+              className="absolute inset-0 flex items-center justify-center"
             >
-              <Play className="w-7 h-7 ml-1" fill="currentColor" />
+              <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center hover:scale-110 transition">
+                <Play className="text-black ml-1" />
+              </div>
             </button>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
           </div>
         )}
-        <div className="p-4">
-          <div className="flex items-center gap-2 mb-2">
-            <div className={`w-6 h-6 rounded-md bg-gradient-to-br ${category.color} flex items-center justify-center`}>
-              <Icon className="w-3.5 h-3.5 text-white" />
-            </div>
-            <span className="text-xs font-semibold text-gold/80 uppercase tracking-wider">{category.title}</span>
-          </div>
-          <h3 className="font-display font-semibold text-foreground/90 line-clamp-2">{item.title || "Untitled Video"}</h3>
+
+        <div className="p-3">
+          <p className="text-xs text-gold/70 uppercase">{category.title}</p>
+          <h3 className="text-sm font-semibold line-clamp-2">
+            {item.title || "Untitled"}
+          </h3>
         </div>
-      </motion.div>
+      </div>
     );
   }
 
   if (item.type === "audio") {
     return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: index * 0.1 }}
-        className="glass-panel rounded-xl p-4 hover:border-gold/40 transition-all duration-300"
-      >
+      <div className="p-4 rounded-xl bg-black/30 border border-white/10">
         <div className="flex items-center gap-3 mb-3">
-          <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${category.color} flex items-center justify-center`}>
-            <Icon className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <span className="text-xs font-semibold text-gold/80 uppercase tracking-wider">{category.title}</span>
-            <h3 className="font-display font-semibold text-foreground/90">{item.title || "Untitled Audio"}</h3>
-          </div>
+          <Icon className="text-white" />
+          <h3 className="font-semibold">{item.title || "Audio"}</h3>
         </div>
-        <audio src={item.url} controls className="w-full" />
-      </motion.div>
+        <audio controls src={item.url} className="w-full" />
+      </div>
     );
   }
 
-  // Document
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.1 }}
-      className="glass-panel rounded-xl p-4 hover:border-gold/40 transition-all duration-300 group"
+    <a
+      href={item.url}
+      target="_blank"
+      className="flex items-center gap-3 p-4 rounded-xl bg-black/30 border border-white/10 hover:border-gold/40 transition"
     >
-      <a href={item.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3">
-        <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${category.color} flex items-center justify-center`}>
-          <FileText className="w-6 h-6 text-white" />
-        </div>
-        <div className="flex-1 min-w-0">
-          <span className="text-xs font-semibold text-gold/80 uppercase tracking-wider">{category.title}</span>
-          <h3 className="font-display font-semibold text-foreground/90 truncate">{item.title || "Document"}</h3>
-        </div>
-        <ExternalLink className="w-5 h-5 text-muted-foreground group-hover:text-gold transition-colors" />
-      </a>
-    </motion.div>
+      <FileText />
+      <div className="flex-1">
+        <h3 className="text-sm font-semibold truncate">
+          {item.title || "Document"}
+        </h3>
+      </div>
+      <ExternalLink size={16} />
+    </a>
   );
 }
 
+/* ================= PAGE ================= */
+
 export default function CulturePage() {
   const { t, localize } = useI18n();
-  const pagesQuery = usePages();
-  const culturePage = pagesQuery.data?.pages.find((p) => p.key === "culture");
-  const media = culturePage?.media ?? [];
+  const { data, isLoading, error } = usePages();
 
-  const mediaCategories = [
-    { icon: Play, title: t.djelisVideos, desc: t.djelisVideosDesc },
-    { icon: Mic, title: t.donsosInterventions, desc: t.donsosInterventionsDesc },
-    { icon: Newspaper, title: t.journalistsOfManden, desc: t.journalistsOfMandenDesc },
-  ];
+  const page = data?.pages.find((p) => p.key === "culture");
+  const paragraphs = splitParagraphs(localize(page?.content) || t.cultureDesc);
+  const images = (page?.images ?? []).filter(Boolean);
+  const media = (page?.media ?? []).filter((item) => Boolean(item.url?.trim()));
 
-  // Group media by category
+  const featured = images[0];
+  const gallery = images.slice(1);
+  const videoCount = media.filter((item) => item.type === "video").length;
+
   const mediaByCategory = media.reduce((acc, item) => {
     const cat = item.category || "other";
-    if (!acc[cat]) acc[cat] = [];
+    acc[cat] = acc[cat] || [];
     acc[cat].push(item);
     return acc;
   }, {} as Record<string, MediaItem[]>);
 
+  /* ================= STATES ================= */
+
+  if (isLoading) {
+    return <div className="p-10 text-center">Loading...</div>;
+  }
+
+  if (error || !page) {
+    return <div className="p-10 text-center text-red-500">Failed to load.</div>;
+  }
+
+  /* ================= UI ================= */
+
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-8 py-12 sm:py-16">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center mb-12"
-      >
-        <h1 className="text-4xl sm:text-5xl font-display font-bold gold-gradient-text mb-4">
-          {localize(culturePage?.title) || t.culture}
-        </h1>
-        <p className="text-lg text-foreground/80 font-body max-w-2xl mx-auto">
-          {localize(culturePage?.content) || t.cultureDesc}
-        </p>
-      </motion.div>
+    <div className="space-y-0">
 
-      {/* Category Cards */}
-      <div className="grid md:grid-cols-3 gap-6 mb-12">
-        {mediaCategories.map((cat, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.15 }}
-            className="glass-panel gold-border-glow rounded-xl p-8 text-center hover:bg-muted/30 transition-all duration-500 group"
-          >
-            <div className="w-14 h-14 rounded-full crimson-gradient-bg flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform">
-              <cat.icon className="w-7 h-7 text-foreground" />
+      {/* HERO */}
+      <section className="px-4 py-12">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid lg:grid-cols-2 gap-10 items-center">
+            <div className="space-y-5">
+              <div className="inline-flex items-center rounded-full border border-gold/20 bg-gold/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold/80">
+                Cultural Archive
+              </div>
+              <h1 className="text-4xl font-bold">
+                {localize(page.title) || t.culture}
+              </h1>
+
+              {paragraphs.map((p, i) => (
+                <p key={i} className="text-gray-300 leading-relaxed">
+                  {p}
+                </p>
+              ))}
+
+              <div className="flex flex-wrap gap-3 pt-2">
+                <div className="rounded-full border border-gold/15 bg-black/30 px-4 py-2 text-sm text-foreground/80">
+                  <span className="font-semibold text-gold">{images.length}</span> images
+                </div>
+                <div className="rounded-full border border-gold/15 bg-black/30 px-4 py-2 text-sm text-foreground/80">
+                  <span className="font-semibold text-gold">{videoCount}</span> videos
+                </div>
+              </div>
             </div>
-            <h3 className="font-display text-lg text-gold mb-3">{cat.title}</h3>
-            <p className="text-sm text-foreground/70 font-body leading-relaxed">{cat.desc}</p>
-          </motion.div>
-        ))}
-      </div>
 
-      {/* Media Gallery */}
-      {media.length > 0 ? (
-        <div className="space-y-10">
-          {Object.entries(mediaByCategory).map(([category, items]) => {
-            const config = CATEGORY_CONFIG[category as keyof typeof CATEGORY_CONFIG] || CATEGORY_CONFIG.other;
-            return (
-              <motion.section
-                key={category}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className="space-y-4"
-              >
-                <div className="flex items-center gap-3 mb-6">
-                  <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${config.color} flex items-center justify-center`}>
-                    <config.icon className="w-5 h-5 text-white" />
-                  </div>
-                  <h2 className="text-2xl font-display font-bold text-foreground/90">{config.title}</h2>
-                  <span className="px-2 py-0.5 text-xs font-semibold bg-gold/20 text-gold rounded-full">{items.length}</span>
-                </div>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {items.map((item, index) => (
-                    <MediaCard key={index} item={item} index={index} />
-                  ))}
-                </div>
-              </motion.section>
-            );
-          })}
+            {featured && (
+              <img
+                src={featured}
+                className="rounded-2xl object-cover w-full h-[350px]"
+              />
+            )}
+          </div>
         </div>
-      ) : (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="glass-panel gold-border-glow rounded-xl p-12 text-center"
-        >
-          <Play className="w-12 h-12 text-gold/40 mx-auto mb-4" />
-          <p className="text-muted-foreground font-body italic">
-            {t.mediaGalleryComingSoon}
-          </p>
-        </motion.div>
+      </section>
+
+      {/* GALLERY - FULL WIDTH */}
+      {gallery.length > 0 && (
+        <section className="w-full">
+          <div className="px-4 max-w-6xl mx-auto mb-6">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="text-2xl font-semibold">Gallery</h2>
+              <span className="rounded-full border border-gold/15 bg-gold/10 px-3 py-1 text-xs font-semibold text-gold/80">
+                {gallery.length} image{gallery.length === 1 ? "" : "s"}
+              </span>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-0">
+            {gallery.map((img, i) => (
+              <motion.div
+                key={i}
+                className="relative aspect-square overflow-hidden group"
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+              >
+                <img
+                  src={img}
+                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300" />
+              </motion.div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* MEDIA */}
+      {media.length > 0 && (
+        <section className="px-4 py-12 space-y-10">
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-center justify-between gap-4 mb-8">
+              <h2 className="text-2xl font-semibold">Videos & Media</h2>
+              <span className="rounded-full border border-gold/15 bg-gold/10 px-3 py-1 text-xs font-semibold text-gold/80">
+                {media.length} item{media.length === 1 ? "" : "s"}
+              </span>
+            </div>
+            {Object.entries(mediaByCategory).map(([cat, items]) => {
+              const config =
+                CATEGORY_CONFIG[cat as keyof typeof CATEGORY_CONFIG] ||
+                CATEGORY_CONFIG.other;
+
+              return (
+                <div key={cat} className="space-y-4 mb-10">
+                  <h2 className="text-xl font-semibold">{config.title}</h2>
+
+                  <div className="grid md:grid-cols-3 gap-4">
+                    {items.map((item, i) => (
+                      <MediaCard key={i} item={item} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* EMPTY */}
+      {media.length === 0 && gallery.length === 0 && (
+        <div className="text-center text-gray-500 py-12">
+          {t.mediaGalleryComingSoon}
+        </div>
       )}
     </div>
   );

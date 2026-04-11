@@ -19,15 +19,15 @@ const DEFAULT_PAGES = [
     images: [],
     links: [],
     timeline: [
-      { year: "3000 B.C.", title: { en: "Arrival of Mandenkas" }, description: { en: "" } },
-      { year: "980 A.D.", title: { en: "First University in the world" }, description: { en: "" } },
-      { year: "1236 A.D.", title: { en: "World's first constitution of human rights, abolished slavery" }, description: { en: "" } },
-      { year: "1312 A.D.", title: { en: "Discovery of America" }, description: { en: "" } },
-      { year: "1324 A.D.", title: { en: "The richest man in history" }, description: { en: "" } },
-      { year: "1351 A.D.", title: { en: "Named most honest people on earth" }, description: { en: "" } },
-      { year: "1455 A.D.", title: { en: "Manden wins war against Portugal" }, description: { en: "" } },
-      { year: "2020 A.D.", title: { en: "Return of the Empire" }, description: { en: "" } },
-      { year: "2023 A.D.", title: { en: "Creation of Manden Calendar" }, description: { en: "" } }
+      { year: "3000 B.C.", title: { en: "Arrival of Mandenkas" }, description: { en: "The ancient Mandenka people arrived in West Africa, establishing the foundation of what would become the great Manden Empire." }, url: "/history/timeline/arrival-of-mandenkas" },
+      { year: "980 A.D.", title: { en: "First University in the world" }, description: { en: "" }, url: "/history/timeline/first-university-in-the-world" },
+      { year: "1236 A.D.", title: { en: "World's first constitution of human rights, abolished slavery" }, description: { en: "" }, url: "/history/timeline/world-s-first-constitution-of-human-rights-abolished-slavery" },
+      { year: "1312 A.D.", title: { en: "Discovery of America" }, description: { en: "" }, url: "/history/timeline/discovery-of-america" },
+      { year: "1324 A.D.", title: { en: "The richest man in history" }, description: { en: "" }, url: "/history/timeline/the-richest-man-in-history" },
+      { year: "1351 A.D.", title: { en: "Named most honest people on earth" }, description: { en: "" }, url: "/history/timeline/named-most-honest-people-on-earth" },
+      { year: "1455 A.D.", title: { en: "Manden wins war against Portugal" }, description: { en: "" }, url: "/history/timeline/manden-wins-war-against-portugal" },
+      { year: "2020 A.D.", title: { en: "Return of the Empire" }, description: { en: "" }, url: "/history/timeline/return-of-the-empire" },
+      { year: "2023 A.D.", title: { en: "Creation of Manden Calendar" }, description: { en: "" }, url: "/history/timeline/creation-of-manden-calendar" }
     ]
   },
   {
@@ -44,11 +44,17 @@ const DEFAULT_PAGES = [
     ],
     governance: {
       chiefdom: { en: "Manden Mansaya" },
+      chiefdomUrl: "/governance/biographies/manden-mansaya",
       mandenMansa: { en: "Mari Djata Keita V" },
+      mandenMansaUrl: "/governance/biographies/mari-djata-keita-v",
       mandenDjeliba: { en: "Mabougnata Dibla Ibrahim Diabate" },
+      mandenDjelibaUrl: "/governance/biographies/mabougnata-dibla-ibrahim-diabate",
       mandenMory: { en: "Mabougnata Alpha Omar Kaba" },
+      mandenMoryUrl: "/governance/biographies/mabougnata-alpha-omar-kaba",
       governmentName: { en: "Manden Empire" },
+      governmentNameUrl: "/governance/biographies/manden-empire",
       constitution: { en: "Kouroukan Fouga, adopted in 1236" },
+      constitutionUrl: "/governance/biographies/kouroukan-fouga",
       governmentType: { en: "Monarchy" },
       corruptionIndex: "05",
       corruptionSummary: {
@@ -63,30 +69,102 @@ const DEFAULT_PAGES = [
         {
           name: { en: "Reflection Committee" },
           powers: { en: "Filters ideas based on alignment with Manden principles." },
-          selection: { en: "Meritocratic" }
+          selection: { en: "Meritocratic" },
+          url: "/governance/biographies/reflection-committee"
         },
         {
           name: { en: "General Assembly" },
           powers: { en: "Obtains consensus from within the Manden community." },
-          selection: { en: "Meritocratic" }
+          selection: { en: "Meritocratic" },
+          url: "/governance/biographies/general-assembly"
         },
         {
           name: { en: "Legislative Committee" },
           powers: { en: "Handles the promulgation of governing protocols." },
-          selection: { en: "Meritocratic" }
+          selection: { en: "Meritocratic" },
+          url: "/governance/biographies/legislative-committee"
         }
       ],
       phone: "1 (800) 636-5913"
     }
   },
   {
-    key: "economy",
-    title: { en: "Economy" },
-    content: { en: "Economic information, data analytics, service: means of transferring money, system of letters of recommendation, dues system." },
+    key: "global-perspectives",
+    title: { en: "Global Perspectives" },
+    content: {
+      en: "Browse the Manden network by country or by organization.\n\nCountry entries can be added over time and are displayed alphabetically on the public page."
+    },
     images: [],
-    links: [
-      { label: { en: "Donate" }, url: "https://example.com/donate" }
+    links: [],
+    directory: {
+      countries: [],
+      organizations: []
+    }
+  },
+  {
+    key: "reference-bureau",
+    title: { en: "Reference Bureau" },
+    content: {
+      en: "The Reference Bureau helps visitors join the network, ask questions, or register entrepreneurial interest.\n\nThese channels can begin as placeholders and become more detailed over time as new forms, contacts, and workflows are added."
+    },
+    images: [],
+    links: [],
+    utilityCards: [
+      {
+        id: "join",
+        title: { en: "I Want to Join" },
+        description: { en: "Learn about membership and how to become part of the Manden community." },
+        url: ""
+      },
+      {
+        id: "questions",
+        title: { en: "I Have Questions" },
+        description: { en: "Get answers about the Manden Empire, its governance, and its mission." },
+        url: ""
+      },
+      {
+        id: "entrepreneur",
+        title: { en: "I Am an Entrepreneur" },
+        description: { en: "Discover opportunities for entrepreneurs within the Manden network." },
+        url: ""
+      }
     ]
+  },
+  {
+    key: "academy",
+    title: { en: "Academy" },
+    content: {
+      en: "The Academy can present courses in the alphabet of West Africa, history, and other learning programs.\n\nYou can publish these gradually and update the course links over time from the admin dashboard."
+    },
+    images: [],
+    links: [],
+    utilityCards: [
+      {
+        id: "nko",
+        title: { en: "Courses in N'ko" },
+        description: { en: "Learn the N'ko script and language courses." },
+        url: ""
+      },
+      {
+        id: "history-courses",
+        title: { en: "History Courses" },
+        description: { en: "Study the rich history of the Manden Empire." },
+        url: ""
+      },
+      {
+        id: "others",
+        title: { en: "Other Courses" },
+        description: { en: "Additional educational programs and training." },
+        url: ""
+      }
+    ]
+  },
+  {
+    key: "economy",
+    title: { en: "Economy of Manden" },
+    content: { en: "The Manden Empire maintains a robust economic system built on ancestral principles of fairness, transparency, and community welfare. Our economy supports members through efficient transfer services, verified recommendation letters, and a structured dues system that funds communal development.\n\nAll financial transactions are conducted with the utmost integrity, reflecting the Manden values of honesty and accountability that have been recognized globally since 1351 A.D." },
+    images: [],
+    links: []
   },
   { key: "commerce", title: { en: "Commerce" }, content: { en: "Promotion of merchandise from different merchants and entrepreneurs, with their contact information." }, images: [], links: [] },
   { key: "culture", title: { en: "Culture" }, content: { en: "Videos and interventions of Djelis, Donsos, and journalists of Manden." }, images: [], links: [], media: [] },
