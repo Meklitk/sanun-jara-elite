@@ -28,3 +28,10 @@ bun.lock
 bun.lockb
 yarn.lock
 pnpm-lock.yaml
+
+# Uploads folder (user content, not source code)
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Build artifacts
+*.timestamp-*.mjs

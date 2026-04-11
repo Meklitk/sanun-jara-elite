@@ -54,7 +54,7 @@ export default function SidebarNav({
         "flex flex-col gap-6",
         mode === "desktop"
           ? "sticky top-24 hidden h-[calc(100vh-7rem)] w-[244px] shrink-0 rounded-[1.75rem] border border-gold/15 bg-black/30 p-5 shadow-[0_28px_90px_rgba(0,0,0,0.32)] lg:flex"
-          : "h-full rounded-none border-none bg-transparent p-0 shadow-none",
+          : "flex h-full min-h-0 flex-col overflow-y-auto rounded-none border-none bg-transparent p-0 shadow-none",
       )}
     >
       <div className="space-y-3">
@@ -84,7 +84,12 @@ export default function SidebarNav({
           </form>
 
           {searchActive && (trimmedQuery || searchResults.length > 0) ? (
-            <div className="absolute left-0 right-0 top-[calc(100%+0.55rem)] z-30 overflow-hidden rounded-2xl border border-gold/15 bg-background/95 p-2 shadow-[0_26px_70px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+            <div className={cn(
+              "z-30 overflow-hidden rounded-2xl border border-gold/15 bg-background/95 p-2 shadow-[0_26px_70px_rgba(0,0,0,0.5)] backdrop-blur-xl",
+              mode === "desktop"
+                ? "absolute left-0 right-0 top-[calc(100%+0.55rem)]"
+                : "relative mt-2",
+            )}>
               {searchResults.length > 0 ? (
                 <div className="space-y-1">
                   {searchResults.map((item) => (
@@ -158,7 +163,7 @@ export default function SidebarNav({
         </div>
       ) : null}
 
-      <div className="flex-1 space-y-2 overflow-y-auto pr-1">
+      <div className={cn("space-y-2", mode === "desktop" && "flex-1 overflow-y-auto pr-1")}>
         <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-gold/65">
           {t.resourcesDirectory}
         </p>

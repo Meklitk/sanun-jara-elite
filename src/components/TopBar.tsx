@@ -43,7 +43,7 @@ export default function TopBar() {
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="w-[92vw] max-w-sm border-gold/15 bg-background/98 px-5 py-8"
+              className="w-[92vw] max-w-sm overflow-y-auto border-gold/15 bg-background/98 px-5 py-8"
             >
               <SheetHeader className="mb-6">
                 <SheetTitle className="font-display text-2xl gold-gradient-text">Sanunjara</SheetTitle>
