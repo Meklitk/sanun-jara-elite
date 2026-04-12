@@ -1,0 +1,31 @@
+services:
+  # Backend API Service
+  - type: web
+    name: sanunjara-api
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false  # Set manually in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD
+        sync: false  # Set manually in Render dashboard
+      - key: CORS_ORIGIN
+        value: https://sanunjara.onrender.com  # Update after frontend deploy
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    rootDir: server
+
+  # Frontend Static Site
+  - type: static
+    name: sanunjara
+    envVars:
+      - key: VITE_API_URL
+        value: https://sanunjara-api.onrender.com  # Update after backend deploy
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
