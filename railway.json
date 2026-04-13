@@ -1,1 +1,1 @@
-{"build":{"builder":"DOCKERFILE","dockerfilePath":"server/Dockerfile"},"deploy":{"healthcheckPath":"/api/health","restartPolicyType":"ON_FAILURE"}}
+{"build":{"builder":"DOCKERFILE","dockerfilePath":"server/Dockerfile"},"deploy":{"healthcheckPath":"/api/health","healthcheckTimeout":300,"restartPolicyType":"ON_FAILURE"}}
