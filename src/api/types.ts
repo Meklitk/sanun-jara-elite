@@ -71,6 +71,16 @@ export type UtilityCard = {
   url?: string;
 };
 
+export type BiographyItem = {
+  slug: string;
+  name: Partial<LocalizedString>;
+  role: Partial<LocalizedString>;
+  kind: "person" | "institution";
+  content: Partial<LocalizedString>;
+  images: string[];
+  meta?: Array<{ label: Partial<LocalizedString>; value: Partial<LocalizedString> }>;
+};
+
 export type EconomyTableRow = {
   label: Partial<LocalizedString>;
   value: Partial<LocalizedString>;
@@ -104,4 +114,19 @@ export type Page = {
   directory?: DirectoryData;
   economy?: EconomyData;
   utilityCards?: UtilityCard[];
+  biographies?: BiographyItem[];
+};
+
+export type Content = {
+  _id: string;
+  slug: string;
+  title: Partial<LocalizedString>;
+  content: Partial<LocalizedString>;
+  icon: string;
+  order: number;
+  images: string[];
+  links: PageLink[];
+  isPublished: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 };

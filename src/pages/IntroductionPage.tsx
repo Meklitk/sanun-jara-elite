@@ -48,25 +48,14 @@ export default function IntroductionPage() {
               >
                 {title || "Manden Empire"}
               </motion.h1>
-
-              {paragraphs[0] ? (
-                <motion.p
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="mt-4 sm:mt-6 max-w-xl text-base sm:text-lg italic text-foreground/70"
-                >
-                  {paragraphs[0]}
-                </motion.p>
-              ) : null}
             </div>
           </div>
         </div>
       </section>
 
       <section className="mx-auto max-w-5xl space-y-4 sm:space-y-6 px-3 sm:px-6">
-        {paragraphs.slice(1).length ? (
-          paragraphs.slice(1).map((paragraph, index) => (
+        {paragraphs.length ? (
+          paragraphs.map((paragraph, index) => (
             <motion.article
               key={`${paragraph.slice(0, 24)}-${index}`}
               initial={{ opacity: 0, y: 18 }}

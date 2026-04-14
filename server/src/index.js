@@ -11,6 +11,7 @@ import { connectDb } from "./db.js";
 import { Admin } from "./models/Admin.js";
 import { Page } from "./models/Page.js";
 import { Media } from "./models/Media.js";
+import { Content } from "./models/Content.js";
 import { requireAdmin, signAdminToken } from "./auth.js";
 import { seedAdminIfNeeded, seedPagesIfNeeded, ensureDefaultPages } from "./seed.js";
 
@@ -222,6 +223,78 @@ app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (
     url
   });
   return res.json({ media });
+});
+
+// Content API endpoints (for dynamic content types like Religion, Civilization, etc.)
+app.get("/api/content", async (_req, res) => {
+  const content = await Content.find({ isPublished: true }).sort({ order: 1, slug: 1 }).lean();
+  return res.json({ content });
+});
+
+app.get("/api/content/all", requireAdmin(JWT_SECRET), async (_req, res) => {
+  const content = await Content.find().sort({ order: 1, slug: 1 }).lean();
+  return res.json({ content });
+});
+
+app.get("/api/content/:slug", async (req, res) => {
+  const item = await Content.findOne({ slug: req.params.slug, isPublished: true }).lean();
+  if (!item) return res.status(404).json({ error: "not_found" });
+  return res.json({ content: item });
+});
+
+app.post("/api/content", requireAdmin(JWT_SECRET), async (req, res) => {
+  const schema = z.object({
+    slug: z.string().min(1).regex(/^[a-z0-9-]+$/, "Slug must be lowercase alphanumeric with hyphens"),
+    title: z.object({ en: z.string().optional(), fr: z.string().optional() }).optional(),
+    content: z.object({ en: z.string().optional(), fr: z.string().optional() }).optional(),
+    icon: z.string().optional(),
+    order: z.number().optional(),
+    images: z.array(z.string()).optional(),
+    links: z.array(
+      z.object({
+        label: z.object({ en: z.string().optional(), fr: z.string().optional() }).optional(),
+        url: z.string().optional()
+      })
+    ).optional(),
+    isPublished: z.boolean().optional()
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: "invalid_body", details: parsed.error.flatten() });
+
+  const existing = await Content.findOne({ slug: parsed.data.slug }).lean();
+  if (existing) return res.status(409).json({ error: "slug_exists" });
+
+  const item = await Content.create(parsed.data);
+  return res.status(201).json({ content: item });
+});
+
+app.put("/api/content/:id", requireAdmin(JWT_SECRET), async (req, res) => {
+  const schema = z.object({
+    title: z.object({ en: z.string().optional(), fr: z.string().optional() }).optional(),
+    content: z.object({ en: z.string().optional(), fr: z.string().optional() }).optional(),
+    icon: z.string().optional(),
+    order: z.number().optional(),
+    images: z.array(z.string()).optional(),
+    links: z.array(
+      z.object({
+        label: z.object({ en: z.string().optional(), fr: z.string().optional() }).optional(),
+        url: z.string().optional()
+      })
+    ).optional(),
+    isPublished: z.boolean().optional()
+  });
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) return res.status(400).json({ error: "invalid_body" });
+
+  const item = await Content.findByIdAndUpdate(req.params.id, parsed.data, { new: true, runValidators: true }).lean();
+  if (!item) return res.status(404).json({ error: "not_found" });
+  return res.json({ content: item });
+});
+
+app.delete("/api/content/:id", requireAdmin(JWT_SECRET), async (req, res) => {
+  const item = await Content.findByIdAndDelete(req.params.id).lean();
+  if (!item) return res.status(404).json({ error: "not_found" });
+  return res.json({ ok: true });
 });
 
 async function main() {

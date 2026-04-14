@@ -17,6 +17,7 @@ import IntranetPage from "./pages/IntranetPage";
 import EconomyPage from "./pages/EconomyPage";
 import CulturePage from "./pages/CulturePage";
 import ResourcesPage from "./pages/ResourcesPage";
+import ContentPage from "./pages/ContentPage";
 import PageView from "@/features/pages/PageView";
 import AdminLoginPage from "@/features/admin/AdminLoginPage";
 import AdminDashboardPage from "@/features/admin/AdminDashboardPage";
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="/academy/history-courses" element={<AcademyPage section="history-courses" />} />
               <Route path="/academy/others" element={<AcademyPage section="others" />} />
               <Route path="/intranet" element={<IntranetPage />} />
+              <Route path="/content/:slug" element={<ContentPage />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

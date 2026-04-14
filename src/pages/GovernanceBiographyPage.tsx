@@ -1,7 +1,9 @@
-import { ArrowLeft, Landmark, ScrollText, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Landmark, ScrollText, ShieldCheck, ImageIcon } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
 
 import { useI18n } from "@/lib/i18n";
+import type { BiographyItem } from "@/api/types";
 import {
   PageErrorState,
   PageLoadingState,
@@ -19,8 +21,32 @@ type BiographyEntry = {
   kind: "person" | "institution";
   summary: string;
   note: string;
+  content: string;
+  images: string[];
   meta: Array<{ label: string; value: string }>;
 };
+
+function getBiographyFromCustomData(
+  slug: string,
+  biographies: BiographyItem[] | undefined,
+  localize: (obj?: Record<"en" | "fr", string | undefined>) => string
+): Partial<BiographyEntry> | null {
+  if (!biographies) return null;
+  const bio = biographies.find((b) => b.slug === slug);
+  if (!bio) return null;
+
+  return {
+    name: localize(bio.name),
+    role: localize(bio.role),
+    kind: bio.kind,
+    content: localize(bio.content),
+    images: bio.images ?? [],
+    meta: (bio.meta ?? []).map((m) => ({
+      label: localize(m.label),
+      value: localize(m.value),
+    })),
+  };
+}
 
 export default function GovernanceBiographyPage() {
   const { slug = "" } = useParams();
@@ -40,18 +66,11 @@ export default function GovernanceBiographyPage() {
     (lang === "fr"
       ? "La structure de gouvernance du Manden combine la légitimité ancestrale, l'ordre institutionnel et la responsabilité publique."
       : "The governance structure of Manden combines ancestral legitimacy, institutional order, and public stewardship.");
-  const biographyReadyNote =
-    lang === "fr"
-      ? "Cette page biographique est prête à accueillir des notes de leadership, des références historiques et un contexte public à mesure que les éléments sont préparés."
-      : "This biography page is ready for leadership notes, historical references, and public background as they are prepared.";
-  const institutionReadyNote =
-    lang === "fr"
-      ? "Ce profil institutionnel peut être enrichi avec l'historique, le mandat et les références publiques de cette institution."
-      : "This institutional profile can be expanded with founding context, constitutional background, and public references.";
-  const branchReadyNote =
-    lang === "fr"
-      ? "Ce profil institutionnel peut être enrichi avec un mandat plus complet, des notes historiques et des sources publiques complémentaires."
-      : "This institutional profile can be expanded with a fuller mandate, historical notes, and supporting public sources.";
+
+  // Check for custom biography data
+  const customBio = getBiographyFromCustomData(slug, page.biographies, localize);
+  const hasCustomContent = Boolean(customBio?.content?.trim());
+  const hasCustomImages = (customBio?.images?.length ?? 0) > 0;
 
   function officeSummary(name: string, role: string) {
     return lang === "fr"
@@ -83,7 +102,19 @@ export default function GovernanceBiographyPage() {
       : `${name} is shown as part of the institutional structure presented on the governance page for ${governmentName}.`;
   }
 
-  const entries: BiographyEntry[] = [
+  function defaultReadyNote(kind: "person" | "institution") {
+    if (kind === "person") {
+      return lang === "fr"
+        ? "Cette page biographique est prête à accueillir des notes de leadership, des références historiques et un contexte public à mesure que les éléments sont préparés."
+        : "This biography page is ready for leadership notes, historical references, and public background as they are prepared.";
+    }
+    return lang === "fr"
+      ? "Ce profil institutionnel peut être enrichi avec l'historique, le mandat et les références publiques de cette institution."
+      : "This institutional profile can be expanded with founding context, constitutional background, and public references.";
+  }
+
+  // Build entries from governance data (fallback for entries without custom biography)
+  const baseEntries: BiographyEntry[] = [
     {
       slug: extractBiographySlug(governance.chiefdomUrl),
       name: localize(governance.chiefdom),
@@ -94,6 +125,8 @@ export default function GovernanceBiographyPage() {
         lang === "fr"
           ? `Cette page peut accueillir l'histoire institutionnelle, le mandat et le dossier public associés à la ${t.chiefdom.toLowerCase()}.`
           : `This page can hold the institutional history, mandate, and public record attached to the ${t.chiefdom.toLowerCase()}.`,
+      content: "",
+      images: [],
       meta: [
         { label: t.role, value: t.chiefdom },
         { label: t.category, value: t.institution },
@@ -106,7 +139,9 @@ export default function GovernanceBiographyPage() {
       role: t.mandenMansa,
       kind: "person",
       summary: officeSummary(localize(governance.mandenMansa), t.mandenMansa),
-      note: biographyReadyNote,
+      note: defaultReadyNote("person"),
+      content: "",
+      images: [],
       meta: [
         { label: t.role, value: t.mandenMansa },
         { label: t.category, value: t.person },
@@ -119,7 +154,9 @@ export default function GovernanceBiographyPage() {
       role: t.mandenDjeliba,
       kind: "person",
       summary: officeSummary(localize(governance.mandenDjeliba), t.mandenDjeliba),
-      note: biographyReadyNote,
+      note: defaultReadyNote("person"),
+      content: "",
+      images: [],
       meta: [
         { label: t.role, value: t.mandenDjeliba },
         { label: t.category, value: t.person },
@@ -132,7 +169,9 @@ export default function GovernanceBiographyPage() {
       role: t.mandenMory,
       kind: "person",
       summary: officeSummary(localize(governance.mandenMory), t.mandenMory),
-      note: biographyReadyNote,
+      note: defaultReadyNote("person"),
+      content: "",
+      images: [],
       meta: [
         { label: t.role, value: t.mandenMory },
         { label: t.category, value: t.person },
@@ -148,7 +187,9 @@ export default function GovernanceBiographyPage() {
         lang === "fr"
           ? `${governmentName} apparaît sur la page de gouvernance comme le nom du gouvernement et le cadre institutionnel des fonctions qui y sont présentées.`
           : `${governmentName} appears on the governance page as the name of government and the institutional frame for the offices listed there.`,
-      note: institutionReadyNote,
+      note: defaultReadyNote("institution"),
+      content: "",
+      images: [],
       meta: [
         { label: t.role, value: t.govName },
         { label: t.category, value: t.institution },
@@ -168,6 +209,8 @@ export default function GovernanceBiographyPage() {
         lang === "fr"
           ? "Cette page peut accueillir l'histoire constitutionnelle, les principes majeurs et les notes de référence publique associées à ce document."
           : "This page can be used for the constitutional history, key principles, and public reference notes associated with this document.",
+      content: "",
+      images: [],
       meta: [
         { label: t.role, value: t.constitution },
         { label: t.category, value: t.institution },
@@ -180,7 +223,12 @@ export default function GovernanceBiographyPage() {
       role: t.branch,
       kind: "institution" as const,
       summary: branchSummary(localize(branch.name)),
-      note: branchReadyNote,
+      note:
+        lang === "fr"
+          ? "Ce profil institutionnel peut être enrichi avec un mandat plus complet, des notes historiques et des sources publiques complémentaires."
+          : "This institutional profile can be expanded with a fuller mandate, historical notes, and supporting public sources.",
+      content: "",
+      images: [] as string[],
       meta: [
         { label: t.role, value: t.branch },
         { label: t.mainPowers, value: localize(branch.powers) || t.linkUnavailable },
@@ -189,18 +237,55 @@ export default function GovernanceBiographyPage() {
     })),
   ].filter((entry) => entry.slug && entry.name);
 
-  const entry = entries.find((item) => item.slug === slug);
+  // Also include custom biographies that may not be in governance data
+  const customSlugs = (page.biographies ?? []).map((b) => b.slug).filter(Boolean);
+  const customOnlyEntries = (page.biographies ?? [])
+    .filter((b) => !baseEntries.some((e) => e.slug === b.slug))
+    .map((b) => ({
+      slug: b.slug,
+      name: localize(b.name),
+      role: localize(b.role),
+      kind: b.kind,
+      summary:
+        b.kind === "person"
+          ? officeSummary(localize(b.name), localize(b.role))
+          : institutionSummary(localize(b.name), localize(b.role)),
+      note: defaultReadyNote(b.kind),
+      content: localize(b.content),
+      images: b.images ?? [],
+      meta: (b.meta ?? []).map((m) => ({
+        label: localize(m.label),
+        value: localize(m.value),
+      })),
+    }));
 
-  if (!entry) return <PageNotFoundState />;
+  const allEntries = [...baseEntries, ...customOnlyEntries];
+  const baseEntry = allEntries.find((item) => item.slug === slug);
 
-  const paragraphs = [
-    entry.summary,
-    governanceOverview,
-    entry.kind === "person"
-      ? officePresenceNote(entry.name, entry.role)
-      : institutionPresenceNote(entry.name),
-    entry.note,
-  ];
+  if (!baseEntry) return <PageNotFoundState />;
+
+  // Merge with custom data if available
+  const entry: BiographyEntry = {
+    ...baseEntry,
+    ...(customBio?.name && { name: customBio.name }),
+    ...(customBio?.role && { role: customBio.role }),
+    ...(customBio?.kind && { kind: customBio.kind }),
+    ...(customBio?.content && { content: customBio.content }),
+    ...(customBio?.images?.length && { images: customBio.images }),
+    ...(customBio?.meta?.length && { meta: customBio.meta }),
+  };
+
+  // Build paragraphs - use custom content if available, otherwise use generated content
+  const paragraphs = hasCustomContent
+    ? splitParagraphs(entry.content)
+    : [
+        entry.summary,
+        governanceOverview,
+        entry.kind === "person"
+          ? officePresenceNote(entry.name, entry.role)
+          : institutionPresenceNote(entry.name),
+        entry.note,
+      ];
 
   return (
     <div className="space-y-8">
@@ -227,23 +312,69 @@ export default function GovernanceBiographyPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
-        <article className="rounded-[1.8rem] border border-gold/15 bg-black/25 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-8">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/20 bg-gold/10 text-gold">
-              {entry.kind === "person" ? <ShieldCheck className="h-5 w-5" /> : <Landmark className="h-5 w-5" />}
+        <div className="space-y-6">
+          {/* Custom Content Article */}
+          <article className="rounded-[1.8rem] border border-gold/15 bg-black/25 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-8">
+            <div className="flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/20 bg-gold/10 text-gold">
+                {entry.kind === "person" ? <ShieldCheck className="h-5 w-5" /> : <Landmark className="h-5 w-5" />}
+              </div>
+              <div>
+                <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.profileNotes}</p>
+                <h2 className="mt-1 text-xl font-semibold text-foreground">{entry.role}</h2>
+              </div>
             </div>
-            <div>
-              <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.profileNotes}</p>
-              <h2 className="mt-1 text-xl font-semibold text-foreground">{entry.role}</h2>
-            </div>
-          </div>
 
-          <div className="mt-6 space-y-4 text-base leading-8 text-foreground/76">
-            {paragraphs.map((paragraph, index) => (
-              <p key={`${paragraph.slice(0, 24)}-${index}`}>{paragraph}</p>
-            ))}
-          </div>
-        </article>
+            <div className="mt-6 space-y-4 text-base leading-8 text-foreground/76">
+              {paragraphs.map((paragraph, index) => (
+                <p key={`${paragraph.slice(0, 24)}-${index}`}>{paragraph}</p>
+              ))}
+            </div>
+          </article>
+
+          {/* Images Gallery - only show if there are custom images */}
+          {hasCustomImages && (
+            <motion.article
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              className="rounded-[1.8rem] border border-gold/15 bg-black/25 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-8"
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/20 bg-gold/10 text-gold">
+                  <ImageIcon className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">
+                    {lang === "fr" ? "Galerie" : "Gallery"}
+                  </p>
+                  <h2 className="mt-1 text-xl font-semibold text-foreground">
+                    {lang === "fr" ? "Images" : "Images"}
+                  </h2>
+                </div>
+              </div>
+
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
+                {entry.images.map((url, index) => (
+                  <motion.div
+                    key={url}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    className="overflow-hidden rounded-[1.25rem] border border-gold/15 bg-black/20"
+                  >
+                    <img
+                      src={url}
+                      alt={`${entry.name} - ${index + 1}`}
+                      className="w-full h-48 sm:h-56 object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                  </motion.div>
+                ))}
+              </div>
+            </motion.article>
+          )}
+        </div>
 
         <aside className="space-y-4">
           <div className="rounded-[1.6rem] border border-gold/15 bg-black/25 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]">
@@ -258,14 +389,26 @@ export default function GovernanceBiographyPage() {
             </div>
           </div>
 
-          {entry.meta.map((item) => (
-            <div
-              key={`${item.label}-${item.value}`}
+          {/* Category badge */}
+          <div className="rounded-[1.6rem] border border-gold/15 bg-white/[0.03] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.category}</p>
+            <p className="mt-3 text-sm font-semibold uppercase tracking-[0.08em] text-foreground">
+              {entry.kind === "person" ? t.person : t.institution}
+            </p>
+          </div>
+
+          {entry.meta.map((item, index) => (
+            <motion.div
+              key={`${item.label}-${item.value}-${index}`}
+              initial={{ opacity: 0, x: 20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.05 }}
               className="rounded-[1.6rem] border border-gold/15 bg-white/[0.03] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]"
             >
               <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{item.label}</p>
-              <p className="mt-3 text-sm font-semibold uppercase tracking-[0.08em] text-foreground">{item.value}</p>
-            </div>
+              <p className="mt-3 text-sm font-semibold tracking-[0.02em] text-foreground">{item.value}</p>
+            </motion.div>
           ))}
         </aside>
       </section>

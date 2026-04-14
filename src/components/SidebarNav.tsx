@@ -1,5 +1,5 @@
-import { useDeferredValue, useState } from "react";
-import { Search } from "lucide-react";
+import { useDeferredValue, useState, useMemo } from "react";
+import { Search, FileText, FolderOpen, Layers } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { buildQuickNavItems, coreNavItems, utilityNavItems } from "@/lib/site-config";
+import { useContent } from "@/api/content";
 
 type SidebarNavProps = {
   mode?: "desktop" | "mobile";
@@ -19,12 +20,15 @@ export default function SidebarNav({
   includeUtilityNav = false,
   onNavigate,
 }: SidebarNavProps) {
-  const { t, lang, setLang } = useI18n();
+  const { t, lang, setLang, localize } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [searchActive, setSearchActive] = useState(false);
   const deferredQuery = useDeferredValue(query);
+  const { data: contentData } = useContent();
+
+  const contentItems = useMemo(() => contentData?.content ?? [], [contentData]);
 
   const searchItems = buildQuickNavItems(t);
   const trimmedQuery = deferredQuery.trim().toLowerCase();
@@ -183,6 +187,38 @@ export default function SidebarNav({
             {isActive(item.path) ? <div className="h-2.5 w-2.5 rounded-full bg-gold/70" /> : null}
           </button>
         ))}
+
+        {/* Dynamic Content Items */}
+        {contentItems.length > 0 && (
+          <>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-gold/65 mt-4 pt-4 border-t border-gold/10">
+              {t.additionalContent}
+            </p>
+            {contentItems.map((item) => {
+              const path = `/content/${item.slug}`;
+              const title = localize(item.title) || item.slug;
+              return (
+                <button
+                  key={item._id}
+                  type="button"
+                  onClick={() => goTo(path)}
+                  className={cn(
+                    "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition duration-300",
+                    isActive(path)
+                      ? "border-gold/30 bg-gold/12 text-gold shadow-[inset_0_1px_0_hsl(var(--gold)/0.15)]"
+                      : "border-white/5 bg-white/[0.03] text-foreground/78 hover:border-gold/15 hover:bg-white/[0.06] hover:text-foreground",
+                  )}
+                >
+                  <span className="font-display text-sm tracking-[0.08em] flex items-center gap-2">
+                    <FolderOpen className="w-3.5 h-3.5" />
+                    {title}
+                  </span>
+                  {isActive(path) ? <div className="h-2.5 w-2.5 rounded-full bg-gold/70" /> : null}
+                </button>
+              );
+            })}
+          </>
+        )}
       </div>
 
       <div className="space-y-4 border-t border-gold/10 pt-4">

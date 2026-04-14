@@ -162,6 +162,8 @@ const translations = {
     phone: "International Number",
     pageError: "Failed to load content for this section.",
     pageNotFound: "This section has not been configured yet.",
+    relatedLinks: "Related Links",
+    additionalContent: "Additional Content",
   },
   fr: {
     introduction: "Introduction",
@@ -321,6 +323,8 @@ const translations = {
     phone: "Numéro international",
     pageError: "Échec du chargement du contenu pour cette section.",
     pageNotFound: "Cette section n'a pas encore été configurée.",
+    relatedLinks: "Liens connexes",
+    additionalContent: "Contenu additionnel",
   },
 } as const;
 

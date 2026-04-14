@@ -114,63 +114,83 @@ export default function AdminGovernanceEditor({ governance, onChange }: Props) {
           </div>
 
           <div className="space-y-2">
-            <Label>Chiefdom</Label>
+            <Label>Chiefdom (Name)</Label>
             <Input
               value={governance.chiefdom.en ?? ""}
               onChange={(e) => updateLocalizedField("chiefdom", e.target.value)}
+              placeholder="e.g., Manden Mansaya"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
+            <Label className="text-[11px] text-muted-foreground mt-1">Biography Page URL</Label>
             <Input
               value={governance.chiefdomUrl ?? ""}
               onChange={(e) => updateUrlField("chiefdomUrl", e.target.value)}
               placeholder="/governance/biographies/manden-mansaya"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
+            <p className="text-[10px] text-muted-foreground">
+              Tip: Create the biography page below using slug "manden-mansaya" to add custom content and images.
+            </p>
           </div>
 
           <div className="space-y-2">
-            <Label>Manden Mansa</Label>
+            <Label>Manden Mansa (Name)</Label>
             <Input
               value={governance.mandenMansa.en ?? ""}
               onChange={(e) => updateLocalizedField("mandenMansa", e.target.value)}
+              placeholder="e.g., Mari Djata Keita V"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
+            <Label className="text-[11px] text-muted-foreground mt-1">Biography Page URL</Label>
             <Input
               value={governance.mandenMansaUrl ?? ""}
               onChange={(e) => updateUrlField("mandenMansaUrl", e.target.value)}
               placeholder="/governance/biographies/mari-djata-keita-v"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
+            <p className="text-[10px] text-muted-foreground">
+              Tip: Create the biography page below using slug "mari-djata-keita-v" to add custom content and images.
+            </p>
           </div>
 
           <div className="space-y-2">
-            <Label>Manden Djeliba</Label>
+            <Label>Manden Djeliba (Name)</Label>
             <Input
               value={governance.mandenDjeliba.en ?? ""}
               onChange={(e) => updateLocalizedField("mandenDjeliba", e.target.value)}
+              placeholder="e.g., Mabougnata Djeliba Ibrahim Diabate"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
+            <Label className="text-[11px] text-muted-foreground mt-1">Biography Page URL</Label>
             <Input
               value={governance.mandenDjelibaUrl ?? ""}
               onChange={(e) => updateUrlField("mandenDjelibaUrl", e.target.value)}
-              placeholder="/governance/biographies/mabougnata-dibla-ibrahim-diabate"
+              placeholder="/governance/biographies/mabougnata-djeliba-ibrahim-diabate"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
+            <p className="text-[10px] text-muted-foreground">
+              Example: Corrected spelling from "Dibla" to "Djeliba". Create biography page below using slug "mabougnata-djeliba-ibrahim-diabate".
+            </p>
           </div>
 
           <div className="space-y-2">
-            <Label>Manden Mory</Label>
+            <Label>Manden Mory (Name)</Label>
             <Input
               value={governance.mandenMory.en ?? ""}
               onChange={(e) => updateLocalizedField("mandenMory", e.target.value)}
+              placeholder="e.g., Mabougnata Alpha Omar Kaba"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
+            <Label className="text-[11px] text-muted-foreground mt-1">Biography Page URL</Label>
             <Input
               value={governance.mandenMoryUrl ?? ""}
               onChange={(e) => updateUrlField("mandenMoryUrl", e.target.value)}
               placeholder="/governance/biographies/mabougnata-alpha-omar-kaba"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
+            <p className="text-[10px] text-muted-foreground">
+              Tip: Create the biography page below using slug "mabougnata-alpha-omar-kaba" to add custom content and images.
+            </p>
           </div>
         </section>
 
@@ -187,8 +207,10 @@ export default function AdminGovernanceEditor({ governance, onChange }: Props) {
             <Input
               value={governance.governmentName.en ?? ""}
               onChange={(e) => updateLocalizedField("governmentName", e.target.value)}
+              placeholder="e.g., Manden Empire"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
+            <Label className="text-[11px] text-muted-foreground mt-1">Biography Page URL</Label>
             <Input
               value={governance.governmentNameUrl ?? ""}
               onChange={(e) => updateUrlField("governmentNameUrl", e.target.value)}
@@ -202,8 +224,10 @@ export default function AdminGovernanceEditor({ governance, onChange }: Props) {
             <Input
               value={governance.constitution.en ?? ""}
               onChange={(e) => updateLocalizedField("constitution", e.target.value)}
+              placeholder="e.g., Kouroukan Fouga, adopted in 1236"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
+            <Label className="text-[11px] text-muted-foreground mt-1">Biography Page URL</Label>
             <Input
               value={governance.constitutionUrl ?? ""}
               onChange={(e) => updateUrlField("constitutionUrl", e.target.value)}
