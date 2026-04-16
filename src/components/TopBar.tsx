@@ -53,7 +53,7 @@ export default function TopBar() {
               className="w-[92vw] max-w-sm overflow-y-auto border-gold/15 bg-background/98 px-5 py-8"
             >
               <SheetHeader className="mb-6">
-                <SheetTitle className="font-display text-2xl gold-gradient-text">Sanunjara</SheetTitle>
+                <SheetTitle className="font-display text-2xl gold-gradient-text">Sanun jara</SheetTitle>
                 <SheetDescription>{t.quickSearchPlaceholder}</SheetDescription>
               </SheetHeader>
               <SidebarNav
