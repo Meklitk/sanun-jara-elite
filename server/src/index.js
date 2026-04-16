@@ -23,17 +23,20 @@ const UPLOAD_DIR = process.env.UPLOAD_DIR || "uploads";
 const app = express();
 
 //
-// ✅ BULLETPROOF CORS (manual — no duplicates)
+// ✅ FINAL CORS FIX (NO DUPLICATES EVER)
 //
-const allowedOrigins = (process.env.CORS_ORIGIN || "")
-  .split(",")
-  .map(o => o.trim())
-  .filter(Boolean);
+const allowedOrigins = [
+  "https://sanunjara.com",
+  "https://sanun-jara-elite.vercel.app"
+];
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
 
-  if (allowedOrigins.includes(origin)) {
+  // 🔥 remove any existing header (Railway/proxy issues)
+  res.removeHeader("Access-Control-Allow-Origin");
+
+  if (origin && allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
 
@@ -73,12 +76,12 @@ const upload = multer({
 });
 
 //
-// ✅ Health
+// ✅ HEALTH
 //
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
 //
-// ✅ Auth
+// ✅ AUTH
 //
 app.post("/api/login", async (req, res) => {
   const schema = z.object({
@@ -95,12 +98,16 @@ app.post("/api/login", async (req, res) => {
   const ok = await bcrypt.compare(parsed.data.password, admin.passwordHash);
   if (!ok) return res.status(401).json({ error: "invalid_credentials" });
 
-  const token = signAdminToken({ adminId: admin._id.toString() }, JWT_SECRET);
+  const token = signAdminToken(
+    { adminId: admin._id.toString() },
+    JWT_SECRET
+  );
+
   res.json({ token });
 });
 
 //
-// ✅ Upload
+// ✅ UPLOAD
 //
 app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (req, res) => {
   try {
@@ -128,18 +135,29 @@ app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (
 // ✅ CONTENT APIs
 //
 app.get("/api/content", async (_req, res) => {
-  const content = await Content.find({ isPublished: true }).sort({ order: 1 }).lean();
+  const content = await Content.find({ isPublished: true })
+    .sort({ order: 1 })
+    .lean();
+
   res.json({ content });
 });
 
 app.get("/api/content/all", async (_req, res) => {
-  const content = await Content.find().sort({ order: 1 }).lean();
+  const content = await Content.find()
+    .sort({ order: 1 })
+    .lean();
+
   res.json({ content });
 });
 
 app.get("/api/content/:slug", async (req, res) => {
-  const item = await Content.findOne({ slug: req.params.slug, isPublished: true }).lean();
+  const item = await Content.findOne({
+    slug: req.params.slug,
+    isPublished: true
+  }).lean();
+
   if (!item) return res.status(404).json({ error: "not_found" });
+
   res.json({ content: item });
 });
 
@@ -158,12 +176,19 @@ app.post("/api/content", requireAdmin(JWT_SECRET), async (req, res) => {
 });
 
 app.put("/api/content/:id", requireAdmin(JWT_SECRET), async (req, res) => {
-  const item = await Content.findByIdAndUpdate(req.params.id, req.body, { new: true }).lean();
+  const item = await Content.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  ).lean();
+
   if (!item) return res.status(404).json({ error: "not_found" });
+
   res.json({ content: item });
 });
 
-app.delete("/api/content/:id", requireAdmin(JWT_SECRET), async (_req, res) => {
+app.delete("/api/content/:id", requireAdmin(JWT_SECRET), async (req, res) => {
+  await Content.findByIdAndDelete(req.params.id);
   res.json({ ok: true });
 });
 
@@ -182,7 +207,7 @@ async function main() {
   await ensureDefaultPages();
 
   app.listen(PORT, () => {
-    console.log(`API running on port ${PORT}`);
+    console.log(`🚀 API running on port ${PORT}`);
   });
 }
 
