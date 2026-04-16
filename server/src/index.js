@@ -371,6 +371,22 @@ app.post("/api/admin/ensure-pages", requireAdmin(JWT_SECRET), async (_req, res) 
 });
 
 //
+// ✅ GLOBAL ERROR HANDLER
+//
+app.use((err, _req, res, _next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ error: "internal_server_error", message: err.message });
+});
+
+//
+// ✅ 404 HANDLER (must be last)
+//
+app.use((req, res) => {
+  console.log(`404: ${req.method} ${req.url}`);
+  res.status(404).json({ error: "not_found", path: req.url });
+});
+
+//
 // ✅ START SERVER
 //
 async function main() {

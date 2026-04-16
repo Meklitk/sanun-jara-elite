@@ -3,13 +3,14 @@ import mongoose from "mongoose";
 const MONGODB_URI =
   process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/sanun_jara_elite";
 
-export const connectDb = async () => {
+export const connectDb = async (uri) => {
+  const connectionUri = uri || MONGODB_URI;
   try {
-    if (!MONGODB_URI) {
+    if (!connectionUri) {
       throw new Error("MONGODB_URI is not defined in environment variables");
     }
 
-    await mongoose.connect(MONGODB_URI, {
+    await mongoose.connect(connectionUri, {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
