@@ -27,16 +27,21 @@ const app = express();
 //
 // ✅ CORS FIX (multiple origins)
 //
-const allowedOrigins = (process.env.CORS_ORIGIN || "").split(",");
+const allowedOrigins = (process.env.CORS_ORIGIN || "")
+  .split(",")
+  .map(o => o.trim())
+  .filter(Boolean);
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.error("CORS blocked:", origin);
-      callback(new Error("Not allowed by CORS"));
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, origin); // ✅ VERY IMPORTANT
     }
+
+    console.error("CORS blocked:", origin);
+    return callback(new Error("Not allowed by CORS"));
   },
   credentials: true
 }));
