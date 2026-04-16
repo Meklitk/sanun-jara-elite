@@ -31,7 +31,7 @@ export default function NianiInstitutionsPage() {
           </div>
         </div>
         <p className="mt-5 max-w-3xl text-base leading-8 text-foreground/76">
-          {content || "Explore the institutions of the Manden Empire."}
+          {content || (lang === "fr" ? "Explorez les institutions de l'Empire Manden." : "Explore the institutions of the Manden Empire.")}
         </p>
       </section>
 
@@ -39,7 +39,7 @@ export default function NianiInstitutionsPage() {
         <div className="rounded-[1.8rem] border border-dashed border-gold/20 bg-gradient-to-b from-gold/5 to-transparent px-6 py-16 text-center">
           <Landmark className="h-12 w-12 text-gold/40 mx-auto mb-4" />
           <p className="text-sm text-muted-foreground">
-            No institutions yet.
+            {t.noInstitutionsYet}
           </p>
         </div>
       ) : (
@@ -83,7 +83,7 @@ export default function NianiInstitutionsPage() {
                 <div className="space-y-2">
                   <p className="text-xs uppercase tracking-[0.22em] text-gold/70 flex items-center gap-2">
                     <Play className="h-3 w-3" />
-                    {lang === "fr" ? "Vidéos" : "Videos"}
+                    {t.nianiVideos}
                   </p>
                   <div className="space-y-2">
                     {institution.videos.map((video, idx) => (

@@ -49,7 +49,7 @@ function TimelineEntryLink({
 
 export default function HistoryTimelineEventPage() {
   const { slug = "" } = useParams();
-  const { lang, t, localize } = useI18n();
+  const { t, localize } = useI18n();
   const { page, title, content, isLoading, error } = useCmsPage("history");
 
   if (isLoading) return <PageLoadingState />;
@@ -157,10 +157,10 @@ export default function HistoryTimelineEventPage() {
                   </div>
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">
-                      {lang === "fr" ? "Galerie" : "Gallery"}
+                      {t.timelineGallery}
                     </p>
                     <p className="mt-1 text-sm font-semibold text-foreground">
-                      {current.images.length} {current.images.length === 1 ? (lang === "fr" ? "image" : "image") : (lang === "fr" ? "images" : "images")}
+                      {current.images.length} {current.images.length === 1 ? t.timelineImage : t.timelineImages}
                     </p>
                   </div>
                 </div>
@@ -192,7 +192,7 @@ export default function HistoryTimelineEventPage() {
                 viewport={{ once: true }}
                 className="rounded-[1.6rem] border border-gold/15 bg-gold/10 p-5 text-sm leading-7 text-foreground/88"
               >
-                <h3 className="text-xs uppercase tracking-[0.28em] text-gold/80">{lang === "fr" ? "Note" : "Note"}</h3>
+                <h3 className="text-xs uppercase tracking-[0.28em] text-gold/80">{t.timelineNote}</h3>
                 <p className="mt-3 text-base text-foreground/85">{noteText}</p>
               </motion.div>
             ) : null}

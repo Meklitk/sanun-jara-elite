@@ -31,7 +31,7 @@ export default function NianiArchitecturalProjectsPage() {
           </div>
         </div>
         <p className="mt-5 max-w-3xl text-base leading-8 text-foreground/76">
-          {content || "Explore the architectural projects of the Manden Empire."}
+          {content || (lang === "fr" ? "Explorez les projets architecturaux de l'Empire Manden." : "Explore the architectural projects of the Manden Empire.")}
         </p>
       </section>
 
@@ -39,7 +39,7 @@ export default function NianiArchitecturalProjectsPage() {
         <div className="rounded-[1.8rem] border border-dashed border-gold/20 bg-gradient-to-b from-gold/5 to-transparent px-6 py-16 text-center">
           <Building2 className="h-12 w-12 text-gold/40 mx-auto mb-4" />
           <p className="text-sm text-muted-foreground">
-            No architectural projects yet.
+            {t.noProjectsYet}
           </p>
         </div>
       ) : (
@@ -65,7 +65,7 @@ export default function NianiArchitecturalProjectsPage() {
                   <div className="flex items-center gap-2 mb-3">
                     <ImageIcon className="h-4 w-4 text-gold" />
                     <p className="text-xs uppercase tracking-[0.22em] text-gold/70">
-                      {lang === "fr" ? "Images conceptuelles" : "Concept Images"}
+                      {t.nianiConceptImages}
                     </p>
                   </div>
                   <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -90,7 +90,7 @@ export default function NianiArchitecturalProjectsPage() {
                   <div className="flex items-center gap-2 mb-3">
                     <Hammer className="h-4 w-4 text-gold" />
                     <p className="text-xs uppercase tracking-[0.22em] text-gold/70">
-                      {lang === "fr" ? "Travaux réalisés" : "Work in Progress"}
+                      {t.nianiWorkProgress}
                     </p>
                   </div>
                   <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">

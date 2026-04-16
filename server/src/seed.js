@@ -14,20 +14,20 @@ const DEFAULT_PAGES = [
   },
   {
     key: "history",
-    title: { en: "History of Manden" },
-    content: { en: "" },
+    title: { en: "History of Manden", fr: "Histoire de Manden" },
+    content: { en: "", fr: "" },
     images: [],
     links: [],
     timeline: [
-      { year: "3000 B.C.", title: { en: "Arrival of Mandenkas" }, description: { en: "The ancient Mandenka people arrived in West Africa, establishing the foundation of what would become the great Manden Empire." }, url: "/history/timeline/arrival-of-mandenkas" },
-      { year: "980 A.D.", title: { en: "First University in the world" }, description: { en: "" }, url: "/history/timeline/first-university-in-the-world" },
-      { year: "1236 A.D.", title: { en: "World's first constitution of human rights, abolished slavery" }, description: { en: "" }, url: "/history/timeline/world-s-first-constitution-of-human-rights-abolished-slavery" },
-      { year: "1312 A.D.", title: { en: "Discovery of America" }, description: { en: "" }, url: "/history/timeline/discovery-of-america" },
-      { year: "1324 A.D.", title: { en: "The richest man in history" }, description: { en: "" }, url: "/history/timeline/the-richest-man-in-history" },
-      { year: "1351 A.D.", title: { en: "Named most honest people on earth" }, description: { en: "" }, url: "/history/timeline/named-most-honest-people-on-earth" },
-      { year: "1455 A.D.", title: { en: "Manden wins war against Portugal" }, description: { en: "" }, url: "/history/timeline/manden-wins-war-against-portugal" },
-      { year: "2020 A.D.", title: { en: "Return of the Empire" }, description: { en: "" }, url: "/history/timeline/return-of-the-empire" },
-      { year: "2023 A.D.", title: { en: "Creation of Manden Calendar" }, description: { en: "" }, url: "/history/timeline/creation-of-manden-calendar" }
+      { year: "3000 B.C.", title: { en: "Arrival of Mandenkas", fr: "Arrivée des Mandenkás" }, description: { en: "The ancient Mandenka people arrived in West Africa, establishing the foundation of what would become the great Manden Empire.", fr: "Les anciens peuples Mandenka sont arrivés en Afrique de l'Ouest, établissant les fondations de ce qui deviendrait le grand Empire Manden." }, url: "/history/timeline/arrival-of-mandenkas" },
+      { year: "980 A.D.", title: { en: "First University in the world", fr: "Première Université au monde" }, description: { en: "", fr: "" }, url: "/history/timeline/first-university-in-the-world" },
+      { year: "1236 A.D.", title: { en: "World's first constitution of human rights, abolished slavery", fr: "Première constitution des droits humains, abolition de l'esclavage" }, description: { en: "", fr: "" }, url: "/history/timeline/world-s-first-constitution-of-human-rights-abolished-slavery" },
+      { year: "1312 A.D.", title: { en: "Discovery of America", fr: "Découverte de l'Amérique" }, description: { en: "", fr: "" }, url: "/history/timeline/discovery-of-america" },
+      { year: "1324 A.D.", title: { en: "The richest man in history", fr: "L'homme le plus riche de l'histoire" }, description: { en: "", fr: "" }, url: "/history/timeline/the-richest-man-in-history" },
+      { year: "1351 A.D.", title: { en: "Named most honest people on earth", fr: "Nommés peuple le plus honnête de la terre" }, description: { en: "", fr: "" }, url: "/history/timeline/named-most-honest-people-on-earth" },
+      { year: "1455 A.D.", title: { en: "Manden wins war against Portugal", fr: "Manden gagne la guerre contre le Portugal" }, description: { en: "", fr: "" }, url: "/history/timeline/manden-wins-war-against-portugal" },
+      { year: "2020 A.D.", title: { en: "Return of the Empire", fr: "Retour de l'Empire" }, description: { en: "", fr: "" }, url: "/history/timeline/return-of-the-empire" },
+      { year: "2023 A.D.", title: { en: "Creation of Manden Calendar", fr: "Création du Calendrier Manden" }, description: { en: "", fr: "" }, url: "/history/timeline/creation-of-manden-calendar" }
     ]
   },
   {

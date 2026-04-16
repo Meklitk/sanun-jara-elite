@@ -14,12 +14,12 @@ const emptyLink = (): PageLink => ({
 
 const emptyTimelineItem = (): TimelineItem => ({
   year: "",
-  title: { en: "" },
-  description: { en: "" },
-  notes: { en: "" },
+  title: { en: "", fr: "" },
+  description: { en: "", fr: "" },
+  notes: { en: "", fr: "" },
   image: "",
   images: [],
-  content: { en: "" },
+  content: { en: "", fr: "" },
   url: "",
 });
 
@@ -207,8 +207,8 @@ type TimelineEditorProps = {
 export function AdminTimelineEditor({ timeline, onChange, token }: TimelineEditorProps) {
   const list = timeline.length ? timeline : [];
   const eventsWithYears = list.filter((item) => Boolean(item.year?.trim())).length;
-  const eventsWithDescriptions = list.filter((item) => Boolean(item.description?.en?.trim())).length;
-  const eventsWithNotes = list.filter((item) => Boolean(item.notes?.en?.trim())).length;
+  const eventsWithDescriptions = list.filter((item) => Boolean(item.description?.en?.trim() || item.description?.fr?.trim())).length;
+  const eventsWithNotes = list.filter((item) => Boolean(item.notes?.en?.trim() || item.notes?.fr?.trim())).length;
 
   function setAt(i: number, next: TimelineItem) {
     const copy = [...list];
@@ -332,9 +332,9 @@ export function AdminTimelineEditor({ timeline, onChange, token }: TimelineEdito
                             <span className="rounded-full border border-gold/20 bg-black/25 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-gold/80">
                               {item.year?.trim() || "No year yet"}
                             </span>
-                            {item.title?.en?.trim() ? (
+                            {item.title?.en?.trim() || item.title?.fr?.trim() ? (
                               <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-[11px] text-foreground/75">
-                                {item.title.en.trim()}
+                                {item.title?.en?.trim() || item.title?.fr?.trim()}
                               </span>
                             ) : null}
                           </div>
@@ -393,7 +393,7 @@ export function AdminTimelineEditor({ timeline, onChange, token }: TimelineEdito
                         <div className="space-y-2">
                           <Label htmlFor={`tl-title-en-${i}`} className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
                             <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
-                            Title
+                            Title (EN)
                           </Label>
                           <Input
                             id={`tl-title-en-${i}`}
@@ -408,46 +408,107 @@ export function AdminTimelineEditor({ timeline, onChange, token }: TimelineEdito
                             }
                           />
                         </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor={`tl-title-fr-${i}`} className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-blue-400/60 rounded-full"></span>
+                            Titre (FR)
+                          </Label>
+                          <Input
+                            id={`tl-title-fr-${i}`}
+                            placeholder="Titre de l'événement..."
+                            className="border-blue-400/20 bg-black/20 focus:border-blue-400/50 focus:ring-blue-400/20"
+                            value={item.title?.fr ?? ""}
+                            onChange={(e) =>
+                              setAt(i, {
+                                ...item,
+                                title: { ...(item.title ?? {}), fr: e.target.value },
+                              })
+                            }
+                          />
+                        </div>
                       </div>
 
-                      <div className="mt-4 space-y-2">
-                        <Label htmlFor={`tl-desc-en-${i}`} className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
-                          Description <span className="text-muted-foreground font-normal">(optional)</span>
-                        </Label>
-                        <Textarea
-                          id={`tl-desc-en-${i}`}
-                          rows={3}
-                          placeholder="Enter event description..."
-                          className="min-h-[4.5rem] border-gold/20 bg-black/20 resize-y focus:border-gold/50 focus:ring-gold/20"
-                          value={item.description?.en ?? ""}
-                          onChange={(e) =>
-                            setAt(i, {
-                              ...item,
-                              description: { ...(item.description ?? {}), en: e.target.value },
-                            })
-                          }
-                        />
+                      <div className="mt-4 grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor={`tl-desc-en-${i}`} className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
+                            Description EN <span className="text-muted-foreground font-normal">(optional)</span>
+                          </Label>
+                          <Textarea
+                            id={`tl-desc-en-${i}`}
+                            rows={3}
+                            placeholder="Enter event description..."
+                            className="min-h-[4.5rem] border-gold/20 bg-black/20 resize-y focus:border-gold/50 focus:ring-gold/20"
+                            value={item.description?.en ?? ""}
+                            onChange={(e) =>
+                              setAt(i, {
+                                ...item,
+                                description: { ...(item.description ?? {}), en: e.target.value },
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`tl-desc-fr-${i}`} className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-blue-400/60 rounded-full"></span>
+                            Description FR <span className="text-muted-foreground font-normal">(optionnel)</span>
+                          </Label>
+                          <Textarea
+                            id={`tl-desc-fr-${i}`}
+                            rows={3}
+                            placeholder="Entrez la description..."
+                            className="min-h-[4.5rem] border-blue-400/20 bg-black/20 resize-y focus:border-blue-400/50 focus:ring-blue-400/20"
+                            value={item.description?.fr ?? ""}
+                            onChange={(e) =>
+                              setAt(i, {
+                                ...item,
+                                description: { ...(item.description ?? {}), fr: e.target.value },
+                              })
+                            }
+                          />
+                        </div>
                       </div>
 
-                      <div className="mt-4 space-y-2">
-                        <Label htmlFor={`tl-notes-en-${i}`} className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
-                          <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
-                          Notes <span className="text-muted-foreground font-normal">(optional)</span>
-                        </Label>
-                        <Textarea
-                          id={`tl-notes-en-${i}`}
-                          rows={3}
-                          placeholder="Add contextual notes or commentary..."
-                          className="min-h-[4.5rem] border-gold/20 bg-black/20 resize-y focus:border-gold/50 focus:ring-gold/20"
-                          value={item.notes?.en ?? ""}
-                          onChange={(e) =>
-                            setAt(i, {
-                              ...item,
-                              notes: { ...(item.notes ?? {}), en: e.target.value },
-                            })
-                          }
-                        />
+                      <div className="mt-4 grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label htmlFor={`tl-notes-en-${i}`} className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
+                            Notes EN <span className="text-muted-foreground font-normal">(optional)</span>
+                          </Label>
+                          <Textarea
+                            id={`tl-notes-en-${i}`}
+                            rows={3}
+                            placeholder="Add contextual notes..."
+                            className="min-h-[4.5rem] border-gold/20 bg-black/20 resize-y focus:border-gold/50 focus:ring-gold/20"
+                            value={item.notes?.en ?? ""}
+                            onChange={(e) =>
+                              setAt(i, {
+                                ...item,
+                                notes: { ...(item.notes ?? {}), en: e.target.value },
+                              })
+                            }
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor={`tl-notes-fr-${i}`} className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 bg-blue-400/60 rounded-full"></span>
+                            Notes FR <span className="text-muted-foreground font-normal">(optionnel)</span>
+                          </Label>
+                          <Textarea
+                            id={`tl-notes-fr-${i}`}
+                            rows={3}
+                            placeholder="Ajoutez des notes..."
+                            className="min-h-[4.5rem] border-blue-400/20 bg-black/20 resize-y focus:border-blue-400/50 focus:ring-blue-400/20"
+                            value={item.notes?.fr ?? ""}
+                            onChange={(e) =>
+                              setAt(i, {
+                                ...item,
+                                notes: { ...(item.notes ?? {}), fr: e.target.value },
+                              })
+                            }
+                          />
+                        </div>
                       </div>
 
                       <div className="mt-4 space-y-2">
