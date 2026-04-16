@@ -390,19 +390,24 @@ app.use((req, res) => {
 // ✅ START SERVER
 //
 async function main() {
-  await connectDb(MONGODB_URI);
-
-  await seedAdminIfNeeded({
-    username: process.env.ADMIN_USERNAME || "admin",
-    password: process.env.ADMIN_PASSWORD || "admin1234"
-  });
-
-  await seedPagesIfNeeded();
-  await ensureDefaultPages();
-
+  // Start listening first so healthcheck can respond immediately
   app.listen(PORT, () => {
     console.log(`🚀 API running on port ${PORT}`);
   });
+
+  try {
+    await connectDb(MONGODB_URI);
+    await seedAdminIfNeeded({
+      username: process.env.ADMIN_USERNAME || "admin",
+      password: process.env.ADMIN_PASSWORD || "admin1234"
+    });
+    await seedPagesIfNeeded();
+    await ensureDefaultPages();
+    console.log("✅ DB connected and seeded");
+  } catch (err) {
+    console.error("❌ DB connection failed:", err.message);
+    process.exit(1);
+  }
 }
 
 main().catch(console.error);
