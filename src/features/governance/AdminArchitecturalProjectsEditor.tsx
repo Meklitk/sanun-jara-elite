@@ -66,8 +66,8 @@ export function AdminArchitecturalProjectsEditor({ projects, onChange, token }: 
 
   const emptyProject = (): ArchitecturalProjectItem => ({
     id: Date.now().toString(),
-    name: { en: "" },
-    description: { en: "" },
+    name: { en: "", fr: "" },
+    description: { en: "", fr: "" },
     conceptImages: [],
     workImages: [],
   });
@@ -160,41 +160,80 @@ export function AdminArchitecturalProjectsEditor({ projects, onChange, token }: 
                   </div>
                 </div>
 
-                <div className="space-y-2 pl-3">
-                  <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
-                    Name
-                  </Label>
-                  <Input
-                    placeholder="Project name..."
-                    className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
-                    value={item.name?.en ?? ""}
-                    onChange={(e) =>
-                      setAt(i, {
-                        ...item,
-                        name: { ...(item.name ?? {}), en: e.target.value },
-                      })
-                    }
-                  />
+                <div className="grid gap-4 md:grid-cols-2 pl-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
+                      Name (EN)
+                    </Label>
+                    <Input
+                      placeholder="Project name..."
+                      className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
+                      value={item.name?.en ?? ""}
+                      onChange={(e) =>
+                        setAt(i, {
+                          ...item,
+                          name: { ...(item.name ?? {}), en: e.target.value },
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-blue-400/60 rounded-full"></span>
+                      Nom (FR)
+                    </Label>
+                    <Input
+                      placeholder="Nom du projet..."
+                      className="border-blue-400/20 bg-black/20 focus:border-blue-400/50 focus:ring-blue-400/20"
+                      value={item.name?.fr ?? ""}
+                      onChange={(e) =>
+                        setAt(i, {
+                          ...item,
+                          name: { ...(item.name ?? {}), fr: e.target.value },
+                        })
+                      }
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2 pl-3">
-                  <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
-                    Description
-                  </Label>
-                  <Textarea
-                    rows={3}
-                    placeholder="Describe the project..."
-                    className="min-h-[4.5rem] border-gold/20 bg-black/20 resize-y focus:border-gold/50 focus:ring-gold/20"
-                    value={item.description?.en ?? ""}
-                    onChange={(e) =>
-                      setAt(i, {
-                        ...item,
-                        description: { ...(item.description ?? {}), en: e.target.value },
-                      })
-                    }
-                  />
+                <div className="grid gap-4 md:grid-cols-2 pl-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
+                      Description EN
+                    </Label>
+                    <Textarea
+                      rows={3}
+                      placeholder="Describe the project..."
+                      className="min-h-[4.5rem] border-gold/20 bg-black/20 resize-y focus:border-gold/50 focus:ring-gold/20"
+                      value={item.description?.en ?? ""}
+                      onChange={(e) =>
+                        setAt(i, {
+                          ...item,
+                          description: { ...(item.description ?? {}), en: e.target.value },
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-blue-400/60 rounded-full"></span>
+                      Description FR
+                    </Label>
+                    <Textarea
+                      rows={3}
+                      placeholder="Décrivez le projet..."
+                      className="min-h-[4.5rem] border-blue-400/20 bg-black/20 resize-y focus:border-blue-400/50 focus:ring-blue-400/20"
+                      value={item.description?.fr ?? ""}
+                      onChange={(e) =>
+                        setAt(i, {
+                          ...item,
+                          description: { ...(item.description ?? {}), fr: e.target.value },
+                        })
+                      }
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2 pl-3">
@@ -228,7 +267,7 @@ export function AdminArchitecturalProjectsEditor({ projects, onChange, token }: 
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
                       {item.conceptImages.map((img, idx) => (
                         <div key={idx} className="relative group">
-                          <img src={img} alt={`${item.name?.en || "Project"} concept ${idx + 1}`} className="h-24 w-full rounded-lg object-cover" />
+                          <img src={img} alt={`${item.name?.en || item.name?.fr || "Project"} concept ${idx + 1}`} className="h-24 w-full rounded-lg object-cover" />
                           <Button
                             type="button"
                             size="icon"
@@ -275,7 +314,7 @@ export function AdminArchitecturalProjectsEditor({ projects, onChange, token }: 
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
                       {item.workImages.map((img, idx) => (
                         <div key={idx} className="relative group">
-                          <img src={img} alt={`${item.name?.en || "Project"} work ${idx + 1}`} className="h-24 w-full rounded-lg object-cover" />
+                          <img src={img} alt={`${item.name?.en || item.name?.fr || "Project"} work ${idx + 1}`} className="h-24 w-full rounded-lg object-cover" />
                           <Button
                             type="button"
                             size="icon"

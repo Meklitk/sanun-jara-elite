@@ -49,8 +49,8 @@ export function AdminInstitutionsEditor({ institutions, onChange, token }: Insti
 
   const emptyInstitution = (): InstitutionItem => ({
     id: Date.now().toString(),
-    name: { en: "" },
-    description: { en: "" },
+    name: { en: "", fr: "" },
+    description: { en: "", fr: "" },
     images: [],
     videos: [],
   });
@@ -143,41 +143,80 @@ export function AdminInstitutionsEditor({ institutions, onChange, token }: Insti
                   </div>
                 </div>
 
-                <div className="space-y-2 pl-3">
-                  <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
-                    Name
-                  </Label>
-                  <Input
-                    placeholder="Institution name..."
-                    className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
-                    value={item.name?.en ?? ""}
-                    onChange={(e) =>
-                      setAt(i, {
-                        ...item,
-                        name: { ...(item.name ?? {}), en: e.target.value },
-                      })
-                    }
-                  />
+                <div className="grid gap-4 md:grid-cols-2 pl-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
+                      Name (EN)
+                    </Label>
+                    <Input
+                      placeholder="Institution name..."
+                      className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
+                      value={item.name?.en ?? ""}
+                      onChange={(e) =>
+                        setAt(i, {
+                          ...item,
+                          name: { ...(item.name ?? {}), en: e.target.value },
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-blue-400/60 rounded-full"></span>
+                      Nom (FR)
+                    </Label>
+                    <Input
+                      placeholder="Nom de l'institution..."
+                      className="border-blue-400/20 bg-black/20 focus:border-blue-400/50 focus:ring-blue-400/20"
+                      value={item.name?.fr ?? ""}
+                      onChange={(e) =>
+                        setAt(i, {
+                          ...item,
+                          name: { ...(item.name ?? {}), fr: e.target.value },
+                        })
+                      }
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2 pl-3">
-                  <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
-                    Description
-                  </Label>
-                  <Textarea
-                    rows={3}
-                    placeholder="Describe the institution..."
-                    className="min-h-[4.5rem] border-gold/20 bg-black/20 resize-y focus:border-gold/50 focus:ring-gold/20"
-                    value={item.description?.en ?? ""}
-                    onChange={(e) =>
-                      setAt(i, {
-                        ...item,
-                        description: { ...(item.description ?? {}), en: e.target.value },
-                      })
-                    }
-                  />
+                <div className="grid gap-4 md:grid-cols-2 pl-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
+                      Description EN
+                    </Label>
+                    <Textarea
+                      rows={3}
+                      placeholder="Describe the institution..."
+                      className="min-h-[4.5rem] border-gold/20 bg-black/20 resize-y focus:border-gold/50 focus:ring-gold/20"
+                      value={item.description?.en ?? ""}
+                      onChange={(e) =>
+                        setAt(i, {
+                          ...item,
+                          description: { ...(item.description ?? {}), en: e.target.value },
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-blue-400/60 rounded-full"></span>
+                      Description FR
+                    </Label>
+                    <Textarea
+                      rows={3}
+                      placeholder="Décrivez l'institution..."
+                      className="min-h-[4.5rem] border-blue-400/20 bg-black/20 resize-y focus:border-blue-400/50 focus:ring-blue-400/20"
+                      value={item.description?.fr ?? ""}
+                      onChange={(e) =>
+                        setAt(i, {
+                          ...item,
+                          description: { ...(item.description ?? {}), fr: e.target.value },
+                        })
+                      }
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-2 pl-3">
@@ -211,7 +250,7 @@ export function AdminInstitutionsEditor({ institutions, onChange, token }: Insti
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
                       {item.images.map((img, idx) => (
                         <div key={idx} className="relative group">
-                          <img src={img} alt={`${item.name?.en || "Institution"} ${idx + 1}`} className="h-24 w-full rounded-lg object-cover" />
+                          <img src={img} alt={`${item.name?.en || item.name?.fr || "Institution"} ${idx + 1}`} className="h-24 w-full rounded-lg object-cover" />
                           <Button
                             type="button"
                             size="icon"
