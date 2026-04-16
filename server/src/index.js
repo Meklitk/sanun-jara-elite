@@ -23,8 +23,23 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_change_me";
 const UPLOAD_DIR = process.env.UPLOAD_DIR || "uploads";
 const ORIGIN = process.env.CORS_ORIGIN || "http://localhost:8080";
 
+
 const app = express();
-app.use(cors({ origin: ORIGIN, credentials: true }));
+
+const allowedOrigins = (process.env.CORS_ORIGIN || "").split(",");
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.error("CORS blocked:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json({ limit: "2mb" }));
 
 const uploadDirAbs = path.resolve(process.cwd(), UPLOAD_DIR);
@@ -246,8 +261,7 @@ app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (
   const file = req.file;
   if (!file) return res.status(400).json({ error: "missing_file" });
 
-  const url = `/uploads/${file.filename}`;
-  const media = await Media.create({
+const url = `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;  const media = await Media.create({
     originalName: file.originalname,
     mimeType: file.mimetype,
     size: file.size,
