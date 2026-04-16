@@ -214,7 +214,7 @@ const translations = {
     openLink: "Ouvrir le lien",
     linkUnavailable: "Lien bientôt disponible",
     learnMore: "En savoir plus",
-    reincarnate: "Réincarné",
+    reincarnate: "Réincarne",
     overview: "Vue d'ensemble",
     role: "Role",
     category: "Catégorie",

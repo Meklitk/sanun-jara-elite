@@ -90,7 +90,7 @@ export default function TopBar() {
               className="h-12 w-12 rounded-2xl object-cover ring-1 ring-gold/25"
             />
             <div>
-              <p className="font-display text-2xl font-semibold text-foreground">Sanunjara</p>
+              <p className="font-display text-2xl font-semibold text-foreground">Sanun jara</p>
               <p className="text-[11px] uppercase tracking-[0.32em] text-gold/62">{t.reincarnate}</p>
             </div>
           </button>

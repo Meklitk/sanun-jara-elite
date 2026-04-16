@@ -37,7 +37,7 @@ export default function IntroductionPage() {
                 transition={{ duration: 0.6 }}
                 className="mb-4 sm:mb-6 text-[10px] sm:text-xs uppercase tracking-[0.3em] sm:tracking-[0.5em] text-gold/80"
               >
-                Sanunjara Reincarnate
+                Sanun Jara Réincarne
               </motion.p>
 
               <motion.h1
