@@ -21,15 +21,11 @@ export default function HistoryPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  if (isLoading) return <PageLoadingState />;
-  if (error) return <PageErrorState />;
-  if (!page) return <PageNotFoundState />;
-
   const paragraphs = splitParagraphs(content);
   const intro = paragraphs[0] ?? "";
   const narrative = paragraphs.slice(1);
 
-  const events = (page.timeline || []).map((item, index) => ({
+  const events = (page?.timeline || []).map((item, index) => ({
     ...item,
     side: index % 2 === 0 ? "right" : "left",
     ...resolveHistoryTimelineLink(item, index),
@@ -38,9 +34,9 @@ export default function HistoryPage() {
     image: item.image?.trim() || "",
   }));
 
-  const heroImage = page.images?.[0];
-  const galleryImages = heroImage ? page.images.slice(1) : page.images ?? [];
-  const hasContent = Boolean(title || paragraphs.length || events.length || page.images?.length);
+  const heroImage = page?.images?.[0];
+  const galleryImages = heroImage ? page!.images!.slice(1) : page?.images ?? [];
+  const hasContent = Boolean(title || paragraphs.length || events.length || page?.images?.length);
 
   useEffect(() => {
     if (!location.hash) return;
@@ -52,6 +48,10 @@ export default function HistoryPage() {
 
     return () => window.cancelAnimationFrame(frame);
   }, [location.hash, events.length]);
+
+  if (isLoading) return <PageLoadingState />;
+  if (error) return <PageErrorState />;
+  if (!page) return <PageNotFoundState />;
 
   function navigateToEvent(href: string) {
     if (isInternalAppPath(href)) return navigate(href);
