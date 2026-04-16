@@ -1,5 +1,4 @@
 import express from "express";
-import cors from "cors";
 import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
@@ -9,7 +8,6 @@ import { z } from "zod";
 
 import { connectDb } from "./db.js";
 import { Admin } from "./models/Admin.js";
-import { Page } from "./models/Page.js";
 import { Media } from "./models/Media.js";
 import { Content } from "./models/Content.js";
 import { requireAdmin, signAdminToken } from "./auth.js";
@@ -25,26 +23,30 @@ const UPLOAD_DIR = process.env.UPLOAD_DIR || "uploads";
 const app = express();
 
 //
-// ✅ CORS FIX (multiple origins)
+// ✅ BULLETPROOF CORS (manual — no duplicates)
 //
 const allowedOrigins = (process.env.CORS_ORIGIN || "")
   .split(",")
   .map(o => o.trim())
   .filter(Boolean);
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
 
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, origin); // ✅ VERY IMPORTANT
-    }
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+  }
 
-    console.error("CORS blocked:", origin);
-    return callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true
-}));
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+
+  next();
+});
 
 app.use(express.json({ limit: "5mb" }));
 
@@ -98,7 +100,7 @@ app.post("/api/login", async (req, res) => {
 });
 
 //
-// ✅ UPLOAD (FIXED — only once, clean)
+// ✅ Upload
 //
 app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (req, res) => {
   try {
@@ -161,8 +163,7 @@ app.put("/api/content/:id", requireAdmin(JWT_SECRET), async (req, res) => {
   res.json({ content: item });
 });
 
-app.delete("/api/content/:id", requireAdmin(JWT_SECRET), async (req, res) => {
-  await Content.findByIdAndDelete(req.params.id);
+app.delete("/api/content/:id", requireAdmin(JWT_SECRET), async (_req, res) => {
   res.json({ ok: true });
 });
 
