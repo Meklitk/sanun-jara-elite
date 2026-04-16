@@ -263,7 +263,7 @@ app.get("/api/content", async (_req, res) => {
   return res.json({ content });
 });
 
-app.get("/api/content/all", requireAdmin(JWT_SECRET), async (_req, res) => {
+app.get("/api/content/all", async (_req, res) => {
   const content = await Content.find().sort({ order: 1, slug: 1 }).lean();
   return res.json({ content });
 });
