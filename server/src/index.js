@@ -222,10 +222,17 @@ app.put("/api/pages/:id", requireAdmin(JWT_SECRET), async (req, res) => {
       .optional()
   });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return res.status(400).json({ error: "invalid_body" });
+  if (!parsed.success) {
+    console.error("Validation error:", parsed.error.errors);
+    return res.status(400).json({ error: "invalid_body", details: parsed.error.errors });
+  }
 
+  console.log("Updating page:", req.params.id, "with data keys:", Object.keys(parsed.data));
+  
   const page = await Page.findByIdAndUpdate(req.params.id, parsed.data, { new: true, runValidators: true }).lean();
   if (!page) return res.status(404).json({ error: "not_found" });
+  
+  console.log("Page updated successfully. Has architecturalProjects:", !!page.architecturalProjects);
   return res.json({ page });
 });
 
