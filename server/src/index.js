@@ -24,9 +24,9 @@ const UPLOAD_DIR = process.env.UPLOAD_DIR || "uploads";
 const app = express();
 
 //
-// ✅ STRICT CORS (ONLY ONE ORIGIN, NO DUPLICATES)
+// ✅ CORS (MULTIPLE ORIGINS SUPPORT)
 //
-const allowedOrigin = process.env.CORS_ORIGIN;
+const allowedOrigins = (process.env.CORS_ORIGIN || "").split(",").map(o => o.trim()).filter(Boolean);
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
@@ -35,7 +35,7 @@ app.use((req, res, next) => {
   res.removeHeader("Access-Control-Allow-Origin");
   res.removeHeader("access-control-allow-origin");
 
-  if (origin && origin === allowedOrigin) {
+  if (origin && allowedOrigins.includes(origin)) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
 
