@@ -14,14 +14,16 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { AdminLinksEditor, AdminTimelineEditor, AdminEconomyEditor } from "./content-list-editors";
+import AdminBiographiesEditor from "../governance/AdminBiographiesEditor";
+import AdminGovernanceEditor from "../governance/AdminGovernanceEditor";
+import AdminUtilityCardsEditor from "../pages/AdminUtilityCardsEditor";
+import { AdminInstitutionsEditor } from "../governance/AdminInstitutionsEditor";
+import { AdminArchitecturalProjectsEditor } from "../governance/AdminArchitecturalProjectsEditor";
 import { MediaEditor } from "./MediaEditor";
 import { PDFEditor } from "./PDFEditor";
 import type { BiographyItem, DirectoryItem, GovernanceBranch, PageLink, TimelineItem, UtilityCard } from "@/api/types";
-import AdminGovernanceEditor from "@/features/governance/AdminGovernanceEditor";
-import AdminBiographiesEditor from "@/features/governance/AdminBiographiesEditor";
 import { resolveGovernanceData } from "@/features/governance/governance-content";
 import AdminDirectoryEditor from "@/features/pages/AdminDirectoryEditor";
-import AdminUtilityCardsEditor from "@/features/pages/AdminUtilityCardsEditor";
 import { academyCardDefinitions, referenceBureauCardDefinitions } from "@/features/pages/utility-page-config";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -94,6 +96,7 @@ const PAGE_ORDER = [
   "commerce",
   "culture",
   "resources",
+  "niani",
 ] as const;
 
 function sortPagesLikeSite(pages: Page[]): Page[] {
@@ -155,6 +158,7 @@ export default function AdminDashboardPage() {
   const isCultureSection = current?.key === "culture";
   const isResourcesSection = current?.key === "resources";
   const isEconomySection = current?.key === "economy";
+  const isNianiSection = current?.key === "niani";
   const isUtilityCardsSection = isReferenceBureauSection || isAcademySection;
 
   // Section icons mapping
@@ -216,6 +220,8 @@ export default function AdminDashboardPage() {
           directory: current.key === "global-perspectives" ? directory : current.directory,
           utilityCards: current.key === "reference-bureau" || current.key === "academy" ? utilityCards : current.utilityCards,
           biographies: current.key === "governance" ? biographies : current.biographies,
+          institutions: current.key === "niani" ? current.institutions : current.institutions,
+          architecturalProjects: current.key === "niani" ? current.architecturalProjects : current.architecturalProjects,
         },
       });
       toast.success("Saved");
@@ -1077,6 +1083,7 @@ export default function AdminDashboardPage() {
                   <AdminTimelineEditor
                     timeline={current.timeline ?? []}
                     onChange={(timeline) => setDraft({ ...current, timeline })}
+                    token={token}
                   />
                 </>
               )}
@@ -1108,6 +1115,28 @@ export default function AdminDashboardPage() {
                   />
                 </>
               ) : null}
+
+              {isNianiSection && (
+                <>
+                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  <AdminInstitutionsEditor
+                    institutions={current.institutions ?? []}
+                    onChange={(institutions) => setDraft({ ...current, institutions })}
+                    token={token}
+                  />
+                </>
+              )}
+
+              {isNianiSection && (
+                <>
+                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  <AdminArchitecturalProjectsEditor
+                    projects={current.architecturalProjects ?? []}
+                    onChange={(architecturalProjects) => setDraft({ ...current, architecturalProjects })}
+                    token={token}
+                  />
+                </>
+              )}
 
               {current.key === "resources" && (
                 <>

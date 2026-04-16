@@ -1,5 +1,5 @@
 import { useDeferredValue, useState, useMemo } from "react";
-import { Search, FileText, FolderOpen, Layers } from "lucide-react";
+import { Search, FileText, FolderOpen, Layers, ChevronDown } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
@@ -25,6 +25,7 @@ export default function SidebarNav({
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [searchActive, setSearchActive] = useState(false);
+  const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
   const deferredQuery = useDeferredValue(query);
   const { data: contentData } = useContent();
 
@@ -50,6 +51,13 @@ export default function SidebarNav({
 
   function isActive(path: string) {
     return location.pathname === path;
+  }
+
+  function toggleDropdown(path: string) {
+    setOpenDropdowns((prev) => ({
+      ...prev,
+      [path]: !prev[path],
+    }));
   }
 
   return (
@@ -129,40 +137,62 @@ export default function SidebarNav({
             {t.overview}
           </p>
           <div className="space-y-2">
-            {utilityNavItems.map((item) => (
-              <div key={item.path} className="rounded-2xl border border-gold/12 bg-black/20 p-3">
-                <button
-                  type="button"
-                  onClick={() => goTo(item.path)}
-                  className={cn(
-                    "w-full rounded-xl px-3 py-2 text-left text-sm font-semibold transition",
-                    isActive(item.path)
-                      ? "bg-gold/12 text-gold"
-                      : "text-foreground/80 hover:bg-white/5 hover:text-foreground",
-                  )}
-                >
-                  {t[item.key]}
-                </button>
-                <div className="mt-2 space-y-1 pl-2">
-                  {item.children.map((child) => (
-                    <button
-                      key={child.id}
-                      type="button"
-                      onClick={() => {
-                        if (item.key === "intranet" && child.id === "login") {
-                          goTo("/admin/login");
-                        } else {
-                          goTo(`${item.path}#${child.id}`);
-                        }
-                      }}
-                      className="w-full rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
-                    >
-                      {t[child.key]}
-                    </button>
-                  ))}
+            {utilityNavItems.map((item) => {
+              const isOpen = mode === "desktop" ? true : openDropdowns[item.path] || false;
+              return (
+                <div key={item.path} className="rounded-2xl border border-gold/12 bg-black/20 p-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (mode === "desktop") {
+                        goTo(item.path);
+                      } else {
+                        toggleDropdown(item.path);
+                      }
+                    }}
+                    className={cn(
+                      "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-semibold transition",
+                      isActive(item.path)
+                        ? "bg-gold/12 text-gold"
+                        : "text-foreground/80 hover:bg-white/5 hover:text-foreground",
+                    )}
+                  >
+                    {t[item.key]}
+                    {mode === "mobile" && (
+                      <ChevronDown
+                        className={cn(
+                          "h-4 w-4 transition-transform duration-200",
+                          isOpen ? "rotate-180" : ""
+                        )}
+                      />
+                    )}
+                  </button>
+                  <div
+                    className={cn(
+                      "mt-2 space-y-1 pl-2 overflow-hidden transition-all duration-200",
+                      mode === "desktop" ? "" : isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                    )}
+                  >
+                    {item.children.map((child) => (
+                      <button
+                        key={child.id}
+                        type="button"
+                        onClick={() => {
+                          if (item.key === "intranet" && child.id === "login") {
+                            goTo("/admin/login");
+                          } else {
+                            goTo(`${item.path}#${child.id}`);
+                          }
+                        }}
+                        className="w-full rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
+                      >
+                        {t[child.key]}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       ) : null}

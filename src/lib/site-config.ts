@@ -46,6 +46,15 @@ export const utilityNavItems: UtilityNavItem[] = [
     ],
   },
   {
+    key: "niani",
+    path: "/niani",
+    children: [
+      { id: "institutions", key: "institutions", path: "/niani/institutions" },
+      { id: "architectural-projects", key: "architecturalProjects", path: "/niani/architectural-projects" },
+      { id: "niani-tv", key: "nianiTv", path: "/niani/niani-tv" },
+    ],
+  },
+  {
     key: "academy",
     path: "/academy",
     children: [

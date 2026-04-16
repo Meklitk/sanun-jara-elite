@@ -14,6 +14,10 @@ export type TimelineItem = {
   year: string;
   title: Partial<LocalizedString>;
   description: Partial<LocalizedString>;
+  notes?: Partial<LocalizedString>;
+  image?: string;
+  images?: string[];
+  content?: Partial<LocalizedString>;
   url?: string;
 };
 
@@ -71,6 +75,22 @@ export type UtilityCard = {
   url?: string;
 };
 
+export type InstitutionItem = {
+  id: string;
+  name: Partial<LocalizedString>;
+  description: Partial<LocalizedString>;
+  images: string[];
+  videos?: string[];
+};
+
+export type ArchitecturalProjectItem = {
+  id: string;
+  name: Partial<LocalizedString>;
+  description: Partial<LocalizedString>;
+  conceptImages: string[];
+  workImages: string[];
+};
+
 export type BiographyItem = {
   slug: string;
   name: Partial<LocalizedString>;
@@ -115,6 +135,8 @@ export type Page = {
   economy?: EconomyData;
   utilityCards?: UtilityCard[];
   biographies?: BiographyItem[];
+  institutions?: InstitutionItem[];
+  architecturalProjects?: ArchitecturalProjectItem[];
 };
 
 export type Content = {

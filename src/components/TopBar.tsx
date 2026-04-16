@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Menu, Languages } from "lucide-react";
+import { ChevronDown, Menu, Languages, X } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import SidebarNav from "@/components/SidebarNav";
@@ -11,6 +11,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -22,6 +28,7 @@ export default function TopBar() {
   const location = useLocation();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [flagOpen, setFlagOpen] = useState(false);
 
   const toggleLang = () => setLang(lang === "en" ? "fr" : "en");
 
@@ -154,13 +161,39 @@ export default function TopBar() {
             <Languages className="mr-2 h-4 w-4" />
             {lang === "en" ? "FR" : "EN"}
           </Button>
-          <img
-            src="/images/manden-flag-lion.svg"
-            alt="Manden flag"
-            className="h-10 w-14 rounded-xl border border-gold/15 bg-black/25 object-contain p-2"
-          />
+          <button
+            type="button"
+            onClick={() => setFlagOpen(true)}
+            className="rounded-xl border border-gold/15 bg-black/25 p-2 transition hover:border-gold/30 hover:bg-gold/5"
+          >
+            <img
+              src="/images/manden-flag-lion.svg"
+              alt="Manden flag"
+              className="h-10 w-14 object-contain"
+            />
+          </button>
         </div>
       </div>
+
+      <Dialog open={flagOpen} onOpenChange={setFlagOpen}>
+        <DialogContent className="max-w-3xl border-gold/20 bg-gradient-to-b from-black to-black/95">
+          <DialogHeader>
+            <DialogTitle className="gold-gradient-text text-2xl">Flag of Manden</DialogTitle>
+          </DialogHeader>
+          <div className="flex items-center justify-center p-6">
+            <div className="relative overflow-hidden rounded-2xl border-2 border-gold/30 shadow-[0_0_60px_rgba(255,205,86,0.15)]">
+              <img
+                src="/images/realFlag.jpeg"
+                alt="Flag of Manden"
+                className="max-w-full h-auto object-contain"
+              />
+            </div>
+          </div>
+          <p className="text-center text-sm text-muted-foreground mt-2">
+            The official flag of the Manden Empire
+          </p>
+        </DialogContent>
+      </Dialog>
     </header>
   );
 }

@@ -35,6 +35,7 @@ export default function HistoryPage() {
     ...resolveHistoryTimelineLink(item, index),
     title: localize(item.title),
     description: localize(item.description),
+    image: item.image?.trim() || "",
   }));
 
   const heroImage = page.images?.[0];
@@ -212,6 +213,7 @@ function TimelineCard({
     title?: string;
     description?: string;
     href: string;
+    image?: string;
   };
   index: number;
   align: "left" | "right";
@@ -219,7 +221,7 @@ function TimelineCard({
   onKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
 }) {
   const { t } = useI18n();
-  
+
   return (
     <motion.article
       initial={{ opacity: 0, x: align === "left" ? 40 : -40 }}
@@ -240,6 +242,21 @@ function TimelineCard({
       )}
       <h2 className="mt-2 sm:mt-3 text-lg sm:text-xl font-semibold">{event.title}</h2>
       <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-foreground/70">{event.description}</p>
+      {event.image && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: index * 0.05 + 0.1 }}
+          className="mt-4 overflow-hidden rounded-xl border border-gold/10 bg-black/20"
+        >
+          <img
+            src={event.image}
+            alt={event.title || "Timeline event"}
+            className="h-32 w-full object-cover"
+          />
+        </motion.div>
+      )}
       <p className={`mt-3 sm:mt-4 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.22em] text-gold/75 ${align === "right" ? "sm:text-right" : ""}`}>
         {t.openTimelineEntry}
       </p>

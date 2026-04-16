@@ -32,6 +32,11 @@ const TimelineItemSchema = new mongoose.Schema(
       en: { type: String, default: "" },
       fr: { type: String, default: "" }
     },
+    notes: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    image: { type: String, default: "" },
     url: { type: String, default: "" }
   },
   { _id: false }
@@ -200,6 +205,40 @@ const EconomySchema = new mongoose.Schema(
   { _id: false }
 );
 
+const InstitutionItemSchema = new mongoose.Schema(
+  {
+    id: { type: String, required: true },
+    name: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    description: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    images: [{ type: String }],
+    videos: [{ type: String }]
+  },
+  { _id: false }
+);
+
+const ArchitecturalProjectItemSchema = new mongoose.Schema(
+  {
+    id: { type: String, required: true },
+    name: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    description: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    conceptImages: [{ type: String }],
+    workImages: [{ type: String }]
+  },
+  { _id: false }
+);
+
 const PageSchema = new mongoose.Schema(
   {
     key: { type: String, required: true, unique: true, index: true }, // introduction, history...
@@ -218,7 +257,9 @@ const PageSchema = new mongoose.Schema(
     media: [MediaItemSchema],
     directory: DirectorySchema,
     economy: EconomySchema,
-    utilityCards: [UtilityCardSchema]
+    utilityCards: [UtilityCardSchema],
+    institutions: [InstitutionItemSchema],
+    architecturalProjects: [ArchitecturalProjectItemSchema]
   },
   { timestamps: true }
 );

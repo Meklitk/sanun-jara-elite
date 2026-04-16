@@ -131,6 +131,37 @@ const DEFAULT_PAGES = [
     ]
   },
   {
+    key: "niani",
+    title: { en: "Niani" },
+    content: {
+      en: "Niani - The heart of the Manden Empire. Explore institutions, architectural projects, and our media channel.\n\nContent for each section can be added and managed from the admin dashboard."
+    },
+    images: [],
+    links: [],
+    institutions: [],
+    architecturalProjects: [],
+    utilityCards: [
+      {
+        id: "institutions",
+        title: { en: "Institutions" },
+        description: { en: "Different institutions and their pictures and videos." },
+        url: "/niani/institutions"
+      },
+      {
+        id: "architectural-projects",
+        title: { en: "Architectural Projects" },
+        description: { en: "List of architectural structures and their conceptual images." },
+        url: "/niani/architectural-projects"
+      },
+      {
+        id: "niani-tv",
+        title: { en: "Niani TV" },
+        description: { en: "Videos and link to the Niani YouTube channel." },
+        url: "/niani/niani-tv"
+      }
+    ]
+  },
+  {
     key: "academy",
     title: { en: "Academy" },
     content: {
@@ -198,13 +229,27 @@ export async function seedPagesIfNeeded() {
 /** Insert any missing default pages by `key` (safe if DB already had partial data). */
 export async function ensureDefaultPages() {
   let added = 0;
+  let updated = 0;
   for (const doc of DEFAULT_PAGES) {
     const exists = await Page.findOne({ key: doc.key }).lean();
     if (!exists) {
       await Page.create(doc);
       added++;
+    } else {
+      // Update existing page with any missing fields
+      const updateData = {};
+      for (const key of Object.keys(doc)) {
+        if (!(key in exists)) {
+          updateData[key] = doc[key];
+        }
+      }
+      if (Object.keys(updateData).length > 0) {
+        await Page.updateOne({ key: doc.key }, { $set: updateData });
+        updated++;
+      }
     }
   }
   if (added > 0) console.log(`✅ Added ${added} missing pages`);
+  if (updated > 0) console.log(`✅ Updated ${updated} pages with missing fields`);
 }
 

@@ -29,7 +29,7 @@ type BiographyEntry = {
 function getBiographyFromCustomData(
   slug: string,
   biographies: BiographyItem[] | undefined,
-  localize: (obj?: Record<"en" | "fr", string | undefined>) => string
+  localize: (value: Partial<{ en: string; fr?: string }> | undefined) => string
 ): Partial<BiographyEntry> | null {
   if (!biographies) return null;
   const bio = biographies.find((b) => b.slug === slug);
@@ -245,7 +245,7 @@ export default function GovernanceBiographyPage() {
       slug: b.slug,
       name: localize(b.name),
       role: localize(b.role),
-      kind: b.kind,
+      kind: b.kind as "person" | "institution",
       summary:
         b.kind === "person"
           ? officeSummary(localize(b.name), localize(b.role))

@@ -20,7 +20,8 @@
       "Bash(dir *)",
       "Bash(\"c:\\program files\\mongodb\\server\\8.2\\bin\\mongod.exe\" *)",
       "Bash(sc *)",
-      "Bash(net *)"
+      "Bash(net *)",
+      "Read(C:\\Users\\MAKI\\Downloads/**)"
     ]
   },
   "$version": 3

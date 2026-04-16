@@ -3,7 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, ChevronUp, ChevronDown, Link2, Clock, DollarSign, Table, Landmark, ArrowRightLeft, FileCheck, Users } from "lucide-react";
+import { Plus, Trash2, ChevronUp, ChevronDown, Link2, Clock, DollarSign, Table, Landmark, ArrowRightLeft, FileCheck, Users, Upload, X } from "lucide-react";
+import { uploadFile } from "@/api/upload";
+import { toast } from "sonner";
 
 const emptyLink = (): PageLink => ({
   label: { en: "" },
@@ -14,6 +16,10 @@ const emptyTimelineItem = (): TimelineItem => ({
   year: "",
   title: { en: "" },
   description: { en: "" },
+  notes: { en: "" },
+  image: "",
+  images: [],
+  content: { en: "" },
   url: "",
 });
 
@@ -195,17 +201,46 @@ export function AdminLinksEditor({
 type TimelineEditorProps = {
   timeline: TimelineItem[];
   onChange: (items: TimelineItem[]) => void;
+  token: string;
 };
 
-export function AdminTimelineEditor({ timeline, onChange }: TimelineEditorProps) {
+export function AdminTimelineEditor({ timeline, onChange, token }: TimelineEditorProps) {
   const list = timeline.length ? timeline : [];
   const eventsWithYears = list.filter((item) => Boolean(item.year?.trim())).length;
   const eventsWithDescriptions = list.filter((item) => Boolean(item.description?.en?.trim())).length;
+  const eventsWithNotes = list.filter((item) => Boolean(item.notes?.en?.trim())).length;
 
   function setAt(i: number, next: TimelineItem) {
     const copy = [...list];
     copy[i] = next;
     onChange(copy);
+  }
+
+  async function handleImageUpload(file: File, index: number) {
+    try {
+      const res = await uploadFile(file, token);
+      setAt(index, { ...list[index], image: res.media.url });
+      toast.success("Image uploaded");
+    } catch {
+      toast.error("Upload failed");
+    }
+  }
+
+  async function handleAdditionalImageUpload(file: File, index: number) {
+    try {
+      const res = await uploadFile(file, token);
+      const currentImages = list[index].images || [];
+      setAt(index, { ...list[index], images: [...currentImages, res.media.url] });
+      toast.success("Image added to gallery");
+    } catch {
+      toast.error("Upload failed");
+    }
+  }
+
+  function removeAdditionalImage(index: number, imageIndex: number) {
+    const currentImages = list[index].images || [];
+    const newImages = currentImages.filter((_, i) => i !== imageIndex);
+    setAt(index, { ...list[index], images: newImages });
   }
 
   return (
@@ -250,6 +285,11 @@ export function AdminTimelineEditor({ timeline, onChange }: TimelineEditorProps)
               label: "Detailed items",
               value: eventsWithDescriptions,
               note: "Events with supporting descriptions",
+            },
+            {
+              label: "Events with notes",
+              value: eventsWithNotes,
+              note: "Events with editorial or contextual notes",
             },
           ].map((stat) => (
             <div key={stat.label} className="bg-black/25 px-5 py-4">
@@ -388,6 +428,155 @@ export function AdminTimelineEditor({ timeline, onChange }: TimelineEditorProps)
                             })
                           }
                         />
+                      </div>
+
+                      <div className="mt-4 space-y-2">
+                        <Label htmlFor={`tl-notes-en-${i}`} className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
+                          Notes <span className="text-muted-foreground font-normal">(optional)</span>
+                        </Label>
+                        <Textarea
+                          id={`tl-notes-en-${i}`}
+                          rows={3}
+                          placeholder="Add contextual notes or commentary..."
+                          className="min-h-[4.5rem] border-gold/20 bg-black/20 resize-y focus:border-gold/50 focus:ring-gold/20"
+                          value={item.notes?.en ?? ""}
+                          onChange={(e) =>
+                            setAt(i, {
+                              ...item,
+                              notes: { ...(item.notes ?? {}), en: e.target.value },
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="mt-4 space-y-2">
+                        <Label htmlFor={`tl-image-${i}`} className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
+                          Event image <span className="text-muted-foreground font-normal">(optional)</span>
+                        </Label>
+                        {item.image ? (
+                          <div className="flex flex-col gap-3">
+                            <div className="flex items-center gap-3 p-3 rounded-xl border border-gold/20 bg-black/20">
+                              <img src={item.image} alt={item.title?.en || "Timeline event image"} className="w-20 h-14 rounded-lg object-cover" />
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs text-gold truncate">{item.image}</p>
+                              </div>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                className="shrink-0 border-gold/30 hover:bg-gold/10"
+                                onClick={() => setAt(i, { ...item, image: "" })}
+                              >
+                                <X className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex gap-2">
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              className="flex-1 border-gold/20 bg-black/20 text-xs"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  handleImageUpload(file, i);
+                                }
+                                e.currentTarget.value = "";
+                              }}
+                            />
+                            <Input
+                              placeholder="Or paste image URL..."
+                              className="flex-1 border-gold/20 bg-black/20 text-xs"
+                              value={item.image ?? ""}
+                              onChange={(e) => setAt(i, { ...item, image: e.target.value })}
+                            />
+                          </div>
+                        )}
+                        <p className="text-[11px] text-muted-foreground">
+                          Upload an image or paste a URL. This image will appear on the timeline event detail page.
+                        </p>
+                      </div>
+
+                      <div className="mt-4 space-y-2">
+                        <Label htmlFor={`tl-images-${i}`} className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
+                          Additional images <span className="text-muted-foreground font-normal">(optional)</span>
+                        </Label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="flex-1 border-gold/20 bg-black/20 text-xs"
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files ?? []);
+                              files.forEach(file => handleAdditionalImageUpload(file, i));
+                              e.currentTarget.value = "";
+                            }}
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            className="shrink-0 border-gold/30 hover:bg-gold/10"
+                            onClick={() => setAt(i, { ...item, images: [] })}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground">
+                          Upload multiple images to display in a gallery on the timeline event detail page.
+                        </p>
+                      </div>
+
+                      {(item.images && item.images.length > 0) ? (
+                        <div className="mt-4 rounded-2xl border border-white/10 bg-black/20 p-3">
+                          <div className="flex items-center justify-between mb-3">
+                            <p className="text-[11px] uppercase tracking-[0.28em] text-gold/70">Image Gallery Preview ({item.images.length})</p>
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            {item.images.map((img, idx) => (
+                              <div key={idx} className="relative group">
+                                <img src={img} alt={`${item.title?.en || "Timeline event"} ${idx + 1}`} className="h-32 w-full rounded-[1rem] object-cover" />
+                                <Button
+                                  type="button"
+                                  size="icon"
+                                  variant="destructive"
+                                  className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                                  onClick={() => removeAdditionalImage(i, idx)}
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+
+                      <div className="mt-4 space-y-2">
+                        <Label htmlFor={`tl-content-en-${i}`} className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
+                          Full content <span className="text-muted-foreground font-normal">(optional)</span>
+                        </Label>
+                        <Textarea
+                          id={`tl-content-en-${i}`}
+                          rows={6}
+                          placeholder="Enter detailed content for this timeline event (full article body)..."
+                          className="min-h-[9rem] border-gold/20 bg-black/20 resize-y focus:border-gold/50 focus:ring-gold/20"
+                          value={item.content?.en ?? ""}
+                          onChange={(e) =>
+                            setAt(i, {
+                              ...item,
+                              content: { ...(item.content ?? {}), en: e.target.value },
+                            })
+                          }
+                        />
+                        <p className="text-[11px] text-muted-foreground">
+                          Add full article-like content. This will be displayed in the overview section of the timeline event detail page.
+                        </p>
                       </div>
 
                       <div className="mt-4 space-y-2">

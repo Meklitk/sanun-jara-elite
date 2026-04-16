@@ -12,6 +12,9 @@ import GovernancePage from "./pages/GovernancePage";
 import GovernanceBiographyPage from "./pages/GovernanceBiographyPage";
 import GlobalPerspectivesPage from "./pages/GlobalPerspectivesPage";
 import ReferenceBureauPage from "./pages/ReferenceBureauPage";
+import NianiPage from "./pages/NianiPage";
+import NianiInstitutionsPage from "./pages/NianiInstitutionsPage";
+import NianiArchitecturalProjectsPage from "./pages/NianiArchitecturalProjectsPage";
 import AcademyPage from "./pages/AcademyPage";
 import IntranetPage from "./pages/IntranetPage";
 import EconomyPage from "./pages/EconomyPage";
@@ -52,6 +55,10 @@ const App = () => (
               <Route path="/reference-bureau/join" element={<ReferenceBureauPage section="join" />} />
               <Route path="/reference-bureau/questions" element={<ReferenceBureauPage section="questions" />} />
               <Route path="/reference-bureau/entrepreneur" element={<ReferenceBureauPage section="entrepreneur" />} />
+              <Route path="/niani" element={<NianiPage />} />
+              <Route path="/niani/institutions" element={<NianiInstitutionsPage />} />
+              <Route path="/niani/architectural-projects" element={<NianiArchitecturalProjectsPage />} />
+              <Route path="/niani/niani-tv" element={<NianiPage section="niani-tv" />} />
               <Route path="/academy" element={<AcademyPage />} />
               <Route path="/academy/nko" element={<AcademyPage section="nko" />} />
               <Route path="/academy/history-courses" element={<AcademyPage section="history-courses" />} />

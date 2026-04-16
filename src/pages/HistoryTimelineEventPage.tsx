@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { ArrowLeft, Clock3, ScrollText } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowLeft, Clock3, ScrollText, ImageIcon } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
 import { useI18n } from "@/lib/i18n";
@@ -61,22 +62,22 @@ export default function HistoryTimelineEventPage() {
     year: item.year,
     title: localize(item.title),
     description: localize(item.description),
+    notes: localize(item.notes),
+    image: item.image?.trim() || "",
+    images: (item.images || []).map(img => img.trim()).filter(Boolean),
+    content: localize(item.content),
   }));
   const currentIndex = events.findIndex((event) => event.slug === slug);
 
   if (currentIndex === -1) return <PageNotFoundState />;
 
   const current = events[currentIndex];
-  const overview =
-    paragraphs[0] ||
-    (lang === "fr"
-      ? "Chaque evenement chronologique prolonge le recit historique du Manden et renvoie a la chronologie publique."
-      : "Each timeline event extends the historical narrative of Manden and connects back to the public chronology.");
-  const detailNote =
-    current.description ||
-    (lang === "fr"
-      ? ""
-      : "");
+  const hasCustomContent = Boolean(current.content?.trim());
+  const overview = hasCustomContent
+    ? current.content || ""
+    : (paragraphs[0] || "");
+  const detailNote = current.description || "";
+  const noteText = current.notes || "";
   const backTarget = `/history#${current.slug}`;
 
   return (
@@ -114,14 +115,87 @@ export default function HistoryTimelineEventPage() {
             </div>
           </div>
 
-          <div className="mt-6 space-y-4 text-base leading-8 text-foreground/76">
-            <p>{overview}</p>
-            <p>{detailNote}</p>
-            <p>
-              {lang === "fr"
-                ? `${current.title || "Cet evenement"} reste relie a la chronologie complete de l'histoire du Manden.`
-                : `${current.title || "This event"} remains connected to the full History of Manden timeline.`}
-            </p>
+          <div className="mt-6 space-y-6 text-base leading-8 text-foreground/76">
+            {hasCustomContent ? (
+              <div className="prose prose-invert max-w-none">
+                {overview.split("\n\n").map((paragraph, index) => (
+                  <p key={index} className="mb-4 leading-relaxed">{paragraph}</p>
+                ))}
+              </div>
+            ) : (
+              <>
+                <p>{overview}</p>
+                {detailNote && <p>{detailNote}</p>}
+              </>
+            )}
+
+            {current.image ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="overflow-hidden rounded-[1.8rem] border border-white/10 bg-black/20 shadow-[0_24px_80px_rgba(0,0,0,0.24)]"
+              >
+                <img
+                  src={current.image}
+                  alt={current.title || t.timelineEvent}
+                  className="h-72 w-full object-cover"
+                />
+              </motion.div>
+            ) : null}
+
+            {current.images && current.images.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="rounded-[1.8rem] border border-gold/15 bg-black/20 p-5"
+              >
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/20 bg-gold/10 text-gold">
+                    <ImageIcon className="h-4 w-4" />
+                  </div>
+                  <div>
+                    <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">
+                      {lang === "fr" ? "Galerie" : "Gallery"}
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-foreground">
+                      {current.images.length} {current.images.length === 1 ? (lang === "fr" ? "image" : "image") : (lang === "fr" ? "images" : "images")}
+                    </p>
+                  </div>
+                </div>
+                <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                  {current.images.map((img, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1 }}
+                      className="overflow-hidden rounded-[1.25rem] border border-gold/15 bg-black/20"
+                    >
+                      <img
+                        src={img}
+                        alt={`${current.title} - ${index + 1}`}
+                        className="h-48 sm:h-56 w-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {noteText ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                className="rounded-[1.6rem] border border-gold/15 bg-gold/10 p-5 text-sm leading-7 text-foreground/88"
+              >
+                <h3 className="text-xs uppercase tracking-[0.28em] text-gold/80">{lang === "fr" ? "Note" : "Note"}</h3>
+                <p className="mt-3 text-base text-foreground/85">{noteText}</p>
+              </motion.div>
+            ) : null}
           </div>
         </article>
 

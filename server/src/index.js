@@ -50,6 +50,7 @@ const PAGE_ORDER = [
   "governance",
   "global-perspectives",
   "reference-bureau",
+  "niani",
   "academy",
   "economy",
   "commerce",
@@ -116,6 +117,8 @@ app.put("/api/pages/:id", requireAdmin(JWT_SECRET), async (req, res) => {
           year: z.string().optional(),
           title: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
           description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          notes: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          image: z.string().optional(),
           url: z.string().optional()
         })
       )
@@ -192,6 +195,28 @@ app.put("/api/pages/:id", requireAdmin(JWT_SECRET), async (req, res) => {
           title: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
           description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
           url: z.string().optional()
+        })
+      )
+      .optional(),
+    institutions: z
+      .array(
+        z.object({
+          id: z.string(),
+          name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          images: z.array(z.string()).optional(),
+          videos: z.array(z.string()).optional()
+        })
+      )
+      .optional(),
+    architecturalProjects: z
+      .array(
+        z.object({
+          id: z.string(),
+          name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          conceptImages: z.array(z.string()).optional(),
+          workImages: z.array(z.string()).optional()
         })
       )
       .optional()
