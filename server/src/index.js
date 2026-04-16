@@ -8,6 +8,7 @@ import { z } from "zod";
 
 import { connectDb } from "./db.js";
 import { Admin } from "./models/Admin.js";
+import { Page } from "./models/Page.js";
 import { Media } from "./models/Media.js";
 import { Content } from "./models/Content.js";
 import { requireAdmin, signAdminToken } from "./auth.js";
@@ -188,6 +189,185 @@ app.put("/api/content/:id", requireAdmin(JWT_SECRET), async (req, res) => {
 app.delete("/api/content/:id", requireAdmin(JWT_SECRET), async (req, res) => {
   await Content.findByIdAndDelete(req.params.id);
   res.json({ ok: true });
+});
+
+//
+// ✅ PAGES APIs (for CMS pages like Niani, History, etc.)
+//
+const PAGE_ORDER = [
+  "introduction",
+  "history",
+  "governance",
+  "global-perspectives",
+  "reference-bureau",
+  "niani",
+  "academy",
+  "economy",
+  "commerce",
+  "culture",
+  "resources"
+];
+
+function sortPagesByNavOrder(pages) {
+  const rank = (key) => {
+    const i = PAGE_ORDER.indexOf(key);
+    return i === -1 ? PAGE_ORDER.length : i;
+  };
+  return [...pages].sort((a, b) => rank(a.key) - rank(b.key) || String(a.key).localeCompare(String(b.key)));
+}
+
+app.get("/api/pages", async (_req, res) => {
+  const pages = sortPagesByNavOrder(await Page.find().lean());
+  return res.json({ pages });
+});
+
+app.put("/api/pages/:id", requireAdmin(JWT_SECRET), async (req, res) => {
+  const schema = z.object({
+    key: z.string().min(1).optional(),
+    title: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+    content: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+    images: z.array(z.string()).optional(),
+    links: z.array(
+      z.object({
+        label: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        url: z.string().optional()
+      })
+    ).optional(),
+    timeline: z.array(
+      z.object({
+        year: z.string().optional(),
+        title: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        notes: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        content: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        image: z.string().optional(),
+        images: z.array(z.string()).optional(),
+        url: z.string().optional()
+      })
+    ).optional(),
+    governance: z.object({
+      chiefdom: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+      chiefdomUrl: z.string().optional(),
+      mandenMansa: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+      mandenMansaUrl: z.string().optional(),
+      mandenDjeliba: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+      mandenDjelibaUrl: z.string().optional(),
+      mandenMory: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+      mandenMoryUrl: z.string().optional(),
+      governmentName: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+      governmentNameUrl: z.string().optional(),
+      constitution: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+      constitutionUrl: z.string().optional(),
+      governmentType: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+      corruptionIndex: z.string().optional(),
+      corruptionSummary: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+      riskIndex: z.string().optional(),
+      riskSummary: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+      taxInformation: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+      branches: z.array(
+        z.object({
+          name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          powers: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          selection: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          url: z.string().optional()
+        })
+      ).optional(),
+      phone: z.string().optional()
+    }).partial().optional(),
+    media: z.array(
+      z.object({
+        url: z.string(),
+        title: z.string().optional(),
+        type: z.enum(["video", "audio", "document"]),
+        category: z.enum(["djelis", "donsos", "journalists", "other"]).optional()
+      })
+    ).optional(),
+    directory: z.object({
+      countries: z.array(
+        z.object({
+          name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional()
+        })
+      ).optional(),
+      organizations: z.array(
+        z.object({
+          name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional()
+        })
+      ).optional()
+    }).partial().optional(),
+    economy: z.object({
+      currency: z.string().optional(),
+      tables: z.array(
+        z.object({
+          id: z.string(),
+          title: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          rows: z.array(
+            z.object({
+              label: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+              value: z.string().optional()
+            })
+          ).optional()
+        })
+      ).optional()
+    }).partial().optional(),
+    utilityCards: z.array(
+      z.object({
+        id: z.string(),
+        title: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        url: z.string().optional()
+      })
+    ).optional(),
+    biographies: z.array(
+      z.object({
+        id: z.string(),
+        name: z.string().optional(),
+        role: z.string().optional(),
+        bio: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        image: z.string().optional(),
+        url: z.string().optional()
+      })
+    ).optional(),
+    institutions: z.array(
+      z.object({
+        id: z.string(),
+        name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        images: z.array(z.string()).optional(),
+        videos: z.array(z.string()).optional()
+      })
+    ).optional(),
+    architecturalProjects: z.array(
+      z.object({
+        id: z.string(),
+        name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        conceptImages: z.array(z.string()).optional(),
+        workImages: z.array(z.string()).optional()
+      })
+    ).optional()
+  });
+
+  const parsed = schema.safeParse(req.body);
+  if (!parsed.success) {
+    console.error("Validation error:", parsed.error.errors);
+    return res.status(400).json({ error: "invalid_body", details: parsed.error.errors });
+  }
+
+  console.log("Updating page:", req.params.id, "with data keys:", Object.keys(parsed.data));
+
+  const page = await Page.findByIdAndUpdate(req.params.id, parsed.data, { new: true, runValidators: true }).lean();
+  if (!page) return res.status(404).json({ error: "not_found" });
+
+  console.log("Page updated successfully. Has institutions:", !!page.institutions, "Has projects:", !!page.architecturalProjects);
+  return res.json({ page });
+});
+
+app.post("/api/admin/ensure-pages", requireAdmin(JWT_SECRET), async (_req, res) => {
+  await ensureDefaultPages();
+  const pages = sortPagesByNavOrder(await Page.find().lean());
+  return res.json({ ok: true, pages });
 });
 
 //
