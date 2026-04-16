@@ -23,20 +23,22 @@ const UPLOAD_DIR = process.env.UPLOAD_DIR || "uploads";
 const app = express();
 
 //
-// ✅ BULLETPROOF CORS (ONLY ONE HEADER EVER)
+// ✅ STRICT CORS (ONLY ONE ORIGIN, NO DUPLICATES)
 //
-const allowedOrigins = (process.env.CORS_ORIGIN || "")
-  .split(",")
-  .map(o => o.trim())
-  .filter(Boolean);
+const allowedOrigin = process.env.CORS_ORIGIN;
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
 
-  if (origin && allowedOrigins.includes(origin)) {
+  // 🔥 force clean (avoid proxy duplication)
+  res.removeHeader("Access-Control-Allow-Origin");
+  res.removeHeader("access-control-allow-origin");
+
+  if (origin && origin === allowedOrigin) {
     res.setHeader("Access-Control-Allow-Origin", origin);
   }
 
+  res.setHeader("Vary", "Origin");
   res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
   res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
@@ -131,12 +133,18 @@ app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (
 // ✅ CONTENT APIs
 //
 app.get("/api/content", async (_req, res) => {
-  const content = await Content.find({ isPublished: true }).sort({ order: 1 }).lean();
+  const content = await Content.find({ isPublished: true })
+    .sort({ order: 1 })
+    .lean();
+
   res.json({ content });
 });
 
 app.get("/api/content/all", async (_req, res) => {
-  const content = await Content.find().sort({ order: 1 }).lean();
+  const content = await Content.find()
+    .sort({ order: 1 })
+    .lean();
+
   res.json({ content });
 });
 
@@ -166,8 +174,14 @@ app.post("/api/content", requireAdmin(JWT_SECRET), async (req, res) => {
 });
 
 app.put("/api/content/:id", requireAdmin(JWT_SECRET), async (req, res) => {
-  const item = await Content.findByIdAndUpdate(req.params.id, req.body, { new: true }).lean();
+  const item = await Content.findByIdAndUpdate(
+    req.params.id,
+    req.body,
+    { new: true }
+  ).lean();
+
   if (!item) return res.status(404).json({ error: "not_found" });
+
   res.json({ content: item });
 });
 
