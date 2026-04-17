@@ -6,6 +6,7 @@ import multer from "multer";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { Buffer } from 'buffer';
+import { v2 as cloudinary } from 'cloudinary';
 
 import { connectDb } from "./db.js";
 import { Admin } from "./models/Admin.js";
@@ -22,6 +23,20 @@ const MONGODB_URI = process.env.MONGODB_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
 // Use /tmp for uploads which is always writable on Railway
 const UPLOAD_DIR = "/tmp";
+
+// Configure Cloudinary for video storage (bypasses Railway 100MB limit)
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY;
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET;
+
+if (CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
+  cloudinary.config({
+    cloud_name: CLOUDINARY_CLOUD_NAME,
+    api_key: CLOUDINARY_API_KEY,
+    api_secret: CLOUDINARY_API_SECRET,
+  });
+  console.log("Cloudinary configured for video uploads");
+}
 
 const app = express();
 
@@ -171,7 +186,7 @@ app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (
 });
 
 //
-// UPLOAD VIDEO - Store on disk (for large video files)
+// UPLOAD VIDEO to Cloudinary (bypasses Railway 100MB limit)
 //
 app.post("/api/upload-video", requireAdmin(JWT_SECRET), uploadVideo.single("file"), async (req, res) => {
   try {
@@ -183,6 +198,39 @@ app.post("/api/upload-video", requireAdmin(JWT_SECRET), uploadVideo.single("file
 
     console.log("Video upload received:", file.originalname, "Size:", file.size, "Path:", file.path);
 
+    // If Cloudinary is configured, upload there (supports large files)
+    if (CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
+      console.log("Uploading to Cloudinary...");
+      const result = await cloudinary.uploader.upload(file.path, {
+        resource_type: "video",
+        folder: "niani-tv",
+        public_id: `video-${Date.now()}-${Math.round(Math.random() * 1E9)}`,
+      });
+      
+      // Delete local file after upload
+      try {
+        fs.unlinkSync(file.path);
+      } catch (e) {
+        console.error("Failed to delete temp file:", e);
+      }
+
+      // Store Cloudinary URL in DB
+      const media = await Media.create({
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+        size: file.size,
+        data: null,
+        url: result.secure_url,
+        cloudinaryPublicId: result.public_id,
+      });
+
+      console.log("Video uploaded to Cloudinary:", media._id, "URL:", result.secure_url);
+      return res.json({ media });
+    }
+
+    // Fallback: store locally (limited by Railway 100MB)
+    console.log("Cloudinary not configured, using local storage (100MB limit)");
+    
     // Verify file exists on disk
     if (!fs.existsSync(file.path)) {
       console.error("Upload video failed: File not found on disk after upload");
@@ -192,16 +240,16 @@ app.post("/api/upload-video", requireAdmin(JWT_SECRET), uploadVideo.single("file
     // Create URL for the uploaded video
     const videoUrl = `/uploads/videos/${file.filename}`;
 
-    // Store metadata in DB (but not the actual file data)
+    // Store metadata in DB
     const media = await Media.create({
       originalName: file.originalname,
       mimeType: file.mimetype,
       size: file.size,
-      data: null, // No base64 data for videos (too large)
+      data: null,
       url: videoUrl
     });
 
-    console.log("Video uploaded successfully:", media._id, "URL:", videoUrl);
+    console.log("Video uploaded locally:", media._id, "URL:", videoUrl);
     res.json({ media });
   } catch (err) {
     console.error("Video upload error:", err);
@@ -209,6 +257,62 @@ app.post("/api/upload-video", requireAdmin(JWT_SECRET), uploadVideo.single("file
       return res.status(400).json({ error: "invalid_file_type", message: "Only video files are allowed" });
     }
     res.status(500).json({ error: "upload_failed", message: err.message });
+  }
+});
+
+//
+// CLOUDINARY DIRECT UPLOAD SIGNATURE (bypasses Railway 100MB limit)
+// Frontend uploads directly to Cloudinary using this signature
+//
+app.get("/api/cloudinary-signature", requireAdmin(JWT_SECRET), (_req, res) => {
+  if (!CLOUDINARY_API_SECRET) {
+    return res.status(500).json({ error: "cloudinary_not_configured" });
+  }
+
+  const timestamp = Math.round(new Date().getTime() / 1000);
+  const folder = "niani-tv";
+  
+  // Generate signature for direct upload
+  const signature = cloudinary.utils.api_sign_request(
+    { timestamp, folder, resource_type: "video" },
+    CLOUDINARY_API_SECRET
+  );
+
+  res.json({
+    signature,
+    timestamp,
+    cloudName: CLOUDINARY_CLOUD_NAME,
+    apiKey: CLOUDINARY_API_KEY,
+    folder,
+    resourceType: "video"
+  });
+});
+
+//
+// SAVE CLOUDINARY VIDEO URL to Database (after direct upload)
+//
+app.post("/api/save-cloudinary-video", requireAdmin(JWT_SECRET), async (req, res) => {
+  try {
+    const { url, originalName, publicId, size } = req.body;
+    
+    if (!url) {
+      return res.status(400).json({ error: "missing_url" });
+    }
+
+    const media = await Media.create({
+      originalName: originalName || "video",
+      mimeType: "video/mp4",
+      size: size || 0,
+      data: null,
+      url: url,
+      cloudinaryPublicId: publicId,
+    });
+
+    console.log("Cloudinary video saved to DB:", media._id, "URL:", url);
+    res.json({ media });
+  } catch (err) {
+    console.error("Save cloudinary video error:", err);
+    res.status(500).json({ error: "save_failed", message: err.message });
   }
 });
 

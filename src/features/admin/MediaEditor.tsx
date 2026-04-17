@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, ChevronUp, ChevronDown, Film, Mic, FileText, Play } from "lucide-react";
-import { uploadFile, uploadVideoFile } from "@/api/upload";
+import { uploadFile, uploadVideoFile, getCloudinarySignature, uploadToCloudinary, saveCloudinaryVideo } from "@/api/upload";
 import { toast } from "sonner";
 
 const CATEGORIES = [
@@ -74,20 +74,52 @@ export function MediaEditor({ media, onChange, token }: MediaEditorProps) {
     let failedCount = 0;
     let lastError = "";
 
+    // Try to get Cloudinary signature for direct upload (bypasses Railway 100MB limit)
+    let cloudinarySig = null;
+    let useCloudinary = false;
+    try {
+      cloudinarySig = await getCloudinarySignature(token);
+      useCloudinary = true;
+      console.log("Using Cloudinary direct upload");
+    } catch (err) {
+      console.log("Cloudinary not available, using server upload (100MB limit)");
+    }
+
     for (const file of files) {
-      // Check file size (500MB limit)
-      const maxSize = 500 * 1024 * 1024; // 500MB
+      // Check file size (100MB for server upload, 100MB for Cloudinary free tier)
+      const maxSize = useCloudinary ? 100 * 1024 * 1024 : 90 * 1024 * 1024; // 100MB for Cloudinary, 90MB for Railway
       if (file.size > maxSize) {
-        toast.error(`File too large: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB > 500MB limit)`);
+        toast.error(`File too large: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB > ${maxSize/1024/1024}MB limit)`);
         failedCount += 1;
         continue;
       }
 
       try {
-        // Use video upload endpoint for large video files
-        const res = await uploadVideoFile(file, token);
+        let videoUrl: string;
+
+        if (useCloudinary && cloudinarySig) {
+          // Upload directly to Cloudinary (bypasses Railway 100MB limit)
+          toast.loading(`Uploading ${file.name} to cloud...`, { id: `upload-${file.name}` });
+          const cloudResult = await uploadToCloudinary(file, cloudinarySig);
+          
+          // Save Cloudinary URL to database
+          const saveResult = await saveCloudinaryVideo(
+            cloudResult.url,
+            file.name,
+            cloudResult.publicId,
+            cloudResult.bytes,
+            token
+          );
+          videoUrl = saveResult.media.url;
+          toast.dismiss(`upload-${file.name}`);
+        } else {
+          // Fallback: Use server upload (limited by Railway 100MB)
+          const res = await uploadVideoFile(file, token);
+          videoUrl = res.media.url;
+        }
+
         uploadedItems.push({
-          url: res.media.url,
+          url: videoUrl,
           title: titleFromFileName(file.name),
           type: "video",
           category: "other",
@@ -96,6 +128,7 @@ export function MediaEditor({ media, onChange, token }: MediaEditorProps) {
         failedCount += 1;
         lastError = err?.message || "Unknown error";
         console.error("Video upload failed:", file.name, err);
+        toast.dismiss(`upload-${file.name}`);
       }
     }
 
