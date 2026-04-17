@@ -5,6 +5,7 @@ import fs from "fs";
 import multer from "multer";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { Buffer } from 'buffer';
 
 import { connectDb } from "./db.js";
 import { Admin } from "./models/Admin.js";
@@ -54,25 +55,20 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: "5mb" }));
 
 //
-// ✅ Upload setup
+// ✅ Upload setup - Store in memory for DB storage
 //
 const uploadDirAbs = path.resolve(process.cwd(), UPLOAD_DIR);
 fs.mkdirSync(uploadDirAbs, { recursive: true });
 
+// Serve legacy file uploads (backward compatibility)
 app.use("/uploads", express.static(uploadDirAbs));
 
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, uploadDirAbs),
-  filename: (_req, file, cb) => {
-    const safeBase = (file.originalname || "upload").replace(/[^\w.\-]+/g, "_");
-    const unique = `${Date.now()}_${Math.random().toString(16).slice(2)}`;
-    cb(null, `${unique}_${safeBase}`);
-  }
-});
+// Memory storage for new uploads (stored in DB as base64)
+const storage = multer.memoryStorage();
 
 const upload = multer({
   storage,
-  limits: { fileSize: 50 * 1024 * 1024 }
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit for DB storage
 });
 
 //
@@ -106,21 +102,23 @@ app.post("/api/login", async (req, res) => {
 });
 
 //
-// ✅ UPLOAD
+// UPLOAD - Store in MongoDB as Base64
 //
 app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (req, res) => {
   try {
     const file = req.file;
     if (!file) return res.status(400).json({ error: "missing_file" });
 
-    const url = `${req.protocol}://${req.get("host")}/uploads/${file.filename}`;
+    // Convert buffer to base64
+    const base64Data = file.buffer.toString('base64');
+    const dataUri = `data:${file.mimetype};base64,${base64Data}`;
 
     const media = await Media.create({
       originalName: file.originalname,
       mimeType: file.mimetype,
       size: file.size,
-      path: file.filename,
-      url
+      data: base64Data,
+      url: dataUri
     });
 
     res.json({ media });
@@ -131,7 +129,44 @@ app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (
 });
 
 //
-// ✅ CONTENT APIs
+// SERVE IMAGE from Database (for images stored as base64)
+//
+app.get("/api/media/:id", async (req, res) => {
+  try {
+    const media = await Media.findById(req.params.id);
+    if (!media) return res.status(404).json({ error: "not_found" });
+
+    // If stored as base64 data
+    if (media.data) {
+      const buffer = Buffer.from(media.data, 'base64');
+      res.set('Content-Type', media.mimeType);
+      res.set('Cache-Control', 'public, max-age=31536000');
+      return res.send(buffer);
+    }
+
+    // Legacy: redirect to file URL
+    res.redirect(media.url);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "failed_to_load_image" });
+  }
+});
+
+//
+// LIST ALL MEDIA
+//
+app.get("/api/media", async (_req, res) => {
+  try {
+    const media = await Media.find().sort({ createdAt: -1 }).lean();
+    res.json({ media });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "failed_to_list_media" });
+  }
+});
+
+//
+// CONTENT APIs
 //
 app.get("/api/content", async (_req, res) => {
   const content = await Content.find({ isPublished: true })

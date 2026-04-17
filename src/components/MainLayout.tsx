@@ -28,17 +28,13 @@ export default function MainLayout() {
           <SidebarNav mode="desktop" />
 
           <main className="relative min-w-0 flex-1 w-full">
+            <Outlet />
+
             {showFloatingCoatOfArms ? (
-              <div className="pointer-events-none absolute right-0 top-4 z-20 hidden xl:block">
-                <div className="pointer-events-auto">
-                  <SiteCoatOfArms />
-                </div>
+              <div className="mt-10 flex justify-center">
+                <SiteCoatOfArms className="max-w-[200px] xl:max-w-[240px]" />
               </div>
             ) : null}
-
-            <div className={showFloatingCoatOfArms ? "xl:pr-[280px]" : ""}>
-              <Outlet />
-            </div>
           </main>
         </div>
       </div>

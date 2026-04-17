@@ -150,46 +150,59 @@ export default function TopBar() {
           })}
         </nav>
 
-        <div className="hidden items-center gap-3 lg:flex">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={toggleLang}
-            className="rounded-xl border border-gold/15 bg-black/20 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gold/80 hover:bg-gold/10 hover:text-gold"
-          >
-            <Languages className="mr-2 h-4 w-4" />
-            {lang === "en" ? "FR" : "EN"}
-          </Button>
+        <div className="flex items-center gap-2 lg:gap-3">
           <button
             type="button"
             onClick={() => setFlagOpen(true)}
-            className="rounded-xl border border-gold/15 bg-black/25 p-2 transition hover:border-gold/30 hover:bg-gold/5"
+            className="rounded-xl border border-gold/15 bg-black/25 p-2 transition hover:border-gold/30 hover:bg-gold/5 lg:hidden"
           >
             <img
               src="/images/manden-flag-lion.svg"
               alt="Manden flag"
-              className="h-10 w-14 object-contain"
+              className="h-8 w-12 object-contain"
             />
           </button>
+          <div className="hidden items-center gap-3 lg:flex">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={toggleLang}
+              className="rounded-xl border border-gold/15 bg-black/20 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gold/80 hover:bg-gold/10 hover:text-gold"
+            >
+              <Languages className="mr-2 h-4 w-4" />
+              {lang === "en" ? "FR" : "EN"}
+            </Button>
+            <button
+              type="button"
+              onClick={() => setFlagOpen(true)}
+              className="rounded-xl border border-gold/15 bg-black/25 p-2 transition hover:border-gold/30 hover:bg-gold/5"
+            >
+              <img
+                src="/images/manden-flag-lion.svg"
+                alt="Manden flag"
+                className="h-10 w-14 object-contain"
+              />
+            </button>
+          </div>
         </div>
       </div>
 
       <Dialog open={flagOpen} onOpenChange={setFlagOpen}>
         <DialogContent className="max-w-3xl border-gold/20 bg-gradient-to-b from-black to-black/95">
           <DialogHeader>
-            <DialogTitle className="gold-gradient-text text-2xl">Flag of Manden</DialogTitle>
+            <DialogTitle className="gold-gradient-text text-2xl text-center">Flag of Manden</DialogTitle>
           </DialogHeader>
-          <div className="flex items-center justify-center p-6">
+          <div className="flex items-center justify-center p-4 md:p-6">
             <div className="relative overflow-hidden rounded-2xl border-2 border-gold/30 shadow-[0_0_60px_rgba(255,205,86,0.15)]">
               <img
                 src="/images/realFlag.jpeg"
                 alt="Flag of Manden"
-                className="max-w-full h-auto object-contain"
+                className="max-w-full h-auto max-h-[60vh] md:max-h-[500px] object-contain"
               />
             </div>
           </div>
-          <p className="text-center text-sm text-muted-foreground mt-2">
+          <p className="text-center text-sm text-muted-foreground pb-2">
             The official flag of the Manden Empire
           </p>
         </DialogContent>

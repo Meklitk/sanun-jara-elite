@@ -56,6 +56,7 @@ export default function PageView({ pageKey }: { pageKey: string }) {
   const donationLink = page.links?.[0]?.url || "";
   const resourceLinks = pageKey === "economy" ? page.links?.slice(1) ?? [] : page.links ?? [];
   const showIntroHero = pageKey === "introduction";
+  const heroImage = page.images?.[0] || "/images/manden-hero-wide.png";
 
   return (
     <div className="section-fade-in">
@@ -63,7 +64,7 @@ export default function PageView({ pageKey }: { pageKey: string }) {
         <div className="relative -mx-0 -mt-0 mb-10 overflow-hidden border-b border-gold/15 md:rounded-b-2xl">
           <div className="relative h-52 md:h-64 lg:h-72">
             <img
-              src="/images/manden-hero-wide.png"
+              src={heroImage}
               alt=""
               role="presentation"
               className="absolute inset-0 h-full w-full object-cover"
@@ -77,6 +78,22 @@ export default function PageView({ pageKey }: { pageKey: string }) {
               <h1 className="text-3xl font-bold gold-gradient-text drop-shadow-sm md:text-4xl lg:text-5xl">
                 {title || page.key}
               </h1>
+              <div className="mt-4 md:mt-6 flex items-center gap-3 md:gap-4">
+                <div className="relative h-14 w-14 md:h-16 md:w-16 overflow-hidden rounded-xl border border-gold/20 shadow-[0_0_20px_rgba(255,205,86,0.2)]">
+                  <img
+                    src="/images/coat-of-arms-manden.png"
+                    alt="Coat of Arms"
+                    className="h-full w-full object-contain p-1"
+                  />
+                </div>
+                <div className="relative h-14 w-20 md:h-16 md:w-24 overflow-hidden rounded-xl border border-gold/20 shadow-[0_0_20px_rgba(255,205,86,0.2)]">
+                  <img
+                    src="/images/realFlag.jpeg"
+                    alt="Flag of Manden"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
