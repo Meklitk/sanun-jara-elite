@@ -977,7 +977,7 @@ export default function AdminDashboardPage() {
                 </>
               ) : null}
 
-              {current.key !== "introduction" && current.key !== "resources" && current.key !== "global-perspectives" && current.key !== "economy" && current.key !== "reference-bureau" && current.key !== "academy" && (
+              {current.key !== "resources" && current.key !== "global-perspectives" && current.key !== "economy" && current.key !== "reference-bureau" && current.key !== "academy" && (
                 <>
                   <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
                   
