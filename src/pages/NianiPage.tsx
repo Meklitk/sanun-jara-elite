@@ -1,6 +1,27 @@
 import { Building2, Tv, Landmark, Play, Film } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+
+function getYouTubeId(url: string): string | null {
+  const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
+  return match ? match[1] : null;
+}
+
+function getEmbedUrl(url: string): string | null {
+  const ytId = getYouTubeId(url);
+  if (ytId) return `https://www.youtube.com/embed/${ytId}?autoplay=1`;
+  return null;
+}
+
+function getThumbnail(url: string): string | null {
+  const ytId = getYouTubeId(url);
+  if (ytId) return `https://img.youtube.com/vi/${ytId}/mqdefault.jpg`;
+  return null;
+}
+
+function isDirectVideo(url: string): boolean {
+  return /\.(mp4|webm|ogg|mov)(\?|$)/i.test(url);
+}
 import UtilityLandingPage from "@/features/pages/UtilityLandingPage";
 import {
   PageErrorState,
@@ -50,6 +71,9 @@ const nianiCardDefinitions = [
 
 function VideoCard({ item, index, t }: { item: MediaItem; index: number; t: any }) {
   const [play, setPlay] = useState(false);
+  const embedUrl = getEmbedUrl(item.url);
+  const thumb = getThumbnail(item.url);
+  const direct = isDirectVideo(item.url);
 
   return (
     <motion.article
@@ -59,21 +83,27 @@ function VideoCard({ item, index, t }: { item: MediaItem; index: number; t: any 
       transition={{ delay: index * 0.08, duration: 0.5 }}
       className="group relative overflow-hidden rounded-[1.5rem] border border-gold/15 bg-black/40 shadow-[0_20px_60px_rgba(0,0,0,0.3)]"
     >
-      <div className="relative aspect-video overflow-hidden">
+      <div className="relative aspect-video overflow-hidden bg-black">
         {play ? (
-          <video
-            src={item.url}
-            controls
-            autoPlay
-            className="h-full w-full object-cover"
-          />
+          embedUrl ? (
+            <iframe
+              src={embedUrl}
+              className="h-full w-full"
+              allow="autoplay; fullscreen"
+              allowFullScreen
+            />
+          ) : direct ? (
+            <video src={item.url} controls autoPlay className="h-full w-full object-cover" />
+          ) : null
         ) : (
           <>
-            <video
-              src={item.url}
-              className="h-full w-full object-cover opacity-60 transition-opacity group-hover:opacity-80"
-              muted
-            />
+            {thumb ? (
+              <img src={thumb} alt={item.title} className="h-full w-full object-cover opacity-70 transition-opacity group-hover:opacity-90" />
+            ) : (
+              <div className="h-full w-full flex items-center justify-center bg-black/60">
+                <Tv className="h-10 w-10 text-gold/30" />
+              </div>
+            )}
             <div className="absolute inset-0 flex items-center justify-center">
               <button
                 onClick={() => setPlay(true)}

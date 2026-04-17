@@ -72,8 +72,17 @@ export function MediaEditor({ media, onChange, token }: MediaEditorProps) {
   async function handleBulkVideoUpload(files: File[]) {
     const uploadedItems: MediaItem[] = [];
     let failedCount = 0;
+    let lastError = "";
 
     for (const file of files) {
+      // Check file size (500MB limit)
+      const maxSize = 500 * 1024 * 1024; // 500MB
+      if (file.size > maxSize) {
+        toast.error(`File too large: ${file.name} (${(file.size / 1024 / 1024).toFixed(1)}MB > 500MB limit)`);
+        failedCount += 1;
+        continue;
+      }
+
       try {
         // Use video upload endpoint for large video files
         const res = await uploadVideoFile(file, token);
@@ -83,8 +92,10 @@ export function MediaEditor({ media, onChange, token }: MediaEditorProps) {
           type: "video",
           category: "other",
         });
-      } catch {
+      } catch (err: any) {
         failedCount += 1;
+        lastError = err?.message || "Unknown error";
+        console.error("Video upload failed:", file.name, err);
       }
     }
 
@@ -97,7 +108,9 @@ export function MediaEditor({ media, onChange, token }: MediaEditorProps) {
 
     if (failedCount > 0) {
       toast.error(
-        failedCount === 1 ? "1 video failed to upload" : `${failedCount} videos failed to upload`
+        failedCount === 1 
+          ? `1 video failed: ${lastError}` 
+          : `${failedCount} videos failed. Last error: ${lastError}`
       );
     }
   }

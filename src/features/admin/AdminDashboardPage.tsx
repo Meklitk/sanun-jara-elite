@@ -21,6 +21,7 @@ import { AdminInstitutionsEditor } from "../governance/AdminInstitutionsEditor";
 import { AdminArchitecturalProjectsEditor } from "../governance/AdminArchitecturalProjectsEditor";
 import { MediaEditor } from "./MediaEditor";
 import { PDFEditor } from "./PDFEditor";
+import { NianiTvEditor } from "./NianiTvEditor";
 import type { BiographyItem, DirectoryItem, GovernanceBranch, PageLink, TimelineItem, UtilityCard } from "@/api/types";
 import { resolveGovernanceData } from "@/features/governance/governance-content";
 import AdminDirectoryEditor from "@/features/pages/AdminDirectoryEditor";
@@ -1211,10 +1212,9 @@ export default function AdminDashboardPage() {
                     <p className="text-xs text-muted-foreground mb-4">
                       Upload videos for the Niani TV page. These will be displayed in a grid on the public Niani TV page.
                     </p>
-                    <MediaEditor
+                    <NianiTvEditor
                       media={(current.media ?? []).filter((m) => m.type === "video")}
                       onChange={(videos) => setDraft({ ...current, media: [...(current.media ?? []).filter((m) => m.type !== "video"), ...videos] })}
-                      token={token}
                     />
                   </div>
                 </>
