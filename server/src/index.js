@@ -66,18 +66,46 @@ app.use("/uploads", express.static(uploadDirAbs));
 // Memory storage for new uploads (stored in DB as base64)
 const storage = multer.memoryStorage();
 
+// Memory storage for small files (images, docs) - stored in DB as base64
 const upload = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit for DB storage
 });
 
+// Disk storage for large files (videos) - stored on filesystem
+const videoStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const videoDir = path.join(uploadDirAbs, 'videos');
+    fs.mkdirSync(videoDir, { recursive: true });
+    cb(null, videoDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, 'video-' + uniqueSuffix + ext);
+  }
+});
+
+const uploadVideo = multer({
+  storage: videoStorage,
+  limits: { fileSize: 500 * 1024 * 1024 }, // 500MB limit for videos
+  fileFilter: (req, file, cb) => {
+    // Accept video files only
+    if (file.mimetype.startsWith('video/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only video files are allowed'));
+    }
+  }
+});
+
 //
-// ✅ HEALTH
+// HEALTH
 //
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
 //
-// ✅ AUTH
+// AUTH
 //
 app.post("/api/login", async (req, res) => {
   const parsed = z.object({
@@ -102,7 +130,7 @@ app.post("/api/login", async (req, res) => {
 });
 
 //
-// UPLOAD - Store in MongoDB as Base64
+// UPLOAD - Store in MongoDB as Base64 (for images, documents)
 //
 app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (req, res) => {
   try {
@@ -125,6 +153,36 @@ app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "upload_failed" });
+  }
+});
+
+//
+// UPLOAD VIDEO - Store on disk (for large video files)
+//
+app.post("/api/upload-video", requireAdmin(JWT_SECRET), uploadVideo.single("file"), async (req, res) => {
+  try {
+    const file = req.file;
+    if (!file) return res.status(400).json({ error: "missing_file" });
+
+    // Create URL for the uploaded video
+    const videoUrl = `/uploads/videos/${file.filename}`;
+
+    // Store metadata in DB (but not the actual file data)
+    const media = await Media.create({
+      originalName: file.originalname,
+      mimeType: file.mimetype,
+      size: file.size,
+      data: null, // No base64 data for videos (too large)
+      url: videoUrl
+    });
+
+    res.json({ media });
+  } catch (err) {
+    console.error(err);
+    if (err.message === 'Only video files are allowed') {
+      return res.status(400).json({ error: "invalid_file_type", message: "Only video files are allowed" });
+    }
+    res.status(500).json({ error: "upload_failed", message: err.message });
   }
 });
 

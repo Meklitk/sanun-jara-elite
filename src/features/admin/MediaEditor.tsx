@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, ChevronUp, ChevronDown, Film, Mic, FileText, Play } from "lucide-react";
-import { uploadFile } from "@/api/upload";
+import { uploadFile, uploadVideoFile } from "@/api/upload";
 import { toast } from "sonner";
 
 const CATEGORIES = [
@@ -44,7 +44,10 @@ export function MediaEditor({ media, onChange, token }: MediaEditorProps) {
 
   async function handleFileUpload(file: File, index: number, type: MediaItem["type"]) {
     try {
-      const res = await uploadFile(file, token);
+      // Use video upload endpoint for video files (supports larger files)
+      const res = type === "video" 
+        ? await uploadVideoFile(file, token)
+        : await uploadFile(file, token);
       setAt(index, { ...list[index], url: res.media.url });
       toast.success("File uploaded");
     } catch {
@@ -72,7 +75,8 @@ export function MediaEditor({ media, onChange, token }: MediaEditorProps) {
 
     for (const file of files) {
       try {
-        const res = await uploadFile(file, token);
+        // Use video upload endpoint for large video files
+        const res = await uploadVideoFile(file, token);
         uploadedItems.push({
           url: res.media.url,
           title: titleFromFileName(file.name),
