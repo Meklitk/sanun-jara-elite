@@ -10,7 +10,7 @@ import {
 
 export default function IntroductionPage() {
   const { page, title, content, isLoading, error } = useCmsPage("introduction");
-  const images = page?.images ?? [];
+  const featuredImage = page?.featuredImage || page?.images?.[0];
 
   if (isLoading) return <PageLoadingState />;
   if (error) return <PageErrorState />;
@@ -54,29 +54,21 @@ export default function IntroductionPage() {
         </div>
       </section>
 
-      {images.length > 0 && (
-        <section className="mx-auto max-w-6xl px-3 sm:px-6">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
-            {images.map((imageUrl, index) => (
-              <motion.div
-                key={`${imageUrl}-${index}`}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ delay: index * 0.08, duration: 0.5 }}
-                className="group relative overflow-hidden rounded-[1.25rem] sm:rounded-[1.5rem] border border-gold/15 bg-black/40 shadow-[0_20px_60px_rgba(0,0,0,0.3)]"
-              >
-                <div className="aspect-[4/3] overflow-hidden">
-                  <img
-                    src={imageUrl}
-                    alt={`Gallery image ${index + 1}`}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                </div>
-              </motion.div>
-            ))}
-          </div>
+      {featuredImage && (
+        <section className="mx-auto max-w-4xl px-3 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] border border-gold/15 bg-black shadow-[0_30px_100px_rgba(0,0,0,0.5)]"
+          >
+            <img
+              src={featuredImage}
+              alt={title || "Manden Empire"}
+              className="h-auto w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+          </motion.div>
         </section>
       )}
 
