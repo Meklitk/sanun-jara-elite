@@ -23,14 +23,14 @@ export default function MainLayout() {
       <div className="relative z-10">
         <TopBar />
 
-        <div className="mx-auto flex max-w-[1700px] gap-4 px-3 pb-10 pt-4 sm:pt-6 sm:px-4 lg:px-6 xl:gap-6">
+        <div className="mx-auto flex max-w-[1700px] gap-4 px-4 pb-10 pt-4 sm:px-6 lg:px-8 xl:gap-6">
           <SidebarNav mode="desktop" />
 
-          <main className="relative min-w-0 flex-1 w-full">
+          <main className="relative min-w-0 flex-1 w-full overflow-x-hidden">
             <Outlet />
             {showCoatOfArms ? (
-              <div className="flex xl:hidden justify-center mt-10">
-                <SiteCoatOfArms className="w-full max-w-[200px]" />
+              <div className="flex xl:hidden justify-center mt-8 px-4">
+                <SiteCoatOfArms className="w-full max-w-[180px] sm:max-w-[200px]" />
               </div>
             ) : null}
           </main>

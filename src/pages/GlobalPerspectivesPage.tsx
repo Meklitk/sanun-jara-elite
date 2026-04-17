@@ -94,14 +94,14 @@ export default function GlobalPerspectivesPage({ section }: GlobalPerspectivesPa
   const organizations = sortAlphabetically(page.directory?.organizations ?? [], localize);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8 sm:space-y-10 w-full">
       {(!section || section === "country") && (
-        <section className="overflow-hidden rounded-[2rem] border border-gold/15 bg-black/35 p-6 shadow-[0_28px_100px_rgba(0,0,0,0.34)] sm:p-8 lg:p-10">
+        <section className="overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] border border-gold/15 bg-black/35 p-4 sm:p-6 lg:p-10 shadow-[0_28px_100px_rgba(0,0,0,0.34)]">
           <div className="max-w-4xl">
-            <p className="mb-4 text-xs uppercase tracking-[0.38em] text-gold/70">{t.globalPerspectives}</p>
-            <h1 className="text-4xl font-bold gold-gradient-text sm:text-5xl">{title || t.globalPerspectives}</h1>
+            <p className="mb-3 sm:mb-4 text-xs uppercase tracking-[0.38em] text-gold/70">{t.globalPerspectives}</p>
+            <h1 className="text-2xl sm:text-4xl font-bold gold-gradient-text sm:text-5xl">{title || t.globalPerspectives}</h1>
             {!section && paragraphs.length ? (
-              <div className="mt-5 space-y-4 text-base leading-8 text-foreground/76 sm:text-lg">
+              <div className="mt-4 sm:mt-5 space-y-3 sm:space-y-4 text-sm sm:text-base leading-7 sm:leading-8 text-foreground/76">
                 {paragraphs.map((paragraph, index) => (
                   <p key={`${paragraph.slice(0, 24)}-${index}`}>{paragraph}</p>
                 ))}
