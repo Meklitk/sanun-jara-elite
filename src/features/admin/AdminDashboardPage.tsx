@@ -1200,6 +1200,26 @@ export default function AdminDashboardPage() {
                 </>
               )}
 
+              {isNianiSection && (
+                <>
+                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  <div className="rounded-xl border border-gold/20 bg-gradient-to-br from-gold/10 to-transparent p-5">
+                    <Label className="flex items-center gap-2 text-sm font-medium text-foreground/90 mb-4">
+                      <span className="h-4 w-1 rounded-full bg-gradient-to-b from-gold to-gold/50"></span>
+                      Niani TV Videos
+                    </Label>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Upload videos for the Niani TV page. These will be displayed in a grid on the public Niani TV page.
+                    </p>
+                    <MediaEditor
+                      media={(current.media ?? []).filter((m) => m.type === "video")}
+                      onChange={(videos) => setDraft({ ...current, media: [...(current.media ?? []).filter((m) => m.type !== "video"), ...videos] })}
+                      token={token}
+                    />
+                  </div>
+                </>
+              )}
+
               {current.key === "resources" && (
                 <>
                   <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
