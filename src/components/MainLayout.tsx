@@ -1,9 +1,13 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
+import SiteCoatOfArms from "@/components/SiteCoatOfArms";
 import SidebarNav from "@/components/SidebarNav";
 import TopBar from "@/components/TopBar";
 
 export default function MainLayout() {
+  const location = useLocation();
+  const showCoatOfArms = location.pathname !== "/governance";
+
   return (
     <div className="relative min-h-screen bg-background">
       <div
@@ -25,6 +29,12 @@ export default function MainLayout() {
           <main className="relative min-w-0 flex-1 w-full">
             <Outlet />
           </main>
+
+          {showCoatOfArms ? (
+            <aside className="hidden xl:flex flex-col w-[240px] shrink-0">
+              <SiteCoatOfArms className="w-full" />
+            </aside>
+          ) : null}
         </div>
       </div>
     </div>
