@@ -222,6 +222,7 @@ export default function AdminDashboardPage() {
           biographies: current.key === "governance" ? biographies : current.biographies,
           institutions: current.key === "niani" ? current.institutions : current.institutions,
           architecturalProjects: current.key === "niani" ? current.architecturalProjects : current.architecturalProjects,
+          featuredImage: current.featuredImage,
         },
       });
       toast.success("Saved");
@@ -979,6 +980,67 @@ export default function AdminDashboardPage() {
               {current.key !== "introduction" && current.key !== "resources" && current.key !== "global-perspectives" && current.key !== "economy" && current.key !== "reference-bureau" && current.key !== "academy" && (
                 <>
                   <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  
+                  {/* Featured Image Section */}
+                  <div className="space-y-4 rounded-xl border border-gold/20 bg-gradient-to-br from-gold/10 to-transparent p-5 mb-6">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <Label className="flex items-center gap-2 text-sm font-medium text-foreground/90">
+                          <span className="h-4 w-1 rounded-full bg-gradient-to-b from-gold to-gold/50"></span>
+                          Featured Image
+                        </Label>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          This image appears next to the Coat of Arms on all pages. Upload one image.
+                        </p>
+                      </div>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        className="w-auto glass-panel border-gold/20 text-xs"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          try {
+                            const res = await uploadFile(file, token);
+                            setDraft({ ...current, featuredImage: res.media.url });
+                            toast.success("Featured image uploaded");
+                          } catch {
+                            toast.error("Failed to upload featured image");
+                          }
+                          e.currentTarget.value = "";
+                        }}
+                      />
+                    </div>
+                    {current.featuredImage ? (
+                      <div className="relative group/featured">
+                        <img
+                          src={current.featuredImage}
+                          alt="Featured"
+                          className="h-32 w-full rounded-lg border border-gold/30 object-cover"
+                        />
+                        <span className="absolute bottom-2 left-2 rounded-full border border-gold/25 bg-black/70 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-gold/85">
+                          Featured
+                        </span>
+                        <button
+                          type="button"
+                          className="absolute -right-2 -top-2 rounded-full border border-red-500/30 bg-red-500/20 px-2 py-1 text-xs glass-panel opacity-0 transition-opacity group-hover/featured:opacity-100 hover:bg-red-500/40"
+                          onClick={() =>
+                            setDraft({
+                              ...current,
+                              featuredImage: "",
+                            })
+                          }
+                        >
+                          x
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="rounded-xl border border-dashed border-gold/20 bg-black/15 px-5 py-6 text-sm text-muted-foreground">
+                        No featured image set. Upload one to display it next to the Coat of Arms on all pages.
+                      </div>
+                    )}
+                  </div>
+
                   <div className="space-y-4 rounded-xl border border-gold/10 bg-gradient-to-br from-gold/5 to-transparent p-5">
                     <div className="flex items-center justify-between gap-3">
                       <div>

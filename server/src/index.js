@@ -381,7 +381,8 @@ app.put("/api/pages/:id", requireAdmin(JWT_SECRET), async (req, res) => {
         conceptImages: z.array(z.string()).optional(),
         workImages: z.array(z.string()).optional()
       })
-    ).optional()
+    ).optional(),
+    featuredImage: z.string().optional()
   });
 
   const parsed = schema.safeParse(req.body);

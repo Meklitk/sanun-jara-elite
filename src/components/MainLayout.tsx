@@ -1,6 +1,7 @@
 import { Outlet, useLocation } from "react-router-dom";
 
 import SiteCoatOfArms from "@/components/SiteCoatOfArms";
+import SiteFeaturedImage from "@/components/SiteFeaturedImage";
 import SidebarNav from "@/components/SidebarNav";
 import TopBar from "@/components/TopBar";
 import Footer from "@/components/Footer";
@@ -29,13 +30,14 @@ export default function MainLayout() {
 
           <main className="relative min-w-0 flex-1 w-full">
             <Outlet />
-
-            {showFloatingCoatOfArms ? (
-              <div className="mt-10 flex justify-center">
-                <SiteCoatOfArms className="max-w-[200px] xl:max-w-[240px]" />
-              </div>
-            ) : null}
           </main>
+
+          {showFloatingCoatOfArms ? (
+            <aside className="hidden xl:flex flex-col w-[240px] shrink-0 gap-6">
+              <SiteFeaturedImage className="w-full" />
+              <SiteCoatOfArms className="w-full" />
+            </aside>
+          ) : null}
         </div>
       </div>
     </div>

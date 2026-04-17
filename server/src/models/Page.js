@@ -259,7 +259,8 @@ const PageSchema = new mongoose.Schema(
     economy: EconomySchema,
     utilityCards: [UtilityCardSchema],
     institutions: [InstitutionItemSchema],
-    architecturalProjects: [ArchitecturalProjectItemSchema]
+    architecturalProjects: [ArchitecturalProjectItemSchema],
+    featuredImage: { type: String, default: "" }
   },
   { timestamps: true }
 );

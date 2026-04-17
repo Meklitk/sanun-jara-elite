@@ -137,6 +137,7 @@ export type Page = {
   biographies?: BiographyItem[];
   institutions?: InstitutionItem[];
   architecturalProjects?: ArchitecturalProjectItem[];
+  featuredImage?: string;
 };
 
 export type Content = {
