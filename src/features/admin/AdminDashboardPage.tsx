@@ -1215,6 +1215,7 @@ export default function AdminDashboardPage() {
                     <NianiTvEditor
                       media={(current.media ?? []).filter((m) => m.type === "video")}
                       onChange={(videos) => setDraft({ ...current, media: [...(current.media ?? []).filter((m) => m.type !== "video"), ...videos] })}
+                      token={token}
                     />
                   </div>
                 </>
