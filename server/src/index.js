@@ -20,9 +20,8 @@ dotenv.config();
 const PORT = Number(process.env.PORT || 8080);
 const MONGODB_URI = process.env.MONGODB_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
-// Use /tmp for Railway (writable), or fallback to local uploads folder
-// Note: Railway has /tmp as writable, or use UPLOAD_DIR env var for persistent volumes
-const UPLOAD_DIR = process.env.UPLOAD_DIR || "uploads";
+// Use /tmp for uploads which is always writable on Railway
+const UPLOAD_DIR = "/tmp";
 
 const app = express();
 
@@ -59,7 +58,7 @@ app.use(express.json({ limit: "5mb" }));
 //
 // ✅ Upload setup - Store in memory for DB storage
 //
-const uploadDirAbs = path.resolve(process.cwd(), UPLOAD_DIR);
+const uploadDirAbs = UPLOAD_DIR;
 try {
   fs.mkdirSync(uploadDirAbs, { recursive: true });
   console.log("Upload directory:", uploadDirAbs);
@@ -67,8 +66,8 @@ try {
   console.error("Failed to create upload directory:", err);
 }
 
-// Serve legacy file uploads (backward compatibility)
-app.use("/uploads", express.static(uploadDirAbs));
+// Serve video uploads from /tmp/videos
+app.use("/uploads/videos", express.static(path.join(uploadDirAbs, 'videos')));
 
 // Memory storage for new uploads (stored in DB as base64)
 const storage = multer.memoryStorage();
@@ -495,6 +494,18 @@ app.post("/api/admin/ensure-pages", requireAdmin(JWT_SECRET), async (_req, res) 
 // ✅ GLOBAL ERROR HANDLER
 //
 app.use((err, _req, res, _next) => {
+  // Handle multer errors specifically
+  if (err instanceof multer.MulterError) {
+    console.error("Multer upload error:", err.code, err.message);
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return res.status(400).json({ error: "file_too_large", message: "File size exceeds limit" });
+    }
+    if (err.code === "LIMIT_UNEXPECTED_FILE") {
+      return res.status(400).json({ error: "unexpected_file", message: "Unexpected file field" });
+    }
+    return res.status(400).json({ error: "upload_error", message: err.message });
+  }
+  
   console.error("Unhandled error:", err);
   res.status(500).json({ error: "internal_server_error", message: err.message });
 });
