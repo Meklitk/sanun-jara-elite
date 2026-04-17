@@ -84,48 +84,20 @@ try {
 // Serve video uploads from /tmp/videos
 app.use("/uploads/videos", express.static(path.join(uploadDirAbs, 'videos')));
 
-// Memory storage for new uploads (stored in DB as base64)
-const storage = multer.memoryStorage();
-
 // Memory storage for small files (images, docs) - stored in DB as base64
 const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit for DB storage
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB
 });
 
-// Disk storage for large files (videos) - stored on filesystem
-const videoStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const videoDir = path.join(uploadDirAbs, 'videos');
-    try {
-      fs.mkdirSync(videoDir, { recursive: true });
-      console.log("Video upload directory:", videoDir);
-      cb(null, videoDir);
-    } catch (err) {
-      console.error("Failed to create video directory:", err);
-      cb(err, null);
-    }
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    const filename = 'video-' + uniqueSuffix + ext;
-    console.log("Saving video as:", filename);
-    cb(null, filename);
-  }
-});
-
+// Memory storage for videos - piped to Cloudinary
 const uploadVideo = multer({
-  storage: videoStorage,
-  limits: { fileSize: 500 * 1024 * 1024 }, // 500MB limit for videos
-  fileFilter: (req, file, cb) => {
-    // Accept video files only
-    if (file.mimetype.startsWith('video/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only video files are allowed'));
-    }
-  }
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 500 * 1024 * 1024 }, // 500MB
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("video/")) cb(null, true);
+    else cb(new Error("Only video files are allowed"));
+  },
 });
 
 //
@@ -186,76 +158,40 @@ app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (
 });
 
 //
-// UPLOAD VIDEO to Cloudinary (bypasses Railway 100MB limit)
+// UPLOAD VIDEO - streams buffer to Cloudinary
 //
 app.post("/api/upload-video", requireAdmin(JWT_SECRET), uploadVideo.single("file"), async (req, res) => {
   try {
     const file = req.file;
-    if (!file) {
-      console.error("Upload video failed: No file received");
-      return res.status(400).json({ error: "missing_file" });
+    if (!file) return res.status(400).json({ error: "missing_file" });
+
+    console.log("Video upload received:", file.originalname, "size:", file.size);
+
+    if (!(CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET)) {
+      return res.status(500).json({ error: "cloudinary_not_configured", message: "Set CLOUDINARY_* env vars on Railway" });
     }
 
-    console.log("Video upload received:", file.originalname, "Size:", file.size, "Path:", file.path);
+    // Stream buffer directly to Cloudinary (no disk needed)
+    const result = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { resource_type: "video", folder: "niani-tv" },
+        (error, result) => error ? reject(error) : resolve(result)
+      );
+      stream.end(file.buffer);
+    });
 
-    // If Cloudinary is configured, upload there (supports large files)
-    if (CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET) {
-      console.log("Uploading to Cloudinary...");
-      const result = await cloudinary.uploader.upload(file.path, {
-        resource_type: "video",
-        folder: "niani-tv",
-        public_id: `video-${Date.now()}-${Math.round(Math.random() * 1E9)}`,
-      });
-      
-      // Delete local file after upload
-      try {
-        fs.unlinkSync(file.path);
-      } catch (e) {
-        console.error("Failed to delete temp file:", e);
-      }
-
-      // Store Cloudinary URL in DB
-      const media = await Media.create({
-        originalName: file.originalname,
-        mimeType: file.mimetype,
-        size: file.size,
-        data: null,
-        url: result.secure_url,
-        cloudinaryPublicId: result.public_id,
-      });
-
-      console.log("Video uploaded to Cloudinary:", media._id, "URL:", result.secure_url);
-      return res.json({ media });
-    }
-
-    // Fallback: store locally (limited by Railway 100MB)
-    console.log("Cloudinary not configured, using local storage (100MB limit)");
-    
-    // Verify file exists on disk
-    if (!fs.existsSync(file.path)) {
-      console.error("Upload video failed: File not found on disk after upload");
-      return res.status(500).json({ error: "upload_failed", message: "File not saved to disk" });
-    }
-
-    // Create URL for the uploaded video
-    const videoUrl = `/uploads/videos/${file.filename}`;
-
-    // Store metadata in DB
     const media = await Media.create({
       originalName: file.originalname,
       mimeType: file.mimetype,
       size: file.size,
       data: null,
-      url: videoUrl
+      url: result.secure_url,
     });
 
-    console.log("Video uploaded locally:", media._id, "URL:", videoUrl);
-    res.json({ media });
+    console.log("Video uploaded to Cloudinary:", result.secure_url);
+    return res.json({ media });
   } catch (err) {
     console.error("Video upload error:", err);
-    if (err.message === 'Only video files are allowed') {
-      return res.status(400).json({ error: "invalid_file_type", message: "Only video files are allowed" });
-    }
     res.status(500).json({ error: "upload_failed", message: err.message });
   }
 });
