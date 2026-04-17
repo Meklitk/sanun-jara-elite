@@ -191,19 +191,19 @@ export default function TopBar() {
       <Dialog open={flagOpen} onOpenChange={setFlagOpen}>
         <DialogContent className="max-w-3xl border-gold/20 bg-gradient-to-b from-black to-black/95">
           <DialogHeader>
-            <DialogTitle className="gold-gradient-text text-2xl text-center">Flag of Manden</DialogTitle>
+            <DialogTitle className="gold-gradient-text text-2xl text-center">{t.flagOfManden}</DialogTitle>
           </DialogHeader>
           <div className="flex items-center justify-center p-4 md:p-6">
             <div className="relative overflow-hidden rounded-2xl border-2 border-gold/30 shadow-[0_0_60px_rgba(255,205,86,0.15)]">
               <img
                 src="/images/realFlag.jpeg"
-                alt="Flag of Manden"
+                alt={t.flagOfManden}
                 className="max-w-full h-auto max-h-[60vh] md:max-h-[500px] object-contain"
               />
             </div>
           </div>
           <p className="text-center text-sm text-muted-foreground pb-2">
-            The official flag of the Manden Empire
+            {t.flagOfMandenDesc}
           </p>
         </DialogContent>
       </Dialog>
