@@ -20,7 +20,8 @@ dotenv.config();
 const PORT = Number(process.env.PORT || 8080);
 const MONGODB_URI = process.env.MONGODB_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
-const UPLOAD_DIR = process.env.UPLOAD_DIR || "uploads";
+// Use /data for Railway persistent storage, or fallback to local uploads folder
+const UPLOAD_DIR = process.env.UPLOAD_DIR || (process.env.RAILWAY_ENVIRONMENT ? "/data/uploads" : "uploads");
 
 const app = express();
 
@@ -58,7 +59,12 @@ app.use(express.json({ limit: "5mb" }));
 // ✅ Upload setup - Store in memory for DB storage
 //
 const uploadDirAbs = path.resolve(process.cwd(), UPLOAD_DIR);
-fs.mkdirSync(uploadDirAbs, { recursive: true });
+try {
+  fs.mkdirSync(uploadDirAbs, { recursive: true });
+  console.log("Upload directory:", uploadDirAbs);
+} catch (err) {
+  console.error("Failed to create upload directory:", err);
+}
 
 // Serve legacy file uploads (backward compatibility)
 app.use("/uploads", express.static(uploadDirAbs));
@@ -76,13 +82,21 @@ const upload = multer({
 const videoStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const videoDir = path.join(uploadDirAbs, 'videos');
-    fs.mkdirSync(videoDir, { recursive: true });
-    cb(null, videoDir);
+    try {
+      fs.mkdirSync(videoDir, { recursive: true });
+      console.log("Video upload directory:", videoDir);
+      cb(null, videoDir);
+    } catch (err) {
+      console.error("Failed to create video directory:", err);
+      cb(err, null);
+    }
   },
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const ext = path.extname(file.originalname);
-    cb(null, 'video-' + uniqueSuffix + ext);
+    const filename = 'video-' + uniqueSuffix + ext;
+    console.log("Saving video as:", filename);
+    cb(null, filename);
   }
 });
 
@@ -162,7 +176,18 @@ app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (
 app.post("/api/upload-video", requireAdmin(JWT_SECRET), uploadVideo.single("file"), async (req, res) => {
   try {
     const file = req.file;
-    if (!file) return res.status(400).json({ error: "missing_file" });
+    if (!file) {
+      console.error("Upload video failed: No file received");
+      return res.status(400).json({ error: "missing_file" });
+    }
+
+    console.log("Video upload received:", file.originalname, "Size:", file.size, "Path:", file.path);
+
+    // Verify file exists on disk
+    if (!fs.existsSync(file.path)) {
+      console.error("Upload video failed: File not found on disk after upload");
+      return res.status(500).json({ error: "upload_failed", message: "File not saved to disk" });
+    }
 
     // Create URL for the uploaded video
     const videoUrl = `/uploads/videos/${file.filename}`;
@@ -176,9 +201,10 @@ app.post("/api/upload-video", requireAdmin(JWT_SECRET), uploadVideo.single("file
       url: videoUrl
     });
 
+    console.log("Video uploaded successfully:", media._id, "URL:", videoUrl);
     res.json({ media });
   } catch (err) {
-    console.error(err);
+    console.error("Video upload error:", err);
     if (err.message === 'Only video files are allowed') {
       return res.status(400).json({ error: "invalid_file_type", message: "Only video files are allowed" });
     }

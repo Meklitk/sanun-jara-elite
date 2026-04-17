@@ -156,129 +156,81 @@ export function MediaEditor({ media, onChange, token }: MediaEditorProps) {
           </p>
         </div>
       ) : (
-        <ul className="space-y-4">
+        <ul className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {list.map((item, i) => {
             const TypeIcon = TYPES.find((t) => t.value === item.type)?.icon || Film;
             return (
               <li
                 key={i}
-                className="relative overflow-hidden rounded-xl border border-gold/20 bg-gradient-to-br from-gold/10 to-gold/5 p-5 shadow-lg"
+                className="relative rounded-lg border border-gold/20 bg-gradient-to-br from-gold/10 to-gold/5 p-3"
               >
-                <div className="absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b from-gold via-gold/60 to-gold/20" aria-hidden />
-                <div className="pl-3 space-y-4">
-                  <div className="flex flex-wrap items-center justify-between gap-2 pl-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-gold/20 flex items-center justify-center">
-                        <TypeIcon className="h-4 w-4 text-gold" />
-                      </div>
-                      <span className="text-xs font-display font-bold uppercase tracking-wider text-gold">
-                        Media {i + 1}
+                <div className="flex items-start gap-3">
+                  {/* Thumbnail */}
+                  {item.url && item.type === "video" ? (
+                    <video className="w-20 h-14 rounded object-cover shrink-0" src={item.url} muted />
+                  ) : (
+                    <div className="w-20 h-14 rounded bg-black/30 flex items-center justify-center shrink-0">
+                      <TypeIcon className="h-5 w-5 text-gold/50" />
+                    </div>
+                  )}
+
+                  {/* Content */}
+                  <div className="flex-1 min-w-0 space-y-2">
+                    {/* Header */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-gold/70">
+                        #{i + 1}
                       </span>
+                      <div className="flex items-center gap-0.5">
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6 text-muted-foreground hover:text-gold"
+                          disabled={i === 0}
+                          onClick={() => onChange(moveItem(list, i, i - 1))}
+                        >
+                          <ChevronUp className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6 text-muted-foreground hover:text-gold"
+                          disabled={i === list.length - 1}
+                          onClick={() => onChange(moveItem(list, i, i + 1))}
+                        >
+                          <ChevronDown className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6 text-destructive/70 hover:text-destructive"
+                          onClick={() => onChange(list.filter((_, j) => j !== i))}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 text-muted-foreground hover:text-gold"
-                        disabled={i === 0}
-                        onClick={() => onChange(moveItem(list, i, i - 1))}
-                        aria-label="Move up"
-                      >
-                        <ChevronUp className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 text-muted-foreground hover:text-gold"
-                        disabled={i === list.length - 1}
-                        onClick={() => onChange(moveItem(list, i, i + 1))}
-                        aria-label="Move down"
-                      >
-                        <ChevronDown className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        className="h-8 w-8 text-destructive/80 hover:text-destructive hover:bg-destructive/10"
-                        onClick={() => onChange(list.filter((_, j) => j !== i))}
-                        aria-label="Remove media"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-3 pl-3">
-                    <div className="space-y-2">
-                    <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
-                      Type
-                    </Label>
-                    <select
-                        className="w-full h-9 px-3 rounded-md border border-gold/20 bg-black/20 text-sm focus:border-gold/50 focus:ring-gold/20"
-                      value={item.type}
-                      onChange={(e) => setAt(i, { ...item, type: e.target.value as MediaItem["type"] })}
-                    >
-                      {TYPES.map((t) => (
-                        <option key={t.value} value={t.value}>
-                            {t.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
-                        Category
-                      </Label>
-                      <select
-                        className="w-full h-9 px-3 rounded-md border border-gold/20 bg-black/20 text-sm focus:border-gold/50 focus:ring-gold/20"
-                        value={item.category}
-                        onChange={(e) => setAt(i, { ...item, category: e.target.value as MediaItem["category"] })}
-                      >
-                        {CATEGORIES.map((c) => (
-                          <option key={c.value} value={c.value}>
-                            {c.label}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 pl-3">
-                    <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
-                      Title
-                    </Label>
+                    {/* Title Input */}
                     <Input
-                      placeholder="Media title..."
-                      className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
+                      placeholder="Title..."
+                      className="h-7 text-xs border-gold/20 bg-black/20 px-2"
                       value={item.title}
                       onChange={(e) => setAt(i, { ...item, title: e.target.value })}
                     />
-                  </div>
 
-                  <div className="space-y-2 pl-3">
-                    <Label className="text-xs font-semibold text-foreground/80 flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-gold/60 rounded-full"></span>
-                      File
-                    </Label>
+                    {/* File Input */}
                     {item.url ? (
-                      <div className="flex items-center gap-3 p-3 rounded-lg bg-black/20 border border-gold/20">
-                        {item.type === "video" && (
-                          <video className="w-24 h-16 rounded object-cover" src={item.url} muted />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-gold truncate">{item.url}</p>
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <p className="text-[10px] text-gold/70 truncate flex-1">{item.url.split('/').pop()}</p>
                         <Button
                           type="button"
                           size="sm"
-                          variant="outline"
-                          className="shrink-0 border-gold/30 hover:bg-gold/10"
+                          variant="ghost"
+                          className="h-6 text-[10px] px-2 py-0 text-muted-foreground hover:text-gold"
                           onClick={() => setAt(i, { ...item, url: "" })}
                         >
                           Change
@@ -289,20 +241,12 @@ export function MediaEditor({ media, onChange, token }: MediaEditorProps) {
                         <Input
                           type="file"
                           accept={item.type === "video" ? "video/*" : item.type === "audio" ? "audio/*" : ".pdf,.doc,.docx"}
-                          className="flex-1 border-gold/20 bg-black/20 text-xs"
+                          className="h-7 text-[10px] border-gold/20 bg-black/20 px-2"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
-                            if (file) {
-                              handleFileUpload(file, i, item.type);
-                            }
+                            if (file) handleFileUpload(file, i, item.type);
                             e.currentTarget.value = "";
                           }}
-                        />
-                        <Input
-                          placeholder="Or paste URL..."
-                          className="flex-1 border-gold/20 bg-black/20 text-xs"
-                          value={item.url}
-                          onChange={(e) => setAt(i, { ...item, url: e.target.value })}
                         />
                       </div>
                     )}
