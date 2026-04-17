@@ -28,6 +28,11 @@ export default function MainLayout() {
 
           <main className="relative min-w-0 flex-1 w-full">
             <Outlet />
+            {showCoatOfArms ? (
+              <div className="flex xl:hidden justify-center mt-10">
+                <SiteCoatOfArms className="w-full max-w-[200px]" />
+              </div>
+            ) : null}
           </main>
 
           {showCoatOfArms ? (
