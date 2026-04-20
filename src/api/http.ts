@@ -26,8 +26,18 @@ export async function http<T>(
       typeof body === "object" && body !== null && "error" in body
         ? (body as { error?: unknown }).error
         : undefined;
+    const messageFromJson =
+      typeof body === "object" && body !== null && "message" in body
+        ? (body as { message?: unknown }).message
+        : undefined;
+    const normalizedError = errorFromJson !== undefined ? String(errorFromJson) : "";
+    const normalizedMessage = messageFromJson !== undefined ? String(messageFromJson) : "";
     const message =
-      errorFromJson !== undefined ? String(errorFromJson) : `http_${res.status}`;
+      normalizedMessage
+        ? normalizedError && normalizedError !== normalizedMessage
+          ? `${normalizedError}: ${normalizedMessage}`
+          : normalizedMessage
+        : normalizedError || `http_${res.status}`;
     throw new Error(message);
   }
   return body as T;

@@ -124,7 +124,7 @@ export default function AdminLoginPage() {
 
         {/* Footer */}
         <p className="mt-8 text-center text-xs text-gold/40">
-          Sanun Jara Elite Admin Dashboard
+          Sanun Jara Admin Dashboard
         </p>
       </div>
     </div>
