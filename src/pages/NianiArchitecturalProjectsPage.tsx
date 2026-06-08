@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Building2, Image as ImageIcon, Hammer } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import ImageLightbox from "@/components/ImageLightbox";
 import {
   PageErrorState,
   PageLoadingState,
@@ -70,15 +71,11 @@ export default function NianiArchitecturalProjectsPage() {
                   </div>
                   <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {project.conceptImages.map((img, idx) => (
-                      <motion.img
+                      <ImageLightbox
                         key={idx}
                         src={img}
                         alt={`${localize(project.name)} concept ${idx + 1}`}
                         className="h-48 w-full rounded-xl object-cover border border-gold/10 shadow-lg"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: index * 0.1 + idx * 0.05 }}
                       />
                     ))}
                   </div>
@@ -95,15 +92,11 @@ export default function NianiArchitecturalProjectsPage() {
                   </div>
                   <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {project.workImages.map((img, idx) => (
-                      <motion.img
+                      <ImageLightbox
                         key={idx}
                         src={img}
                         alt={`${localize(project.name)} work ${idx + 1}`}
                         className="h-48 w-full rounded-xl object-cover border border-gold/10 shadow-lg"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: index * 0.1 + idx * 0.05 }}
                       />
                     ))}
                   </div>

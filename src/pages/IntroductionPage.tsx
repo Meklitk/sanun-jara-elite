@@ -4,9 +4,30 @@ import {
   PageErrorState,
   PageLoadingState,
   PageNotFoundState,
-  splitParagraphs,
   useCmsPage,
 } from "@/features/pages/page-content";
+
+function parseIntroductionSections(content: string) {
+  if (!content.includes("## ")) {
+    return content
+      .split(/\n\s*\n/g)
+      .map((paragraph) => paragraph.trim())
+      .filter(Boolean)
+      .map((body) => ({ body }));
+  }
+
+  return content
+    .split(/^## /m)
+    .filter(Boolean)
+    .map((block) => {
+      const [heading, ...rest] = block.split("\n");
+      return {
+        heading: heading.trim(),
+        body: rest.join("\n").trim(),
+      };
+    })
+    .filter((section) => section.heading || section.body);
+}
 
 export default function IntroductionPage() {
   const { page, title, content, isLoading, error } = useCmsPage("introduction");
@@ -16,7 +37,7 @@ export default function IntroductionPage() {
   if (error) return <PageErrorState />;
   if (!page) return <PageNotFoundState />;
 
-  const paragraphs = splitParagraphs(content);
+  const paragraphs = parseIntroductionSections(content);
 
   return (
     <div className="min-h-[calc(100vh-3.5rem)] space-y-8 sm:space-y-12 pb-12 sm:pb-16">
@@ -74,16 +95,23 @@ export default function IntroductionPage() {
 
       <section className="mx-auto max-w-5xl space-y-4 sm:space-y-6 px-3 sm:px-6">
         {paragraphs.length ? (
-          paragraphs.map((paragraph, index) => (
+          paragraphs.map((section, index) => (
             <motion.article
-              key={`${paragraph.slice(0, 24)}-${index}`}
+              key={`${section.heading ?? section.body.slice(0, 24)}-${index}`}
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-40px" }}
               transition={{ delay: index * 0.06, duration: 0.4 }}
               className="rounded-[1.25rem] sm:rounded-[1.75rem] border border-gold/12 bg-black/28 p-4 sm:p-6 shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
             >
-              <p className="text-base sm:text-lg leading-7 sm:leading-8 text-foreground/80">{paragraph}</p>
+              {section.heading ? (
+                <h2 className="mb-3 text-xl font-display font-semibold gold-gradient-text sm:text-2xl">
+                  {section.heading}
+                </h2>
+              ) : null}
+              <p className="text-base sm:text-lg leading-7 sm:leading-8 text-foreground/80 whitespace-pre-line">
+                {section.body}
+              </p>
             </motion.article>
           ))
         ) : (

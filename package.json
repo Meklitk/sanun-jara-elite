@@ -6,6 +6,10 @@
   "scripts": {
     "dev": "vite",
     "dev:full": "concurrently -n web,api -c cyan,magenta \"npm run dev\" \"npm --prefix server run dev\"",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "dev:docker": "docker compose up -d && npm run dev",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"

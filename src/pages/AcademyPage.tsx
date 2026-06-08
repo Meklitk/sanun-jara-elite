@@ -1,3 +1,4 @@
+import NkoAlphabetLesson from "@/components/academy/NkoAlphabetLesson";
 import UtilityLandingPage from "@/features/pages/UtilityLandingPage";
 import {
   PageErrorState,
@@ -19,6 +20,10 @@ export default function AcademyPage({ section }: AcademyPageProps) {
   if (isLoading) return <PageLoadingState />;
   if (error) return <PageErrorState />;
   if (!page) return <PageNotFoundState />;
+
+  if (section === "nko") {
+    return <NkoAlphabetLesson />;
+  }
 
   const allCards = academyCardDefinitions
     .map((definition) => {

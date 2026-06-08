@@ -181,7 +181,7 @@ export default function SidebarNav({
                           if (item.key === "intranet" && child.id === "login") {
                             goTo("/admin/login");
                           } else {
-                            goTo(`${item.path}#${child.id}`);
+                            goTo(child.path || `${item.path}#${child.id}`);
                           }
                         }}
                         className="w-full rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
@@ -198,25 +198,73 @@ export default function SidebarNav({
       ) : null}
 
       <div className={cn("space-y-2", mode === "desktop" && "flex-1 overflow-y-auto pr-1")}>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-gold/65">
-          {t.resourcesDirectory}
-        </p>
-        {coreNavItems.map((item) => (
-          <button
-            key={item.path}
-            type="button"
-            onClick={() => goTo(item.path)}
-            className={cn(
-              "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition duration-300",
-              isActive(item.path)
-                ? "border-gold/30 bg-gold/12 text-gold shadow-[inset_0_1px_0_hsl(var(--gold)/0.15)]"
-                : "border-white/5 bg-white/[0.03] text-foreground/78 hover:border-gold/15 hover:bg-white/[0.06] hover:text-foreground",
-            )}
-          >
-            <span className="font-display text-sm tracking-[0.08em]">{t[item.key]}</span>
-            {isActive(item.path) ? <div className="h-2.5 w-2.5 rounded-full bg-gold/70" /> : null}
-          </button>
-        ))}
+        {mode === "mobile" ? (
+          <div className="rounded-2xl border border-gold/12 bg-black/20 p-3">
+            <button
+              type="button"
+              onClick={() => toggleDropdown("core-overview")}
+              className={cn(
+                "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-semibold transition",
+                coreNavItems.some((item) => isActive(item.path))
+                  ? "bg-gold/12 text-gold"
+                  : "text-foreground/80 hover:bg-white/5 hover:text-foreground",
+              )}
+            >
+              {t.overview}
+              <ChevronDown
+                className={cn(
+                  "h-4 w-4 transition-transform duration-200",
+                  openDropdowns["core-overview"] ? "rotate-180" : ""
+                )}
+              />
+            </button>
+            <div
+              className={cn(
+                "mt-2 space-y-1 overflow-hidden transition-all duration-200",
+                openDropdowns["core-overview"] ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+              )}
+            >
+              {coreNavItems.map((item) => (
+                <button
+                  key={item.path}
+                  type="button"
+                  onClick={() => goTo(item.path)}
+                  className={cn(
+                    "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition",
+                    isActive(item.path)
+                      ? "bg-gold/12 text-gold"
+                      : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
+                  )}
+                >
+                  <span>{t[item.key]}</span>
+                  {isActive(item.path) ? <div className="h-2 w-2 rounded-full bg-gold/70" /> : null}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-gold/65">
+              {t.resourcesDirectory}
+            </p>
+            {coreNavItems.map((item) => (
+              <button
+                key={item.path}
+                type="button"
+                onClick={() => goTo(item.path)}
+                className={cn(
+                  "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition duration-300",
+                  isActive(item.path)
+                    ? "border-gold/30 bg-gold/12 text-gold shadow-[inset_0_1px_0_hsl(var(--gold)/0.15)]"
+                    : "border-white/5 bg-white/[0.03] text-foreground/78 hover:border-gold/15 hover:bg-white/[0.06] hover:text-foreground",
+                )}
+              >
+                <span className="font-display text-sm tracking-[0.08em]">{t[item.key]}</span>
+                {isActive(item.path) ? <div className="h-2.5 w-2.5 rounded-full bg-gold/70" /> : null}
+              </button>
+            ))}
+          </>
+        )}
 
         {/* Dynamic Content Items */}
         {contentItems.length > 0 && (

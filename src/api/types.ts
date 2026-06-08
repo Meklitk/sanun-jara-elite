@@ -66,6 +66,7 @@ export type DirectoryItem = {
 export type DirectoryData = {
   countries: DirectoryItem[];
   organizations: DirectoryItem[];
+  affiliations: DirectoryItem[];
 };
 
 export type UtilityCard = {
@@ -137,6 +138,7 @@ export type Page = {
   biographies?: BiographyItem[];
   institutions?: InstitutionItem[];
   architecturalProjects?: ArchitecturalProjectItem[];
+  nkoAlphabetAudio?: string[];
   featuredImage?: string;
 };
 

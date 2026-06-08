@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Landmark, Play } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
+import ImageLightbox from "@/components/ImageLightbox";
 import {
   PageErrorState,
   PageLoadingState,
@@ -64,15 +65,11 @@ export default function NianiInstitutionsPage() {
                 <div className="mb-4">
                   <div className="grid gap-2 grid-cols-2">
                     {institution.images.map((img, idx) => (
-                      <motion.img
+                      <ImageLightbox
                         key={idx}
                         src={img}
                         alt={`${localize(institution.name)} ${idx + 1}`}
                         className="h-32 w-full rounded-lg object-cover border border-gold/10"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
-                        transition={{ delay: index * 0.1 + idx * 0.05 }}
                       />
                     ))}
                   </div>

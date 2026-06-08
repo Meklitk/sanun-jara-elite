@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { BookOpen, Briefcase, GraduationCap, HelpCircle, History, Users } from "lucide-react";
+import { BookOpen, Coins, GraduationCap, HelpCircle, History, Users } from "lucide-react";
 
 import type { UtilityCard } from "@/api/types";
 import type { TranslationKey } from "@/lib/i18n";
@@ -27,8 +27,8 @@ export const referenceBureauCardDefinitions: UtilityCardDefinition[] = [
     accent: "crimson",
   },
   {
-    id: "entrepreneur",
-    icon: Briefcase,
+    id: "cotiser",
+    icon: Coins,
     titleKey: "iAmEntrepreneur",
     descriptionKey: "iAmEntrepreneurDesc",
   },

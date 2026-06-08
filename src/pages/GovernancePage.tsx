@@ -152,7 +152,30 @@ export default function GovernancePage() {
 
           <div className="rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]">
             <h2 className="text-lg font-semibold text-foreground">{t.branchesTitle}</h2>
-            <div className="mt-4 overflow-hidden rounded-[1.25rem] border border-gold/12">
+
+            {/* Mobile: stacked cards */}
+            <div className="mt-4 space-y-3 md:hidden">
+              {governance.branches.map((branch, index) => (
+                <div
+                  key={`${branch.name.en ?? "branch"}-mobile-${index}`}
+                  className="rounded-[1.25rem] border border-gold/12 bg-black/20 p-4"
+                >
+                  <p className="text-[10px] uppercase tracking-[0.22em] text-gold/68">{t.branch}</p>
+                  <LinkedValue
+                    value={localize(branch.name)}
+                    url={branch.url}
+                    className="mt-1 inline-flex text-sm font-semibold text-foreground transition hover:text-gold"
+                  />
+                  <p className="mt-3 text-[10px] uppercase tracking-[0.22em] text-gold/68">{t.mainPowers}</p>
+                  <p className="mt-1 text-sm text-foreground/78">{localize(branch.powers)}</p>
+                  <p className="mt-3 text-[10px] uppercase tracking-[0.22em] text-gold/68">{t.selection}</p>
+                  <p className="mt-1 text-sm text-foreground/78">{localize(branch.selection)}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: table */}
+            <div className="mt-4 hidden overflow-x-auto rounded-[1.25rem] border border-gold/12 md:block">
               <table className="min-w-full divide-y divide-gold/10 text-left text-sm">
                 <thead className="bg-gold/10 text-gold">
                   <tr>

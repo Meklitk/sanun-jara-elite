@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Building, Globe, Plus, Trash2 } from "lucide-react";
+import { Building, Globe, Handshake, Plus, Trash2 } from "lucide-react";
 
 function emptyDirectoryItem(): DirectoryItem {
   return {
@@ -131,6 +131,11 @@ export default function AdminDirectoryEditor({ directory, onChange }: Props) {
             value: directory.organizations.length,
             note: "Displayed alphabetically on the public page",
           },
+          {
+            label: "Affiliation entries",
+            value: (directory.affiliations ?? []).length,
+            note: "Displayed alphabetically on the public page",
+          },
         ].map((item) => (
           <div
             key={item.label}
@@ -159,6 +164,15 @@ export default function AdminDirectoryEditor({ directory, onChange }: Props) {
         items={directory.organizations}
         addLabel="Add Organization"
         onChange={(organizations) => onChange({ ...directory, organizations })}
+      />
+
+      <DirectoryGroup
+        icon={Handshake}
+        title="By Affiliation"
+        description="Add affiliations and their relevant information. The public page also sorts this section alphabetically."
+        items={directory.affiliations ?? []}
+        addLabel="Add Affiliation"
+        onChange={(affiliations) => onChange({ ...directory, affiliations })}
       />
     </div>
   );

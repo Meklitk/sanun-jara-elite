@@ -1,4 +1,4 @@
-import { Building2, Tv, Landmark, Play, Film } from "lucide-react";
+import { Building2, Tv, Landmark, Play, Film, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
 
@@ -124,6 +124,8 @@ function VideoCard({ item, index, t }: { item: MediaItem; index: number; t: any 
   );
 }
 
+const YOUTUBE_CHANNEL_URL = "https://youtu.be/WFnZLcRzfYA";
+
 function NianiTvSection({ page, t }: { page: any; t: any }) {
   const [selectedVideo, setSelectedVideo] = useState<MediaItem | null>(null);
   const videos = (page?.media || []).filter((item: MediaItem) => item.type === "video");
@@ -174,6 +176,19 @@ function NianiTvSection({ page, t }: { page: any; t: any }) {
               >
                 {t.nianiTvDesc}
               </motion.p>
+
+              <motion.a
+                href={YOUTUBE_CHANNEL_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.5, duration: 0.6 }}
+                className="mt-6 inline-flex items-center gap-2 rounded-full border border-gold/25 bg-gold/10 px-5 py-2.5 text-sm font-semibold text-gold transition hover:border-gold/45 hover:bg-gold/15"
+              >
+                {t.watchYoutubeChannel}
+                <ExternalLink className="h-4 w-4" />
+              </motion.a>
             </div>
           </div>
         </div>

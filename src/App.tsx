@@ -20,6 +20,7 @@ import IntranetPage from "./pages/IntranetPage";
 import EconomyPage from "./pages/EconomyPage";
 import CulturePage from "./pages/CulturePage";
 import ResourcesPage from "./pages/ResourcesPage";
+import TombouctouPage from "./pages/TombouctouPage";
 import ContentPage from "./pages/ContentPage";
 import PageView from "@/features/pages/PageView";
 import AdminLoginPage from "@/features/admin/AdminLoginPage";
@@ -48,13 +49,15 @@ const App = () => (
               <Route path="/commerce" element={<PageView pageKey="commerce" />} />
               <Route path="/culture" element={<CulturePage />} />
               <Route path="/resources" element={<ResourcesPage />} />
+              <Route path="/tombouctou" element={<TombouctouPage />} />
               <Route path="/global-perspectives" element={<GlobalPerspectivesPage />} />
               <Route path="/global-perspectives/country" element={<GlobalPerspectivesPage section="country" />} />
               <Route path="/global-perspectives/organization" element={<GlobalPerspectivesPage section="organization" />} />
+              <Route path="/global-perspectives/affiliation" element={<GlobalPerspectivesPage section="affiliation" />} />
               <Route path="/reference-bureau" element={<ReferenceBureauPage />} />
               <Route path="/reference-bureau/join" element={<ReferenceBureauPage section="join" />} />
               <Route path="/reference-bureau/questions" element={<ReferenceBureauPage section="questions" />} />
-              <Route path="/reference-bureau/entrepreneur" element={<ReferenceBureauPage section="entrepreneur" />} />
+              <Route path="/reference-bureau/cotiser" element={<ReferenceBureauPage section="cotiser" />} />
               <Route path="/niani" element={<NianiPage />} />
               <Route path="/niani/institutions" element={<NianiInstitutionsPage />} />
               <Route path="/niani/architectural-projects" element={<NianiArchitecturalProjectsPage />} />

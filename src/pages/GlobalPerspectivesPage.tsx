@@ -1,4 +1,4 @@
-import { Building, Globe, type LucideIcon } from "lucide-react";
+import { Building, Globe, Handshake, type LucideIcon } from "lucide-react";
 import { motion } from "framer-motion";
 
 import {
@@ -78,7 +78,7 @@ function DirectorySection({ id, icon: Icon, title, description, items, localize,
 }
 
 type GlobalPerspectivesPageProps = {
-  section?: "country" | "organization";
+  section?: "country" | "organization" | "affiliation";
 };
 
 export default function GlobalPerspectivesPage({ section }: GlobalPerspectivesPageProps) {
@@ -92,6 +92,7 @@ export default function GlobalPerspectivesPage({ section }: GlobalPerspectivesPa
   const paragraphs = splitParagraphs(content);
   const countries = sortAlphabetically(page.directory?.countries ?? [], localize);
   const organizations = sortAlphabetically(page.directory?.organizations ?? [], localize);
+  const affiliations = sortAlphabetically(page.directory?.affiliations ?? [], localize);
 
   return (
     <div className="space-y-8 sm:space-y-10 w-full">
@@ -132,6 +133,18 @@ export default function GlobalPerspectivesPage({ section }: GlobalPerspectivesPa
           items={organizations}
           localize={localize}
           emptyMessage="No organizations have been added yet. Add them from the admin dashboard and they will appear here in alphabetical order."
+        />
+      )}
+
+      {(!section || section === "affiliation") && (
+        <DirectorySection
+          id="affiliation"
+          icon={Handshake}
+          title={t.byAffiliation}
+          description={t.byAffiliationDesc}
+          items={affiliations}
+          localize={localize}
+          emptyMessage="No affiliations have been added yet. Add them from the admin dashboard and they will appear here in alphabetical order."
         />
       )}
     </div>

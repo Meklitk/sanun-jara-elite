@@ -134,7 +134,44 @@ const DirectoryItemSchema = new mongoose.Schema(
 const DirectorySchema = new mongoose.Schema(
   {
     countries: [DirectoryItemSchema],
-    organizations: [DirectoryItemSchema]
+    organizations: [DirectoryItemSchema],
+    affiliations: [DirectoryItemSchema]
+  },
+  { _id: false }
+);
+
+const BiographyMetaSchema = new mongoose.Schema(
+  {
+    label: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    value: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    }
+  },
+  { _id: false }
+);
+
+const BiographySchema = new mongoose.Schema(
+  {
+    slug: { type: String, required: true },
+    name: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    role: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    kind: { type: String, enum: ["person", "institution"], default: "person" },
+    content: {
+      en: { type: String, default: "" },
+      fr: { type: String, default: "" }
+    },
+    images: [{ type: String }],
+    meta: [BiographyMetaSchema]
   },
   { _id: false }
 );
@@ -260,6 +297,8 @@ const PageSchema = new mongoose.Schema(
     utilityCards: [UtilityCardSchema],
     institutions: [InstitutionItemSchema],
     architecturalProjects: [ArchitecturalProjectItemSchema],
+    biographies: [BiographySchema],
+    nkoAlphabetAudio: [{ type: String }],
     featuredImage: { type: String, default: "" }
   },
   { timestamps: true }

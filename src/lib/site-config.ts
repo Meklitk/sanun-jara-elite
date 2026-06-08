@@ -25,6 +25,7 @@ export const coreNavItems: CoreNavItem[] = [
   { key: "commerce", path: "/commerce" },
   { key: "culture", path: "/culture" },
   { key: "resources", path: "/resources" },
+  { key: "tombouctou", path: "/tombouctou" },
 ];
 
 export const utilityNavItems: UtilityNavItem[] = [
@@ -34,6 +35,7 @@ export const utilityNavItems: UtilityNavItem[] = [
     children: [
       { id: "country", key: "byCountry", path: "/global-perspectives/country" },
       { id: "organization", key: "byOrganization", path: "/global-perspectives/organization" },
+      { id: "affiliation", key: "byAffiliation", path: "/global-perspectives/affiliation" },
     ],
   },
   {
@@ -42,7 +44,7 @@ export const utilityNavItems: UtilityNavItem[] = [
     children: [
       { id: "join", key: "wantToJoin", path: "/reference-bureau/join" },
       { id: "questions", key: "haveQuestions", path: "/reference-bureau/questions" },
-      { id: "entrepreneur", key: "iAmEntrepreneur", path: "/reference-bureau/entrepreneur" },
+      { id: "cotiser", key: "iAmEntrepreneur", path: "/reference-bureau/cotiser" },
     ],
   },
   {
@@ -88,9 +90,9 @@ export function buildQuickNavItems(labels: Record<TranslationKey, string>) {
         parentLabel: "",
       },
       ...item.children.map((child) => ({
-        id: `${item.path}#${child.id}`,
+        id: child.path || `${item.path}#${child.id}`,
         label: labels[child.key],
-        path: `${item.path}#${child.id}`,
+        path: child.path || `${item.path}#${child.id}`,
         parentLabel: labels[item.key],
       })),
     ]),

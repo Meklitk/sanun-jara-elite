@@ -1,3 +1,6 @@
+import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+
 import UtilityLandingPage from "@/features/pages/UtilityLandingPage";
 import {
   PageErrorState,
@@ -7,9 +10,10 @@ import {
 } from "@/features/pages/page-content";
 import { findUtilityCard, referenceBureauCardDefinitions } from "@/features/pages/utility-page-config";
 import { useI18n } from "@/lib/i18n";
+import { MembershipForm, QuestionsForm, CotiserSection } from "@/components/forms/ReferenceBureauForms";
 
 type ReferenceBureauPageProps = {
-  section?: "join" | "questions" | "entrepreneur";
+  section?: "join" | "questions" | "cotiser";
 };
 
 export default function ReferenceBureauPage({ section }: ReferenceBureauPageProps) {
@@ -25,7 +29,7 @@ export default function ReferenceBureauPage({ section }: ReferenceBureauPageProp
       const card = findUtilityCard(page.utilityCards, definition.id);
       const resolvedTitle = localize(card?.title) || t[definition.titleKey];
       const resolvedDescription = localize(card?.description) || t[definition.descriptionKey];
-      const href = card?.url?.trim() || "";
+      const href = card?.url?.trim() || `/reference-bureau/${definition.id}`;
 
       if (!resolvedTitle && !resolvedDescription && !href) return null;
 
@@ -41,20 +45,34 @@ export default function ReferenceBureauPage({ section }: ReferenceBureauPageProp
     })
     .filter((card): card is NonNullable<typeof card> => Boolean(card));
 
-  const filteredCards = section
-    ? allCards.filter((card) => card.id === section)
-    : allCards;
+  if (section) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/reference-bureau"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-gold/15 bg-black/20 px-4 text-xs font-semibold uppercase tracking-wider text-gold transition hover:border-gold/30 hover:bg-gold/10"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>{t.referenceBureau}</span>
+          </Link>
+        </div>
+
+        {section === "join" && <MembershipForm />}
+        {section === "questions" && <QuestionsForm />}
+        {section === "cotiser" && <CotiserSection />}
+      </div>
+    );
+  }
 
   return (
     <UtilityLandingPage
       eyebrow={t.referenceBureau}
       title={title || t.referenceBureau}
       intro={
-        !section
-          ? content || "The Reference Bureau helps visitors join the network, ask questions, or register entrepreneurial interest."
-          : ""
+        content || "The Reference Bureau helps visitors join the network, ask questions, or register entrepreneurial interest."
       }
-      cards={filteredCards}
+      cards={allCards}
     />
   );
 }

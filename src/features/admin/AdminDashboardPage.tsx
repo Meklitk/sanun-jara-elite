@@ -5,6 +5,7 @@ import { usePages, useUpdatePage, useEnsurePages } from "@/api/pages";
 import { useAllContent, useCreateContent, useUpdateContent, useDeleteContent } from "@/api/content";
 import { clearAdminToken, getAdminToken } from "@/api/auth";
 import { uploadFile } from "@/api/upload";
+import { http } from "@/api/http";
 import { useI18n } from "@/lib/i18n";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { AdminLinksEditor, AdminTimelineEditor, AdminEconomyEditor } from "./content-list-editors";
+import AdminNkoAudioEditor from "./AdminNkoAudioEditor";
 import AdminBiographiesEditor from "../governance/AdminBiographiesEditor";
 import AdminGovernanceEditor from "../governance/AdminGovernanceEditor";
 import AdminUtilityCardsEditor from "../pages/AdminUtilityCardsEditor";
@@ -54,7 +56,9 @@ import {
   Eye,
   HelpCircle,
   FileEdit,
-  Upload
+  Upload,
+  Inbox,
+  Mail
 } from "lucide-react";
 
 function isLinkMeaningful(l: PageLink): boolean {
@@ -104,6 +108,7 @@ const PAGE_ORDER = [
   "culture",
   "resources",
   "niani",
+  "tombouctou",
 ] as const;
 
 function sortPagesLikeSite(pages: Page[]): Page[] {
@@ -146,15 +151,72 @@ export default function AdminDashboardPage() {
   const [draft, setDraft] = useState<Page | null>(null);
 
   // Content management state
-  const [activeTab, setActiveTab] = useState<"pages" | "content">("pages");
+  const [activeTab, setActiveTab] = useState<"pages" | "content" | "submissions">("pages");
   const [selectedContentId, setSelectedContentId] = useState<string>("");
   const [contentDraft, setContentDraft] = useState<Content | null>(null);
   const [isCreatingContent, setIsCreatingContent] = useState(false);
   const [newContentSlug, setNewContentSlug] = useState("");
+  const [submissions, setSubmissions] = useState<any[]>([]);
+  const [selectedSubId, setSelectedSubId] = useState<string | null>(null);
+  const [isLoadingSubmissions, setIsLoadingSubmissions] = useState(false);
   const contentQuery = useAllContent(token);
   const createContent = useCreateContent();
   const updateContent = useUpdateContent();
   const deleteContent = useDeleteContent();
+
+  const QUESTIONS_FR = [
+    "Parlez-nous de vous.",
+    "Soutenez-vous notre structure monarchique, notre vision et notre mission ?",
+    "Êtes-vous une patriote Mandenka, prête à œuvrer pour l’unité entre tous les peuples du Manden, quelle que soit leur appartenance ethnique ou religieuse ?",
+    "Êtes-vous déjà membre de Sanun Jara ? Avez-vous lu notre règlement intérieur ?",
+    "Vous engagez-vous à respecter le règlement intérieur ?",
+    "Avez-vous déjà été affiliée à d’autres organisations du Manden ?",
+    "Avez-vous déjà relevé un défi majeur dans votre vie ?",
+    "Qu’est-ce qui vous plaît chez Sanun Jara ?",
+    "À quoi ressemble votre emploi du temps ?",
+    "Êtes-vous au courant que Sanun Jara tient une assemblée générale chaque dimanche ?",
+    "Si vous cessez de voter ou de participer aux assemblées générales, acceptez-vous d’être exclue par le comité de discipline ?",
+    "Savez-vous que chaque membre doit voter pour les nouvelles recrues ?",
+    "Êtes-vous prête à travailler sous la direction d’une femme ?",
+    "Êtes-vous prête à évoluer dans une structure bénévole ?",
+    "Êtes-vous prête à intégrer le gouvernement de Sanun Jara ?",
+    "Croyez-vous être à la hauteur pour faire partie de la chefferie de Sanun Jara (titre de Wana) ?",
+    "Êtes-vous d’accord pour que le temps révèle votre véritable engagement et personnalité au sein de Sanun Jara ?"
+  ];
+
+  const fetchSubmissions = () => {
+    setIsLoadingSubmissions(true);
+    http<{ submissions: any[] }>("/api/submissions", { token })
+      .then((res) => {
+        setSubmissions(res.submissions);
+      })
+      .catch((err) => {
+        console.error(err);
+        toast.error("Failed to load submissions");
+      })
+      .finally(() => {
+        setIsLoadingSubmissions(false);
+      });
+  };
+
+  useEffect(() => {
+    if (activeTab === "submissions") {
+      fetchSubmissions();
+    }
+  }, [activeTab, token]);
+
+  const handleDeleteSub = async (id: string) => {
+    if (!window.confirm("Voulez-vous vraiment supprimer ce formulaire ?")) return;
+    try {
+      await http(`/api/submissions/${id}`, { method: "DELETE", token });
+      toast.success("Formulaire supprimé");
+      if (selectedSubId === id) setSelectedSubId(null);
+      fetchSubmissions();
+    } catch (err) {
+      console.error(err);
+      toast.error("Échec de la suppression");
+    }
+  };
 
   const current = draft ?? selected ?? null;
   const isHistorySection = current?.key === "history";
@@ -180,6 +242,8 @@ export default function AdminDashboardPage() {
     "global-perspectives": <Globe className="w-4 h-4" />,
     "reference-bureau": <FileText className="w-4 h-4" />,
     academy: <BookOpen className="w-4 h-4" />,
+    niani: <Building2 className="w-4 h-4" />,
+    tombouctou: <Globe className="w-4 h-4" />,
   };
   const historyParagraphs = splitEditorParagraphs(current?.content?.fr ?? "");
   const historyEventCount = current?.timeline?.filter(isTimelineMeaningful).length ?? 0;
@@ -474,7 +538,7 @@ export default function AdminDashboardPage() {
             <Separator className="my-4 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
 
             {/* Tabs */}
-            <div className="grid grid-cols-2 gap-1 rounded-xl bg-black/20 p-1 mb-4">
+            <div className="grid grid-cols-3 gap-1 rounded-xl bg-black/20 p-1 mb-4">
               <button
                 type="button"
                 onClick={() => setActiveTab("pages")}
@@ -499,12 +563,26 @@ export default function AdminDashboardPage() {
                 <FolderOpen className="w-3.5 h-3.5" />
                 Content
               </button>
+              <button
+                type="button"
+                onClick={() => setActiveTab("submissions")}
+                className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
+                  activeTab === "submissions"
+                    ? "bg-gold/20 text-gold border border-gold/30"
+                    : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                }`}
+              >
+                <Inbox className="w-3.5 h-3.5" />
+                Forms
+              </button>
             </div>
 
             {/* Stats Summary */}
             <div className="grid grid-cols-2 gap-2 mb-4">
               <div className={`rounded-lg border p-2 text-center transition-all ${
-                activeTab === "pages" 
+                activeTab === "submissions"
+                  ? "bg-green-500/10 border-green-500/30"
+                  : activeTab === "pages" 
                   ? (draft 
                       ? "bg-amber-500/10 border-amber-500/30" 
                       : "bg-green-500/10 border-green-500/30")
@@ -513,33 +591,68 @@ export default function AdminDashboardPage() {
                       : "bg-green-500/10 border-green-500/30")
               }`}>
                 <div className={`text-lg font-bold ${
-                  activeTab === "pages" 
+                  activeTab === "submissions"
+                    ? "text-green-400"
+                    : activeTab === "pages" 
                     ? (draft ? "text-amber-400" : "text-green-400")
                     : (contentDraft ? "text-amber-400" : "text-green-400")
                 }`}>
-                  {activeTab === "pages" 
+                  {activeTab === "submissions"
+                    ? <CheckCircle2 className="w-5 h-5 mx-auto" />
+                    : activeTab === "pages" 
                     ? (draft ? <Sparkles className="w-5 h-5 mx-auto" /> : <CheckCircle2 className="w-5 h-5 mx-auto" />)
                     : (contentDraft ? <Sparkles className="w-5 h-5 mx-auto" /> : <CheckCircle2 className="w-5 h-5 mx-auto" />)}
                 </div>
                 <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
-                  {activeTab === "pages" 
+                  {activeTab === "submissions"
+                    ? "Inbox"
+                    : activeTab === "pages" 
                     ? (draft ? "Unsaved" : "Saved") 
                     : (contentDraft ? "Unsaved" : "Saved")}
                 </div>
               </div>
               <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 p-2 text-center">
                 <div className="text-lg font-bold text-blue-400">
-                  {activeTab === "pages" ? pages.length : contentItems.length}
+                  {activeTab === "pages" ? pages.length : activeTab === "content" ? contentItems.length : submissions.length}
                 </div>
                 <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
-                  {activeTab === "pages" ? "Sections" : "Items"}
+                  {activeTab === "pages" ? "Sections" : activeTab === "content" ? "Items" : "Forms"}
                 </div>
               </div>
             </div>
 
             {/* Navigation */}
             <div className="space-y-2 max-h-[calc(100vh-400px)] overflow-y-auto pr-1 scrollbar-thin">
-              {activeTab === "pages" ? (
+              {activeTab === "submissions" ? (
+                isLoadingSubmissions ? (
+                  <div className="rounded-xl px-4 py-8 text-center text-sm text-muted-foreground">Loading forms...</div>
+                ) : submissions.length === 0 ? (
+                  <div className="rounded-xl px-4 py-8 text-center text-sm text-muted-foreground">No form submissions yet.</div>
+                ) : (
+                  submissions.map((sub) => {
+                    const active = selectedSubId === sub._id;
+                    return (
+                      <button
+                        key={sub._id}
+                        type="button"
+                        onClick={() => setSelectedSubId(sub._id)}
+                        className={`w-full rounded-xl border px-4 py-3 text-left transition ${
+                          active
+                            ? "border-gold/40 bg-gold/10"
+                            : "border-transparent hover:border-gold/20 hover:bg-gold/5"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-gold/70">
+                          <Mail className="h-3.5 w-3.5" />
+                          {sub.type === "membership" ? "Adhésion" : "Question"}
+                        </div>
+                        <div className="mt-1 text-sm font-semibold text-foreground">{sub.name}</div>
+                        <div className="mt-1 truncate text-xs text-muted-foreground">{sub.email}</div>
+                      </button>
+                    );
+                  })
+                )
+              ) : activeTab === "pages" ? (
                 // Pages list
                 pages.map((p, index) => {
                   const active = (current?._id ?? selected?._id) === p._id;
@@ -1259,6 +1372,17 @@ export default function AdminDashboardPage() {
                 </>
               ) : null}
 
+              {isAcademySection ? (
+                <>
+                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  <AdminNkoAudioEditor
+                    audioUrls={current.nkoAlphabetAudio ?? []}
+                    onChange={(nkoAlphabetAudio) => setDraft({ ...current, nkoAlphabetAudio })}
+                    token={token}
+                  />
+                </>
+              ) : null}
+
               {isNianiSection && (
                 <>
                   <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
@@ -1683,6 +1807,73 @@ export default function AdminDashboardPage() {
                       </Button>
                     </div>
                   </div>
+                </Card>
+              </motion.div>
+            )}
+
+            {activeTab === "submissions" && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Card className="glass-panel p-6 sm:p-8 border-gold/20 bg-gradient-to-b from-gold/5 to-transparent backdrop-blur-xl">
+                  {(() => {
+                    const selectedSub = submissions.find((sub) => sub._id === selectedSubId) ?? submissions[0];
+                    if (!selectedSub) {
+                      return (
+                        <div className="text-center text-muted-foreground py-16">
+                          <Inbox className="w-10 h-10 mx-auto mb-3 text-gold/40" />
+                          Select a form submission to review.
+                        </div>
+                      );
+                    }
+
+                    return (
+                      <div className="space-y-6">
+                        <div className="flex flex-wrap items-start justify-between gap-4">
+                          <div>
+                            <p className="text-[11px] uppercase tracking-[0.28em] text-gold/70">
+                              {selectedSub.type === "membership" ? "Formulaire d'adhésion" : "Questions"}
+                            </p>
+                            <h2 className="mt-2 text-2xl font-display font-semibold text-foreground">{selectedSub.name}</h2>
+                            <p className="mt-1 text-sm text-muted-foreground">{selectedSub.email}{selectedSub.phone ? ` · ${selectedSub.phone}` : ""}</p>
+                            {selectedSub.profession ? (
+                              <p className="mt-1 text-sm text-foreground/75">Profession: {selectedSub.profession}</p>
+                            ) : null}
+                          </div>
+                          <Button
+                            variant="outline"
+                            className="border-destructive/30 text-destructive hover:bg-destructive/10"
+                            onClick={() => handleDeleteSub(selectedSub._id)}
+                          >
+                            <Trash2 className="w-4 h-4 mr-2" />
+                            Delete
+                          </Button>
+                        </div>
+
+                        {selectedSub.message ? (
+                          <div className="rounded-2xl border border-gold/15 bg-black/20 p-5">
+                            <p className="text-[11px] uppercase tracking-[0.28em] text-gold/70 mb-3">Message</p>
+                            <p className="text-sm leading-7 text-foreground/80 whitespace-pre-line">{selectedSub.message}</p>
+                          </div>
+                        ) : null}
+
+                        {selectedSub.answers && typeof selectedSub.answers === "object" ? (
+                          <div className="space-y-3">
+                            <p className="text-[11px] uppercase tracking-[0.28em] text-gold/70">Réponses au questionnaire</p>
+                            {Object.entries(selectedSub.answers).map(([key, value], index) => (
+                              <div key={key} className="rounded-2xl border border-gold/12 bg-black/20 p-4">
+                                <p className="text-xs font-semibold text-gold/80">
+                                  {index + 1}. {QUESTIONS_FR[index] ?? key}
+                                </p>
+                                <p className="mt-2 text-sm leading-7 text-foreground/80 whitespace-pre-line">{String(value ?? "")}</p>
+                              </div>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    );
+                  })()}
                 </Card>
               </motion.div>
             )}

@@ -13,6 +13,8 @@ import { Admin } from "./models/Admin.js";
 import { Page } from "./models/Page.js";
 import { Media } from "./models/Media.js";
 import { Content } from "./models/Content.js";
+import { Submission } from "./models/Submission.js";
+import nodemailer from "nodemailer";
 import { requireAdmin, signAdminToken } from "./auth.js";
 import { seedAdminIfNeeded, seedPagesIfNeeded, ensureDefaultPages } from "./seed.js";
 
@@ -351,6 +353,135 @@ app.delete("/api/content/:id", requireAdmin(JWT_SECRET), async (req, res) => {
 });
 
 //
+// SUBMISSIONS & EMAIL APIS (for Membership Questionnaire and Contact/Questions forms)
+//
+async function sendEmailSubmission(sub) {
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT || 587);
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (!host || !user || !pass) {
+    console.log("ℹ️ SMTP configuration is incomplete. Skipping email sending. Submissions are still saved in DB.");
+    return;
+  }
+
+  try {
+    const transporter = nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465 || process.env.SMTP_SECURE === "true",
+      auth: { user, pass },
+    });
+
+    const from = process.env.SMTP_FROM || "info@sanunjara.com";
+    const to = process.env.SMTP_TO || "info@sanunjara.com";
+
+    let subject = "";
+    let html = "";
+
+    if (sub.type === "membership") {
+      subject = `New Membership Application from ${sub.name}`;
+      html = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #d97706; border-bottom: 2px solid #f59e0b; padding-bottom: 10px;">Sanun Jara Membership Application</h2>
+          <p><strong>Name:</strong> ${sub.name}</p>
+          <p><strong>Email:</strong> ${sub.email}</p>
+          <p><strong>Phone:</strong> ${sub.phone || 'N/A'}</p>
+          <p><strong>Profession:</strong> ${sub.profession || 'N/A'}</p>
+          
+          <h3 style="color: #d97706; margin-top: 25px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">Questionnaire Answers</h3>
+          <ol style="padding-left: 20px; line-height: 1.6;">
+      `;
+      
+      if (sub.answers) {
+        for (const [qNum, ans] of Object.entries(sub.answers)) {
+          html += `<li style="margin-bottom: 15px;"><strong>Question ${qNum}:</strong><br/><span style="color: #334155;">${ans}</span></li>`;
+        }
+      }
+      
+      html += `
+          </ol>
+        </div>
+      `;
+    } else {
+      subject = `New Question/Contact Request from ${sub.name}`;
+      html = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;">
+          <h2 style="color: #b91c1c; border-bottom: 2px solid #ef4444; padding-bottom: 10px;">Sanun Jara Contact Inquiry</h2>
+          <p><strong>Name:</strong> ${sub.name}</p>
+          <p><strong>Email:</strong> ${sub.email}</p>
+          <p><strong>Phone:</strong> ${sub.phone || 'N/A'}</p>
+          <div style="margin-top: 20px; background-color: #f8fafc; padding: 15px; border-radius: 6px; border-left: 4px solid #ef4444;">
+            <strong>Message/Question:</strong><br/>
+            <p style="white-space: pre-wrap; line-height: 1.6; color: #334155; margin-top: 5px;">${sub.message}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    await transporter.sendMail({
+      from,
+      to,
+      subject,
+      html,
+    });
+    console.log(`✉️ Email successfully sent to ${to} for submission: ${sub._id}`);
+  } catch (error) {
+    console.error("❌ Failed to send submission email via SMTP:", error);
+  }
+}
+
+app.post("/api/submissions", async (req, res) => {
+  try {
+    const parsed = z.object({
+      type: z.enum(["membership", "question"]),
+      name: z.string(),
+      email: z.string().email(),
+      phone: z.string().optional(),
+      profession: z.string().optional(),
+      message: z.string().optional(),
+      answers: z.any().optional(),
+    }).parse(req.body);
+
+    const sub = await Submission.create(parsed);
+    
+    // Send email asynchronously in the background so the user gets an instant response
+    sendEmailSubmission(sub.toObject()).catch((err) => {
+      console.error("Error in background email sender:", err);
+    });
+
+    res.status(201).json({ ok: true, submission: sub });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(400).json({ error: "validation_error", details: error.errors });
+    }
+    console.error("Submission creation failed:", error);
+    res.status(500).json({ error: "internal_server_error" });
+  }
+});
+
+app.get("/api/submissions", requireAdmin(JWT_SECRET), async (req, res) => {
+  try {
+    const submissions = await Submission.find().sort({ createdAt: -1 }).lean();
+    res.json({ submissions });
+  } catch (error) {
+    console.error("Failed to fetch submissions:", error);
+    res.status(500).json({ error: "internal_server_error" });
+  }
+});
+
+app.delete("/api/submissions/:id", requireAdmin(JWT_SECRET), async (req, res) => {
+  try {
+    await Submission.findByIdAndDelete(req.params.id);
+    res.json({ ok: true });
+  } catch (error) {
+    console.error("Failed to delete submission:", error);
+    res.status(500).json({ error: "internal_server_error" });
+  }
+});
+
+//
 // ✅ PAGES APIs (for CMS pages like Niani, History, etc.)
 //
 const PAGE_ORDER = [
@@ -364,7 +495,8 @@ const PAGE_ORDER = [
   "economy",
   "commerce",
   "culture",
-  "resources"
+  "resources",
+  "tombouctou"
 ];
 
 function sortPagesByNavOrder(pages) {
@@ -453,6 +585,12 @@ app.put("/api/pages/:id", requireAdmin(JWT_SECRET), async (req, res) => {
           name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
           description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional()
         })
+      ).optional(),
+      affiliations: z.array(
+        z.object({
+          name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional()
+        })
       ).optional()
     }).partial().optional(),
     economy: z.object({
@@ -480,12 +618,18 @@ app.put("/api/pages/:id", requireAdmin(JWT_SECRET), async (req, res) => {
     ).optional(),
     biographies: z.array(
       z.object({
-        id: z.string(),
-        name: z.string().optional(),
-        role: z.string().optional(),
-        bio: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
-        image: z.string().optional(),
-        url: z.string().optional()
+        slug: z.string(),
+        name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        role: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        kind: z.enum(["person", "institution"]).optional(),
+        content: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+        images: z.array(z.string()).optional(),
+        meta: z.array(
+          z.object({
+            label: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+            value: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional()
+          })
+        ).optional()
       })
     ).optional(),
     institutions: z.array(
@@ -506,6 +650,7 @@ app.put("/api/pages/:id", requireAdmin(JWT_SECRET), async (req, res) => {
         workImages: z.array(z.string()).optional()
       })
     ).optional(),
+    nkoAlphabetAudio: z.array(z.string()).optional(),
     featuredImage: z.string().optional()
   });
 

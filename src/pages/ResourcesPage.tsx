@@ -135,7 +135,7 @@ function PDFCard({ pdf, index }: { pdf: MediaItem; index: number }) {
 }
 
 export default function ResourcesPage() {
-  const { t, localize } = useI18n();
+  const { t, localize, lang } = useI18n();
   const pagesQuery = usePages();
   const resourcesPage = pagesQuery.data?.pages.find((p) => p.key === "resources");
 
@@ -159,7 +159,10 @@ export default function ResourcesPage() {
   }
 
   const paragraphs = splitParagraphs(
-    localize(resourcesPage.content) || "Access important documents, external links, and related public resources."
+    localize(resourcesPage.content) ||
+      (lang === "fr"
+        ? "Cette section préserve le patrimoine immatériel du Manden dans une perspective UNESCO : royauté, anciens, chasseurs Donso, traditions Carri, institutions et écriture N'Ko."
+        : "This section preserves Manden intangible heritage for UNESCO-aligned documentation: royalty, elders, Donso hunters, Carri traditions, institutions, and N'Ko writing.")
   );
   const links = (resourcesPage.links ?? []).filter((link) => Boolean(link.url?.trim() || localize(link.label)));
   const pdfs = (resourcesPage.media ?? []).filter(
@@ -179,7 +182,7 @@ export default function ResourcesPage() {
             <div className="flex flex-col items-center text-center gap-8">
               <div className="space-y-5 max-w-3xl">
                 <div className="inline-flex items-center justify-center rounded-full border border-gold/20 bg-gold/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold/80">
-                  Resources Directory
+                  {lang === "fr" ? "Patrimoine & Archives" : "Heritage & Archives"}
                 </div>
 
                 <h1 className="text-4xl font-display font-bold gold-gradient-text sm:text-5xl">
@@ -187,24 +190,32 @@ export default function ResourcesPage() {
                 </h1>
 
                 <div className="space-y-6">
-                  <p className="text-base leading-8 text-foreground/80 sm:text-lg">
-                    Welcome to the <span className="text-gold font-semibold">Resources Hub</span>.
-                    This section provides curated documents, research materials, and tools
-                    designed to support informed decision-making and community engagement.
-                  </p>
+                  {paragraphs.map((paragraph, index) => (
+                    <p key={index} className="text-base leading-8 text-foreground/80 sm:text-lg">
+                      {paragraph}
+                    </p>
+                  ))}
 
                   <div className="rounded-2xl border border-gold/20 bg-gradient-to-br from-gold/5 to-transparent p-5">
                     <p className="text-xs uppercase tracking-[0.25em] text-gold/70 mb-4">
-                      What you'll find
+                      {lang === "fr" ? "Cadre UNESCO" : "UNESCO framing"}
                     </p>
 
                     <ul className="grid gap-3 sm:grid-cols-2 text-left">
-                      {[
-                        "Organizational guides and frameworks",
-                        "Key statistics and research summaries",
-                        "Verified organizations and initiatives",
-                        "Practical tools for planning and implementation",
-                      ].map((item, index) => (
+                      {(lang === "fr"
+                        ? [
+                            "Royauté et gouvernance traditionnelle",
+                            "Anciens, Djelis et transmission orale",
+                            "Chasseurs Donso et traditions Carri",
+                            "Institutions, écriture N'Ko et archives",
+                          ]
+                        : [
+                            "Royalty and traditional governance",
+                            "Elders, Djelis, and oral transmission",
+                            "Donso hunters and Carri traditions",
+                            "Institutions, N'Ko writing, and archives",
+                          ]
+                      ).map((item, index) => (
                         <li
                           key={index}
                           className="flex items-start gap-3 rounded-xl border border-gold/10 bg-black/30 p-3 hover:border-gold/30 hover:bg-black/50 transition"
@@ -217,7 +228,9 @@ export default function ResourcesPage() {
                   </div>
 
                   <p className="text-sm text-muted-foreground">
-                    All materials are regularly updated to ensure accuracy and relevance.
+                    {lang === "fr"
+                      ? "Les documents PDF de sauvegarde et les liens externes peuvent être ajoutés depuis le tableau de bord administrateur."
+                      : "Backup PDFs and external links can be added from the admin dashboard."}
                   </p>
                 </div>
               </div>

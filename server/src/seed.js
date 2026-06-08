@@ -7,7 +7,8 @@ const DEFAULT_PAGES = [
     key: "introduction",
     title: { en: "Manden Empire" },
     content: {
-      en: `Manden means 'union'. It is the amalgamation of all of the people of the land, irrespective of their nationality, ethnicity, religious or political background.\n\nSanun Jara is the administration that facilitates the reincarnation of 'Manden Mansaya.' Sanun Jara signifies 'golden lion.'\n\nManden respects the Kouroukan Fouga, which is the world's first constitution that universally declares the rights of man.`
+      en: `## Sanun Jara\n\nSanun Jara is the administration that facilitates the reincarnation of Manden Mansaya. Sanun Jara signifies "golden lion."\n\n## Manden\n\nManden means "union." It is the amalgamation of all of the people of the land, irrespective of nationality, ethnicity, religious or political background.\n\n## Vision\n\nContent to be supplied by the client.\n\n## Mission\n\nContent to be supplied by the client.\n\n## Fundamental Values\n\nManden respects the Kouroukan Fouga, the world's first constitution that universally declares the rights of man.\n\n## Culture\n\nContent to be supplied by the client.`,
+      fr: `## Sanun Jara\n\nSanun Jara est l'administration qui facilite la réincarnation du Manden Mansaya. Sanun Jara signifie « lion d'or ».\n\n## Manden\n\nManden signifie « union ». C'est l'amalgamation de tous les peuples du pays, quelle que soit leur nationalité, leur ethnie, leur appartenance religieuse ou politique.\n\n## Vision\n\nContenu à fournir par le client.\n\n## Mission\n\nContenu à fournir par le client.\n\n## Valeurs fondamentales\n\nManden respecte la Kouroukan Fouga, la première constitution au monde qui déclare universellement les droits de l'homme.\n\n## Culture\n\nContenu à fournir par le client.`
     },
     images: [],
     links: []
@@ -92,41 +93,42 @@ const DEFAULT_PAGES = [
     key: "global-perspectives",
     title: { en: "Global Perspectives" },
     content: {
-      en: "Browse the Manden network by country or by organization.\n\nCountry entries can be added over time and are displayed alphabetically on the public page."
+      en: "Browse the Manden network by federation, organization, or affiliation.\n\nEntries can be added over time and are displayed alphabetically on the public page."
     },
     images: [],
     links: [],
     directory: {
       countries: [],
-      organizations: []
+      organizations: [],
+      affiliations: []
     }
   },
   {
     key: "reference-bureau",
     title: { en: "Reference Bureau" },
     content: {
-      en: "The Reference Bureau helps visitors join the network, ask questions, or register entrepreneurial interest.\n\nThese channels can begin as placeholders and become more detailed over time as new forms, contacts, and workflows are added."
+      en: "The Reference Bureau helps visitors join the network, ask questions, or contribute through Cotiser.\n\nMembership applications and questions are forwarded to info@sanunjara.com."
     },
     images: [],
     links: [],
     utilityCards: [
       {
         id: "join",
-        title: { en: "I Want to Join" },
-        description: { en: "Learn about membership and how to become part of the Manden community." },
-        url: ""
+        title: { en: "I Want to Join", fr: "Je veux joindre" },
+        description: { en: "Learn about membership and how to become part of the Manden community.", fr: "Découvrez l'adhésion et comment rejoindre la communauté du Manden." },
+        url: "/reference-bureau/join"
       },
       {
         id: "questions",
-        title: { en: "I Have Questions" },
-        description: { en: "Get answers about the Manden Empire, its governance, and its mission." },
-        url: ""
+        title: { en: "I Have Questions", fr: "J'ai des questions" },
+        description: { en: "Get answers about the Manden Empire, its governance, and its mission.", fr: "Obtenez des réponses sur l'Empire du Manden, sa gouvernance et sa mission." },
+        url: "/reference-bureau/questions"
       },
       {
-        id: "entrepreneur",
-        title: { en: "I Am an Entrepreneur" },
-        description: { en: "Discover opportunities for entrepreneurs within the Manden network." },
-        url: ""
+        id: "cotiser",
+        title: { en: "Cotiser", fr: "Cotiser" },
+        description: { en: "Support Sanun Jara through contributions and donations.", fr: "Soutenez Sanun Jara par vos contributions et dons." },
+        url: "/reference-bureau/cotiser"
       }
     ]
   },
@@ -138,7 +140,18 @@ const DEFAULT_PAGES = [
     },
     images: [],
     links: [],
-    institutions: [],
+    institutions: [
+      {
+        id: "women",
+        name: { en: "Women's Institution", fr: "Institution des Femmes" },
+        description: {
+          en: "The women's institution supports leadership, education, and community service within Sanun Jara and the Manden Empire.",
+          fr: "L'institution des femmes soutient le leadership, l'éducation et le service communautaire au sein de Sanun Jara et de l'Empire du Manden."
+        },
+        images: [],
+        videos: []
+      }
+    ],
     architecturalProjects: [],
     utilityCards: [
       {
@@ -172,9 +185,9 @@ const DEFAULT_PAGES = [
     utilityCards: [
       {
         id: "nko",
-        title: { en: "Courses in N'ko" },
-        description: { en: "Learn the N'ko script and language courses." },
-        url: ""
+        title: { en: "Courses in N'ko", fr: "Cours en N'ko" },
+        description: { en: "Learn the N'ko script and language courses.", fr: "Apprenez l'écriture et la langue N'ko." },
+        url: "/academy/nko"
       },
       {
         id: "history-courses",
@@ -199,7 +212,32 @@ const DEFAULT_PAGES = [
   },
   { key: "commerce", title: { en: "Commerce" }, content: { en: "Promotion of merchandise from different merchants and entrepreneurs, with their contact information." }, images: [], links: [] },
   { key: "culture", title: { en: "Culture" }, content: { en: "Videos and interventions of Djelis, Donsos, and journalists of Manden." }, images: [], links: [], media: [] },
-  { key: "resources", title: { en: "Resources" }, content: { en: "" }, images: [], links: [], media: [] }
+  {
+    key: "resources",
+    title: { en: "Resources", fr: "Ressources" },
+    content: {
+      en: "This section preserves and presents Manden intangible heritage for UNESCO-aligned documentation: royalty, elders, Donso hunters, Carri traditions, institutions, and N'Ko writing.\n\nUpload backup documents, research materials, and archival PDFs here. Regular database backups should be maintained through your hosting provider.",
+      fr: "Cette section préserve et présente le patrimoine immatériel du Manden dans une perspective UNESCO : royauté, anciens, chasseurs Donso, traditions Carri, institutions et écriture N'Ko.\n\nTéléversez ici les documents de sauvegarde, les recherches et les archives PDF. Des sauvegardes régulières de la base de données doivent être maintenues via votre hébergeur."
+    },
+    images: [],
+    links: [
+      {
+        label: { en: "UNESCO — Intangible Cultural Heritage", fr: "UNESCO — Patrimoine culturel immatériel" },
+        url: "https://ich.unesco.org/"
+      }
+    ],
+    media: []
+  },
+  {
+    key: "tombouctou",
+    title: { en: "Tombouctou", fr: "Tombouctou" },
+    content: {
+      en: "Tombouctou — the city of 333 saints and a pillar of Manden heritage.\n\nContent and images can be added from the admin dashboard.",
+      fr: "Tombouctou — la ville des 333 saints et un pilier du patrimoine du Manden.\n\nLe contenu et les images peuvent être ajoutés depuis le tableau de bord administrateur."
+    },
+    images: [],
+    links: []
+  }
 ];
 
 export async function seedAdminIfNeeded({ username, password }) {
@@ -251,5 +289,33 @@ export async function ensureDefaultPages() {
   }
   if (added > 0) console.log(`✅ Added ${added} missing pages`);
   if (updated > 0) console.log(`✅ Updated ${updated} pages with missing fields`);
+  await migrateReferenceBureauCards();
+}
+
+async function migrateReferenceBureauCards() {
+  const refPage = await Page.findOne({ key: "reference-bureau" });
+  if (!refPage?.utilityCards?.length) return;
+
+  let changed = false;
+  const cards = refPage.utilityCards.map((card) => {
+    if (card.id !== "entrepreneur") return card;
+    changed = true;
+    return {
+      ...card.toObject?.() ?? card,
+      id: "cotiser",
+      title: { en: "Cotiser", fr: "Cotiser", ...(card.title ?? {}) },
+      description: {
+        en: "Support Sanun Jara through contributions and donations.",
+        fr: "Soutenez Sanun Jara par vos contributions et dons.",
+        ...(card.description ?? {})
+      },
+      url: card.url?.trim() ? card.url : "/reference-bureau/cotiser"
+    };
+  });
+
+  if (changed) {
+    await Page.updateOne({ key: "reference-bureau" }, { $set: { utilityCards: cards } });
+    console.log("✅ Migrated reference-bureau entrepreneur card to cotiser");
+  }
 }
 

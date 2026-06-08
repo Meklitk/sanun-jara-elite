@@ -3,6 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import SiteCoatOfArms from "@/components/SiteCoatOfArms";
 import SidebarNav from "@/components/SidebarNav";
 import TopBar from "@/components/TopBar";
+import Footer from "@/components/Footer";
 
 export default function MainLayout() {
   const location = useLocation();
@@ -41,6 +42,8 @@ export default function MainLayout() {
             </aside>
           ) : null}
         </div>
+
+        <Footer />
       </div>
     </div>
   );
