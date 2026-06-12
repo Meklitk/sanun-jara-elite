@@ -18,3 +18,13 @@ export async function uploadCardImage(file: File, slot: CardImageKey, token: str
     }
   );
 }
+
+export async function deleteCardImage(slot: CardImageKey, token: string) {
+  return http<{ ok: boolean; slot: string; filename: string }>(
+    `/api/admin/card-image/${encodeURIComponent(slot)}`,
+    {
+      method: "DELETE",
+      token,
+    }
+  );
+}

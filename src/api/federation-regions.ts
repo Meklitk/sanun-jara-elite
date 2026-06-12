@@ -15,3 +15,13 @@ export async function uploadFederationRegion(file: File, code: FederationRegionC
     token,
   });
 }
+
+export async function deleteFederationRegion(code: FederationRegionCode, token: string) {
+  return http<{ ok: boolean; code: string; filename: string }>(
+    `/api/admin/federation-region/${encodeURIComponent(code)}`,
+    {
+      method: "DELETE",
+      token,
+    }
+  );
+}

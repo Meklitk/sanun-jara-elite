@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { ExternalLink, ImagePlus, CheckCircle2, AlertCircle } from "lucide-react";
+import { ExternalLink, ImagePlus, CheckCircle2, AlertCircle, Trash2 } from "lucide-react";
 
-import { listCardImages, uploadCardImage } from "@/api/card-images";
+import { deleteCardImage, listCardImages, uploadCardImage } from "@/api/card-images";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatAdmin, useAdminT } from "@/features/admin/admin-i18n";
@@ -26,6 +26,7 @@ export default function AdminCardImagesPanel({ section: _section, slots, token, 
   const { lang } = useI18n();
   const [uploaded, setUploaded] = useState<Record<string, boolean>>({});
   const [uploadingSlot, setUploadingSlot] = useState<string | null>(null);
+  const [deletingSlot, setDeletingSlot] = useState<string | null>(null);
 
   async function refresh() {
     try {
@@ -44,15 +45,32 @@ export default function AdminCardImagesPanel({ section: _section, slots, token, 
     if (!file) return;
     setUploadingSlot(slot);
     try {
-      const res = await uploadCardImage(file, slot, token);
+      await uploadCardImage(file, slot, token);
       setUploaded((current) => ({ ...current, [slot]: true }));
       toast.success(formatAdmin(at.cardImageUploaded, { label: CARD_IMAGE_SLOTS[slot].labelEn }));
-      void res;
       await refresh();
     } catch {
       toast.error(at.cardImageUploadFailed);
     } finally {
       setUploadingSlot(null);
+    }
+  }
+
+  async function onDelete(slot: CardImageKey) {
+    const meta = CARD_IMAGE_SLOTS[slot];
+    const label = lang === "fr" ? meta.labelFr : meta.labelEn;
+    if (!window.confirm(at.cardImageDeleteConfirm)) return;
+
+    setDeletingSlot(slot);
+    try {
+      await deleteCardImage(slot, token);
+      setUploaded((current) => ({ ...current, [slot]: false }));
+      toast.success(formatAdmin(at.cardImageDeleted, { label }));
+      await refresh();
+    } catch {
+      toast.error(at.cardImageDeleteFailed);
+    } finally {
+      setDeletingSlot(null);
     }
   }
 
@@ -78,7 +96,7 @@ export default function AdminCardImagesPanel({ section: _section, slots, token, 
           const meta = CARD_IMAGE_SLOTS[slot];
           const url = CARD_IMAGES[slot];
           const exists = uploaded[slot];
-          const busy = uploadingSlot === slot;
+          const busy = uploadingSlot === slot || deletingSlot === slot;
           const label = lang === "fr" ? meta.labelFr : meta.labelEn;
           const hint = lang === "fr" ? meta.hintFr : meta.hintEn;
 
@@ -107,9 +125,20 @@ export default function AdminCardImagesPanel({ section: _section, slots, token, 
                 )}
               </div>
 
-              <div className="mt-3 flex h-28 items-center justify-center overflow-hidden rounded-lg border border-gold/15 bg-black/30">
+              <div className="relative group/card mt-3 flex h-28 items-center justify-center overflow-hidden rounded-lg border border-gold/15 bg-black/30">
                 {exists ? (
-                  <img src={`${url}?t=${Date.now()}`} alt={label} className="h-full w-full object-cover" />
+                  <>
+                    <img src={`${url}?t=${Date.now()}`} alt={label} className="h-full w-full object-cover" />
+                    <button
+                      type="button"
+                      disabled={busy}
+                      title={at.delete}
+                      className="absolute right-2 top-2 rounded-md border border-red-500/30 bg-red-500/20 p-1.5 text-red-200 opacity-0 transition-opacity hover:bg-red-500/40 group-hover/card:opacity-100 disabled:opacity-40"
+                      onClick={() => void onDelete(slot)}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </>
                 ) : (
                   <ImagePlus className="h-8 w-8 text-gold/40" />
                 )}
@@ -128,6 +157,7 @@ export default function AdminCardImagesPanel({ section: _section, slots, token, 
                   e.currentTarget.value = "";
                 }}
               />
+              <p className="mt-1 text-[10px] text-muted-foreground">{at.cardImageUploadHint}</p>
               {busy ? (
                 <p className="mt-1 text-[10px] text-muted-foreground">{at.bioUploading}</p>
               ) : null}

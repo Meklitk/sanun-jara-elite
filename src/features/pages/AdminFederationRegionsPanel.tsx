@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
-import { listFederationRegions, uploadFederationRegion } from "@/api/federation-regions";
+import {
+  deleteFederationRegion,
+  listFederationRegions,
+  uploadFederationRegion,
+} from "@/api/federation-regions";
 import { FEDERATION_REGIONS, type FederationRegionCode } from "@/data/federation-regions";
 import FederationRegionTile from "@/components/FederationRegionTile";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useAdminT } from "@/features/admin/admin-i18n";
 import { toast } from "sonner";
-import { CheckCircle2, ImagePlus } from "lucide-react";
+import { CheckCircle2, ImagePlus, Trash2 } from "lucide-react";
 
 type Props = {
   token: string;
@@ -15,6 +20,7 @@ export default function AdminFederationRegionsPanel({ token }: Props) {
   const at = useAdminT();
   const [customImages, setCustomImages] = useState<Record<string, boolean>>({});
   const [uploadingCode, setUploadingCode] = useState<string | null>(null);
+  const [deletingCode, setDeletingCode] = useState<string | null>(null);
 
   async function refresh() {
     try {
@@ -44,6 +50,22 @@ export default function AdminFederationRegionsPanel({ token }: Props) {
     }
   }
 
+  async function onDelete(code: FederationRegionCode) {
+    if (!window.confirm(at.federationRegionDeleteConfirm)) return;
+
+    setDeletingCode(code);
+    try {
+      await deleteFederationRegion(code, token);
+      setCustomImages((current) => ({ ...current, [code]: false }));
+      toast.success(at.federationRegionDeleted);
+      await refresh();
+    } catch {
+      toast.error(at.federationRegionDeleteFailed);
+    } finally {
+      setDeletingCode(null);
+    }
+  }
+
   return (
     <section className="space-y-4 rounded-xl border border-gold/20 bg-black/20 p-5">
       <div>
@@ -54,7 +76,7 @@ export default function AdminFederationRegionsPanel({ token }: Props) {
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {FEDERATION_REGIONS.map((region) => {
           const hasCustom = customImages[region.code];
-          const busy = uploadingCode === region.code;
+          const busy = uploadingCode === region.code || deletingCode === region.code;
           const url = `/images/maps/regions/${region.filename}`;
 
           return (
@@ -69,9 +91,24 @@ export default function AdminFederationRegionsPanel({ token }: Props) {
                 <span className="font-display text-xl text-gold/80">{region.nkoChar}</span>
               </div>
 
-              <div className="mt-2 flex h-20 items-center justify-center overflow-hidden rounded-md border border-gold/10 bg-black/30">
+              <div className="relative group/region mt-2 flex h-20 items-center justify-center overflow-hidden rounded-md border border-gold/10 bg-black/30">
                 {hasCustom ? (
-                  <img src={`${url}?t=${Date.now()}`} alt={region.code} className="h-full w-full object-cover" />
+                  <>
+                    <img
+                      src={`${url}?t=${Date.now()}`}
+                      alt={region.code}
+                      className="h-full w-full object-cover"
+                    />
+                    <button
+                      type="button"
+                      disabled={busy}
+                      title={at.delete}
+                      className="absolute right-1.5 top-1.5 rounded-md border border-red-500/30 bg-red-500/20 p-1 text-red-200 opacity-0 transition-opacity hover:bg-red-500/40 group-hover/region:opacity-100 disabled:opacity-40"
+                      onClick={() => void onDelete(region.code)}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  </>
                 ) : (
                   <FederationRegionTile
                     code={region.code}
@@ -96,6 +133,19 @@ export default function AdminFederationRegionsPanel({ token }: Props) {
                   e.currentTarget.value = "";
                 }}
               />
+              {hasCustom ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={busy}
+                  className="mt-1 h-7 px-2 text-[10px] text-red-300 hover:bg-red-500/10 hover:text-red-200"
+                  onClick={() => void onDelete(region.code)}
+                >
+                  <Trash2 className="mr-1 h-3 w-3" />
+                  {at.delete}
+                </Button>
+              ) : null}
               {busy ? (
                 <p className="mt-1 text-[10px] text-muted-foreground">{at.bioUploading}</p>
               ) : hasCustom ? (

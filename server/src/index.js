@@ -426,6 +426,26 @@ app.post(
   }
 );
 
+app.delete("/api/admin/card-image/:slot", requireAdmin(JWT_SECRET), (req, res) => {
+  try {
+    const slot = String(req.params.slot ?? "").trim();
+    const filename = CARD_IMAGE_FILENAMES[slot];
+    if (!filename) {
+      return res.status(400).json({ error: "invalid_slot" });
+    }
+
+    const filePath = path.join(CARDS_DIR, filename);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    res.json({ ok: true, slot, filename });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "delete_failed" });
+  }
+});
+
 //
 // FEDERATION REGION IMAGES — saved to public/images/maps/regions/
 //
@@ -507,6 +527,26 @@ app.post(
     }
   }
 );
+
+app.delete("/api/admin/federation-region/:code", requireAdmin(JWT_SECRET), (req, res) => {
+  try {
+    const code = String(req.params.code ?? "").trim();
+    const filename = FEDERATION_REGION_FILENAMES[code];
+    if (!filename) {
+      return res.status(400).json({ error: "invalid_code" });
+    }
+
+    const filePath = path.join(FEDERATION_REGIONS_DIR, filename);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    res.json({ ok: true, code, filename });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "delete_failed" });
+  }
+});
 
 //
 // UPLOAD VIDEO - streams buffer to Cloudinary

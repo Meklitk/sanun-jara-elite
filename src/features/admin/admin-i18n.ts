@@ -133,7 +133,7 @@ export const adminTranslations = {
     federationMapEmpty: "Aucune carte pour l'instant. Téléversez l'illustration médiévale du Manden.",
     federationRegionsTitle: "Régions de la Fédération",
     federationRegionsDesc:
-      "Chaque code (GB, F, Ma, GN, N, B, P, DJ, CH, D, HM) affiche sa lettre N'Ko sur le site. Téléversez une photo seulement pour remplacer l'illustration par défaut.",
+      "Chaque code (GB, F, Ma, GN, N, B, P, DJ, CH, D, HM) affiche sa lettre N'Ko sur le site. Téléversez une photo pour la remplacer, ou supprimez-la pour revenir à la lettre par défaut.",
     federationRegionDefaultHint: "Lettre N'Ko affichée automatiquement sur le site public.",
     federationRegionCustomHint: "Photo personnalisée — remplace la lettre N'Ko sur le site.",
     federationRegionOptionalUpload: "Photo optionnelle (remplace la lettre)",
@@ -141,9 +141,16 @@ export const adminTranslations = {
     federationRegionUploadFailed: "Échec du téléversement de la région",
     cardImagesTitle: "Illustrations des cartes",
     cardImagesDesc:
-      "Téléversez les images pour chaque carte. Elles remplacent les icônes sur le site public immédiatement après l'envoi.",
+      "Téléversez, remplacez ou supprimez les images de chaque carte. Après suppression, l'image disparaît du site public jusqu'à un nouvel envoi.",
     cardImageUploaded: "Image enregistrée ({label})",
     cardImageUploadFailed: "Échec du téléversement de l'image",
+    cardImageDeleted: "Image supprimée ({label})",
+    cardImageDeleteFailed: "Échec de la suppression de l'image",
+    cardImageDeleteConfirm: "Supprimer cette image ? Elle ne s'affichera plus sur le site public.",
+    cardImageUploadHint: "Choisir une image (ajouter ou remplacer)",
+    federationRegionDeleted: "Photo supprimée — la lettre N'Ko réapparaît sur le site.",
+    federationRegionDeleteFailed: "Échec de la suppression de la photo",
+    federationRegionDeleteConfirm: "Supprimer cette photo de région ? La lettre N'Ko par défaut sera rétablie.",
     introSectionsLabel: "Sections de la page d'accueil",
     introSectionsHint:
       "Chaque bloc ci-dessous (Sanun Jara, Manden, Vision, Mission, Valeurs fondamentales, Culture) apparaît comme une carte sur la page publique d'accueil. Remplissez le Français et l'English, puis cliquez Enregistrer.",
@@ -274,7 +281,7 @@ export const adminTranslations = {
     federationMapEmpty: "No map yet. Upload the medieval Manden illustration here.",
     federationRegionsTitle: "Federation regions",
     federationRegionsDesc:
-      "Each code (GB, F, Ma, GN, N, B, P, DJ, CH, D, HM) shows its N'Ko letter on the public site. Upload a photo only to replace the default letter tile.",
+      "Each code (GB, F, Ma, GN, N, B, P, DJ, CH, D, HM) shows its N'Ko letter on the public site. Upload a photo to replace it, or delete it to restore the default letter.",
     federationRegionDefaultHint: "N'Ko letter is shown automatically on the public site.",
     federationRegionCustomHint: "Custom photo — replaces the N'Ko letter on the public site.",
     federationRegionOptionalUpload: "Optional photo (replaces letter)",
@@ -282,9 +289,16 @@ export const adminTranslations = {
     federationRegionUploadFailed: "Region upload failed",
     cardImagesTitle: "Card illustrations",
     cardImagesDesc:
-      "Upload images for each card. They replace the placeholder icons on the public site right after upload.",
+      "Upload, replace, or delete images for each card. After deletion, the image is hidden on the public site until you upload a new one.",
     cardImageUploaded: "Image saved ({label})",
     cardImageUploadFailed: "Image upload failed",
+    cardImageDeleted: "Image deleted ({label})",
+    cardImageDeleteFailed: "Failed to delete image",
+    cardImageDeleteConfirm: "Delete this image? It will no longer appear on the public site.",
+    cardImageUploadHint: "Choose an image (add or replace)",
+    federationRegionDeleted: "Photo removed — the N'Ko letter is shown again on the site.",
+    federationRegionDeleteFailed: "Failed to delete region photo",
+    federationRegionDeleteConfirm: "Delete this region photo? The default N'Ko letter will be restored.",
     introSectionsLabel: "Home page sections",
     introSectionsHint:
       "Each block below (Sanun Jara, Manden, Vision, Mission, Fundamental Values, Culture) appears as a card on the public home page. Fill French and English, then click Save.",
