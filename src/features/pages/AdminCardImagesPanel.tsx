@@ -133,7 +133,7 @@ export default function AdminCardImagesPanel({ section: _section, slots, token, 
                       type="button"
                       disabled={busy}
                       title={at.delete}
-                      className="absolute right-2 top-2 rounded-md border border-red-500/30 bg-red-500/20 p-1.5 text-red-200 opacity-0 transition-opacity hover:bg-red-500/40 group-hover/card:opacity-100 disabled:opacity-40"
+                      className="absolute right-2 top-2 rounded-md border border-red-500/30 bg-red-500/20 p-1.5 text-red-200 opacity-100 transition-opacity hover:bg-red-500/40 disabled:opacity-40"
                       onClick={() => void onDelete(slot)}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -157,6 +157,19 @@ export default function AdminCardImagesPanel({ section: _section, slots, token, 
                   e.currentTarget.value = "";
                 }}
               />
+              {exists ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  disabled={busy}
+                  className="mt-1 h-7 px-2 text-[10px] text-red-300 hover:bg-red-500/10 hover:text-red-200"
+                  onClick={() => void onDelete(slot)}
+                >
+                  <Trash2 className="mr-1 h-3 w-3" />
+                  {at.delete}
+                </Button>
+              ) : null}
               <p className="mt-1 text-[10px] text-muted-foreground">{at.cardImageUploadHint}</p>
               {busy ? (
                 <p className="mt-1 text-[10px] text-muted-foreground">{at.bioUploading}</p>

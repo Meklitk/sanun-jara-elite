@@ -25,6 +25,14 @@ const MONGODB_URI = process.env.MONGODB_URI;
 const JWT_SECRET = process.env.JWT_SECRET;
 // Use /tmp for uploads which is always writable on Railway
 const UPLOAD_DIR = "/tmp";
+const IS_RAILWAY = Boolean(process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_SERVICE_ID);
+
+function resolveContentDir(envKey, localRelativeParts, tmpParts) {
+  if (process.env[envKey]) return process.env[envKey];
+  const localDir = path.resolve(process.cwd(), ...localRelativeParts);
+  if (!IS_RAILWAY) return localDir;
+  return path.join("/tmp", "sanunjara", ...tmpParts);
+}
 
 // Configure Cloudinary for video storage (bypasses Railway 100MB limit)
 const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
@@ -162,8 +170,7 @@ app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (
 //
 // BIOGRAPHY PDFs — saved to public/biographies/ for inline viewing on profile pages
 //
-const BIOGRAPHIES_DIR =
-  process.env.BIOGRAPHIES_DIR || path.resolve(process.cwd(), "../public/biographies");
+const BIOGRAPHIES_DIR = resolveContentDir("BIOGRAPHIES_DIR", ["../public/biographies"], ["biographies"]);
 
 try {
   fs.mkdirSync(BIOGRAPHIES_DIR, { recursive: true });
@@ -342,8 +349,7 @@ app.post(
 //
 // CARD ILLUSTRATIONS — saved to public/images/cards/ for section cards
 //
-const CARDS_DIR =
-  process.env.CARDS_DIR || path.resolve(process.cwd(), "../public/images/cards");
+const CARDS_DIR = resolveContentDir("CARDS_DIR", ["../public/images/cards"], ["images", "cards"]);
 
 const CARD_IMAGE_FILENAMES = {
   affiliationHero: "affiliation-bowing.jpg",
@@ -365,6 +371,7 @@ const CARD_IMAGE_FILENAMES = {
 
 try {
   fs.mkdirSync(CARDS_DIR, { recursive: true });
+  console.log("Cards directory:", CARDS_DIR);
 } catch (err) {
   console.error("Failed to create cards directory:", err);
 }
@@ -449,9 +456,11 @@ app.delete("/api/admin/card-image/:slot", requireAdmin(JWT_SECRET), (req, res) =
 //
 // FEDERATION REGION IMAGES — saved to public/images/maps/regions/
 //
-const FEDERATION_REGIONS_DIR =
-  process.env.FEDERATION_REGIONS_DIR ||
-  path.resolve(process.cwd(), "../public/images/maps/regions");
+const FEDERATION_REGIONS_DIR = resolveContentDir(
+  "FEDERATION_REGIONS_DIR",
+  ["../public/images/maps/regions"],
+  ["images", "maps", "regions"]
+);
 
 const FEDERATION_REGION_FILENAMES = {
   GB: "GB.jpg",
