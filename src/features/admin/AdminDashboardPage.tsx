@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import type { Page, Content } from "@/api/types";
 import { usePages, useUpdatePage, useEnsurePages } from "@/api/pages";
 import { useAllContent, useCreateContent, useUpdateContent, useDeleteContent } from "@/api/content";
@@ -13,10 +13,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 import { AdminLinksEditor, AdminTimelineEditor, AdminEconomyEditor } from "./content-list-editors";
 import AdminNkoAudioEditor from "./AdminNkoAudioEditor";
 import AdminBiographiesEditor from "../governance/AdminBiographiesEditor";
+import AdminBiographyFilesPanel from "../governance/AdminBiographyFilesPanel";
+import AdminLanguageToggle from "./AdminLanguageToggle";
+import { formatAdmin, useAdminT } from "./admin-i18n";
 import AdminGovernanceEditor from "../governance/AdminGovernanceEditor";
 import AdminUtilityCardsEditor from "../pages/AdminUtilityCardsEditor";
 import { AdminInstitutionsEditor } from "../governance/AdminInstitutionsEditor";
@@ -24,16 +28,20 @@ import { AdminArchitecturalProjectsEditor } from "../governance/AdminArchitectur
 import { MediaEditor } from "./MediaEditor";
 import { PDFEditor } from "./PDFEditor";
 import { NianiTvEditor } from "./NianiTvEditor";
+import { NianiCartoonsEditor } from "./NianiCartoonsEditor";
 import type { BiographyItem, DirectoryItem, GovernanceBranch, PageLink, TimelineItem, UtilityCard } from "@/api/types";
 import { resolveGovernanceData } from "@/features/governance/governance-content";
-import AdminDirectoryEditor from "@/features/pages/AdminDirectoryEditor";
+import AdminFederationMapPanel from "@/features/pages/AdminFederationMapPanel";
+import AdminFederationRegionsPanel from "@/features/pages/AdminFederationRegionsPanel";
+import AdminCardImagesPanel from "@/features/pages/AdminCardImagesPanel";
+import IntroductionSectionsEditor from "./IntroductionSectionsEditor";
+import { cardImageKeysForSection } from "@/lib/card-images";
 import { academyCardDefinitions, referenceBureauCardDefinitions } from "@/features/pages/utility-page-config";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   LayoutDashboard, 
   FileText, 
   Image, 
-  Link, 
   Clock, 
   Users, 
   Globe, 
@@ -58,7 +66,11 @@ import {
   FileEdit,
   Upload,
   Inbox,
-  Mail
+  Mail,
+  Search,
+  ExternalLink,
+  ChevronDown,
+  Home
 } from "lucide-react";
 
 function isLinkMeaningful(l: PageLink): boolean {
@@ -129,6 +141,7 @@ function splitEditorParagraphs(text: string) {
 export default function AdminDashboardPage() {
   const token = getAdminToken();
   const { localize, t } = useI18n();
+  const at = useAdminT();
   const pagesQuery = usePages();
   const updatePage = useUpdatePage();
   const ensurePages = useEnsurePages();
@@ -152,6 +165,8 @@ export default function AdminDashboardPage() {
 
   // Content management state
   const [activeTab, setActiveTab] = useState<"pages" | "content" | "submissions">("pages");
+  const [pageSearch, setPageSearch] = useState("");
+  const [guideOpen, setGuideOpen] = useState(true);
   const [selectedContentId, setSelectedContentId] = useState<string>("");
   const [contentDraft, setContentDraft] = useState<Content | null>(null);
   const [isCreatingContent, setIsCreatingContent] = useState(false);
@@ -192,7 +207,7 @@ export default function AdminDashboardPage() {
       })
       .catch((err) => {
         console.error(err);
-        toast.error("Failed to load submissions");
+        toast.error(at.loadSubmissionsFailed);
       })
       .finally(() => {
         setIsLoadingSubmissions(false);
@@ -205,20 +220,28 @@ export default function AdminDashboardPage() {
     }
   }, [activeTab, token]);
 
+  useEffect(() => {
+    if (!token) return;
+    http<{ submissions: any[] }>("/api/submissions", { token })
+      .then((res) => setSubmissions(res.submissions))
+      .catch(() => {});
+  }, [token]);
+
   const handleDeleteSub = async (id: string) => {
-    if (!window.confirm("Voulez-vous vraiment supprimer ce formulaire ?")) return;
+    if (!window.confirm(at.deleteFormConfirm)) return;
     try {
       await http(`/api/submissions/${id}`, { method: "DELETE", token });
-      toast.success("Formulaire supprimé");
+      toast.success(at.formDeleted);
       if (selectedSubId === id) setSelectedSubId(null);
       fetchSubmissions();
     } catch (err) {
       console.error(err);
-      toast.error("Échec de la suppression");
+      toast.error(at.deleteFailed);
     }
   };
 
   const current = draft ?? selected ?? null;
+  const isIntroductionSection = current?.key === "introduction";
   const isHistorySection = current?.key === "history";
   const isGovernanceSection = current?.key === "governance";
   const isGlobalPerspectivesSection = current?.key === "global-perspectives";
@@ -228,6 +251,7 @@ export default function AdminDashboardPage() {
   const isResourcesSection = current?.key === "resources";
   const isEconomySection = current?.key === "economy";
   const isNianiSection = current?.key === "niani";
+  const isCommerceSection = current?.key === "commerce";
   const isUtilityCardsSection = isReferenceBureauSection || isAcademySection;
 
   // Section icons mapping
@@ -256,6 +280,59 @@ export default function AdminDashboardPage() {
     setSelectedId(p._id);
     setDraft(p);
   }
+
+  function confirmDiscardChanges(message: string): boolean {
+    return window.confirm(message);
+  }
+
+  function trySelectPage(p: Page) {
+    if (draft && p._id !== selectedId) {
+      const ok = confirmDiscardChanges(at.discardSectionConfirm);
+      if (!ok) return;
+    }
+    select(p);
+  }
+
+  function trySetActiveTab(tab: "pages" | "content" | "submissions") {
+    if (activeTab === "pages" && draft && tab !== "pages") {
+      const ok = confirmDiscardChanges(at.discardPagesConfirm);
+      if (!ok) return;
+    }
+    if (activeTab === "content" && contentDraft && tab !== "content") {
+      const ok = confirmDiscardChanges(at.discardContentConfirm);
+      if (!ok) return;
+    }
+    setActiveTab(tab);
+  }
+
+  function sectionNavLabel(key: string): string {
+    const map: Record<string, string> = {
+      introduction: t.introduction,
+      history: t.history,
+      governance: t.governance,
+      "global-perspectives": t.globalPerspectives,
+      "reference-bureau": t.referenceBureau,
+      academy: t.academy,
+      economy: t.economy,
+      commerce: t.commerce,
+      culture: t.culture,
+      resources: t.resources,
+      niani: t.niani,
+      tombouctou: t.tombouctou,
+    };
+    return map[key] ?? key;
+  }
+
+  const filteredPages = useMemo(() => {
+    const query = pageSearch.trim().toLowerCase();
+    if (!query) return pages;
+    return pages.filter(
+      (p) =>
+        sectionNavLabel(p.key).toLowerCase().includes(query) ||
+        p.key.toLowerCase().includes(query) ||
+        localize(p.title).toLowerCase().includes(query)
+    );
+  }, [pages, pageSearch, localize, t]);
 
   async function save() {
     if (!current) return;
@@ -296,10 +373,10 @@ export default function AdminDashboardPage() {
           featuredImage: current.featuredImage,
         },
       });
-      toast.success("Saved");
+      toast.success(at.saveSuccess);
       setDraft(null);
     } catch (e) {
-      toast.error("Save failed");
+      toast.error(at.saveFailed);
       // eslint-disable-next-line no-console
       console.error(e);
     }
@@ -325,39 +402,23 @@ export default function AdminDashboardPage() {
         return { ...base, images: [...(base.images ?? []), ...uploadedUrls] };
       });
       toast.success(
-        uploadedUrls.length === 1 ? "1 image uploaded" : `${uploadedUrls.length} images uploaded`
+        uploadedUrls.length === 1 ? at.imageUploaded : formatAdmin(at.imagesUploaded, { count: uploadedUrls.length })
       );
     }
 
     if (failedCount > 0) {
       toast.error(
-        failedCount === 1 ? "1 image failed to upload" : `${failedCount} images failed to upload`
+        failedCount === 1 ? at.imageUploadFailed : formatAdmin(at.imagesUploadFailed, { count: failedCount })
       );
     }
-  }
-
-  function sectionNavLabel(key: string): string {
-    const map: Record<string, string> = {
-      introduction: t.introduction,
-      history: t.history,
-      governance: t.governance,
-      "global-perspectives": t.globalPerspectives,
-      "reference-bureau": t.referenceBureau,
-      academy: t.academy,
-      economy: t.economy,
-      commerce: t.commerce,
-      culture: t.culture,
-      resources: t.resources,
-    };
-    return map[key] ?? key;
   }
 
   async function restoreMissingSections() {
     try {
       await ensurePages.mutateAsync(token);
-      toast.success("Sections synced (missing defaults were added)");
+      toast.success(at.sectionsSynced);
     } catch {
-      toast.error("Could not restore sections");
+      toast.error(at.sectionsSyncFailed);
     }
   }
 
@@ -397,10 +458,10 @@ export default function AdminDashboardPage() {
           isPublished: currentContent.isPublished,
         },
       });
-      toast.success("Content saved");
+      toast.success(at.contentSaved);
       setContentDraft(null);
     } catch (e) {
-      toast.error("Failed to save content");
+      toast.error(at.contentSaveFailed);
       // eslint-disable-next-line no-console
       console.error(e);
     }
@@ -422,14 +483,14 @@ export default function AdminDashboardPage() {
           isPublished: true,
         },
       });
-      toast.success("Content created");
+      toast.success(at.contentCreated);
       setIsCreatingContent(false);
       setNewContentSlug("");
     } catch (e) {
       if (e instanceof Error && e.message.includes("409")) {
-        toast.error("A content item with this slug already exists");
+        toast.error(at.contentSlugExists);
       } else {
-        toast.error("Failed to create content");
+        toast.error(at.contentCreateFailed);
       }
       // eslint-disable-next-line no-console
       console.error(e);
@@ -439,13 +500,13 @@ export default function AdminDashboardPage() {
   async function handleDeleteContent(id: string) {
     try {
       await deleteContent.mutateAsync({ id, token });
-      toast.success("Content deleted");
+      toast.success(at.contentDeleted);
       if (selectedContentId === id) {
         setSelectedContentId("");
         setContentDraft(null);
       }
     } catch (e) {
-      toast.error("Failed to delete content");
+      toast.error(at.contentDeleteFailed);
       // eslint-disable-next-line no-console
       console.error(e);
     }
@@ -471,11 +532,15 @@ export default function AdminDashboardPage() {
         if (!base) return prev;
         return { ...base, images: [...(base.images ?? []), ...uploadedUrls] };
       });
-      toast.success(uploadedUrls.length === 1 ? "1 image uploaded" : `${uploadedUrls.length} images uploaded`);
+      toast.success(
+        uploadedUrls.length === 1 ? at.imageUploaded : formatAdmin(at.imagesUploaded, { count: uploadedUrls.length })
+      );
     }
 
     if (failedCount > 0) {
-      toast.error(failedCount === 1 ? "1 image failed to upload" : `${failedCount} images failed to upload`);
+      toast.error(
+        failedCount === 1 ? at.imageUploadFailed : formatAdmin(at.imagesUploadFailed, { count: failedCount })
+      );
     }
   }
 
@@ -517,7 +582,7 @@ export default function AdminDashboardPage() {
                   <div className="font-display text-lg gold-gradient-text font-bold tracking-tight">Sanun Jara</div>
                   <div className="text-xs text-muted-foreground font-medium flex items-center gap-1">
                     <Sparkles className="w-3 h-3 text-gold/60" />
-                    Admin Dashboard
+                    {at.adminDashboard}
                   </div>
                 </div>
               </div>
@@ -525,13 +590,41 @@ export default function AdminDashboardPage() {
                 variant="ghost"
                 size="sm"
                 className="text-muted-foreground hover:text-gold hover:bg-gold/10 rounded-lg"
+                title={at.signOut}
                 onClick={() => {
                   clearAdminToken();
-                  toast.success("Signed out");
+                  toast.success(at.signedOut);
                   location.href = "/admin/login";
                 }}
               >
                 <LogOut className="w-4 h-4" />
+              </Button>
+            </div>
+
+            <AdminLanguageToggle />
+
+            <div className="flex gap-2 mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 border-gold/25 text-xs hover:bg-gold/10"
+                asChild
+              >
+                <Link to="/" target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                  {at.viewSite}
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 border-gold/25 text-xs hover:bg-gold/10"
+                asChild
+              >
+                <Link to="/">
+                  <Home className="w-3.5 h-3.5 mr-1.5" />
+                  {at.home}
+                </Link>
               </Button>
             </div>
 
@@ -541,7 +634,8 @@ export default function AdminDashboardPage() {
             <div className="grid grid-cols-3 gap-1 rounded-xl bg-black/20 p-1 mb-4">
               <button
                 type="button"
-                onClick={() => setActiveTab("pages")}
+                onClick={() => trySetActiveTab("pages")}
+                title={at.tabPagesHint}
                 className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
                   activeTab === "pages"
                     ? "bg-gold/20 text-gold border border-gold/30"
@@ -549,11 +643,12 @@ export default function AdminDashboardPage() {
                 }`}
               >
                 <FileText className="w-3.5 h-3.5" />
-                Pages
+                {at.tabPages}
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab("content")}
+                onClick={() => trySetActiveTab("content")}
+                title={at.tabContentHint}
                 className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
                   activeTab === "content"
                     ? "bg-gold/20 text-gold border border-gold/30"
@@ -561,19 +656,25 @@ export default function AdminDashboardPage() {
                 }`}
               >
                 <FolderOpen className="w-3.5 h-3.5" />
-                Content
+                {at.tabContent}
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab("submissions")}
-                className={`flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
+                onClick={() => trySetActiveTab("submissions")}
+                title={at.tabFormsHint}
+                className={`relative flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-xs font-semibold transition-all ${
                   activeTab === "submissions"
                     ? "bg-gold/20 text-gold border border-gold/30"
                     : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                 }`}
               >
                 <Inbox className="w-3.5 h-3.5" />
-                Forms
+                {at.tabForms}
+                {submissions.length > 0 && activeTab !== "submissions" ? (
+                  <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-gold px-1 text-[9px] font-bold text-black">
+                    {submissions.length > 9 ? "9+" : submissions.length}
+                  </span>
+                ) : null}
               </button>
             </div>
 
@@ -605,10 +706,10 @@ export default function AdminDashboardPage() {
                 </div>
                 <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
                   {activeTab === "submissions"
-                    ? "Inbox"
+                    ? at.inbox
                     : activeTab === "pages" 
-                    ? (draft ? "Unsaved" : "Saved") 
-                    : (contentDraft ? "Unsaved" : "Saved")}
+                    ? (draft ? at.unsaved : at.saved) 
+                    : (contentDraft ? at.unsaved : at.saved)}
                 </div>
               </div>
               <div className="rounded-lg bg-blue-500/10 border border-blue-500/30 p-2 text-center">
@@ -616,7 +717,7 @@ export default function AdminDashboardPage() {
                   {activeTab === "pages" ? pages.length : activeTab === "content" ? contentItems.length : submissions.length}
                 </div>
                 <div className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">
-                  {activeTab === "pages" ? "Sections" : activeTab === "content" ? "Items" : "Forms"}
+                  {activeTab === "pages" ? at.sections : activeTab === "content" ? at.items : at.forms}
                 </div>
               </div>
             </div>
@@ -625,9 +726,9 @@ export default function AdminDashboardPage() {
             <div className="space-y-2 max-h-[calc(100vh-400px)] overflow-y-auto pr-1 scrollbar-thin">
               {activeTab === "submissions" ? (
                 isLoadingSubmissions ? (
-                  <div className="rounded-xl px-4 py-8 text-center text-sm text-muted-foreground">Loading forms...</div>
+                  <div className="rounded-xl px-4 py-8 text-center text-sm text-muted-foreground">{at.loadingForms}</div>
                 ) : submissions.length === 0 ? (
-                  <div className="rounded-xl px-4 py-8 text-center text-sm text-muted-foreground">No form submissions yet.</div>
+                  <div className="rounded-xl px-4 py-8 text-center text-sm text-muted-foreground">{at.noSubmissions}</div>
                 ) : (
                   submissions.map((sub) => {
                     const active = selectedSubId === sub._id;
@@ -644,7 +745,7 @@ export default function AdminDashboardPage() {
                       >
                         <div className="flex items-center gap-2 text-xs uppercase tracking-[0.18em] text-gold/70">
                           <Mail className="h-3.5 w-3.5" />
-                          {sub.type === "membership" ? "Adhésion" : "Question"}
+                          {sub.type === "membership" ? at.membership : at.question}
                         </div>
                         <div className="mt-1 text-sm font-semibold text-foreground">{sub.name}</div>
                         <div className="mt-1 truncate text-xs text-muted-foreground">{sub.email}</div>
@@ -653,8 +754,22 @@ export default function AdminDashboardPage() {
                   })
                 )
               ) : activeTab === "pages" ? (
-                // Pages list
-                pages.map((p, index) => {
+                <>
+                  <div className="relative mb-2">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={pageSearch}
+                      onChange={(e) => setPageSearch(e.target.value)}
+                      placeholder={at.searchSection}
+                      className="h-9 border-gold/15 bg-black/20 pl-9 text-xs"
+                    />
+                  </div>
+                  {filteredPages.length === 0 ? (
+                    <div className="rounded-xl px-4 py-6 text-center text-sm text-muted-foreground">
+                      {formatAdmin(at.noSectionMatch, { query: pageSearch })}
+                    </div>
+                  ) : (
+                filteredPages.map((p, index) => {
                   const active = (current?._id ?? selected?._id) === p._id;
                   return (
                     <motion.button
@@ -667,7 +782,7 @@ export default function AdminDashboardPage() {
                           ? "bg-gradient-to-r from-gold/20 to-gold/5 border border-gold/40 shadow-lg shadow-gold/10"
                           : "hover:bg-gold/5 border border-transparent hover:border-gold/20"
                       }`}
-                      onClick={() => select(p)}
+                      onClick={() => trySelectPage(p)}
                     >
                       <div className={`${active ? "text-gold" : "text-muted-foreground group-hover:text-gold/80"} transition-colors`}>
                         {sectionIcons[p.key] || <FileText className="w-4 h-4" />}
@@ -684,6 +799,8 @@ export default function AdminDashboardPage() {
                     </motion.button>
                   );
                 })
+                  )}
+                </>
               ) : (
                 // Content list
                 <>
@@ -797,12 +914,12 @@ export default function AdminDashboardPage() {
                 {ensurePages.isPending ? (
                   <span className="flex items-center gap-2">
                     <RotateCcw className="w-3 h-3 animate-spin" />
-                    Syncing...
+                    Synchronisation…
                   </span>
                 ) : (
                   <span className="flex items-center gap-2">
                     <RotateCcw className="w-3 h-3" />
-                    Restore missing sections
+                    {at.syncSections}
                   </span>
                 )}
               </Button>
@@ -811,9 +928,9 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Main Content Area - Scrollable */}
-        <div className="space-y-4">
+        <div className={`space-y-4 ${activeTab === "pages" && hasChanges ? "pb-24" : ""}`}>
           <AnimatePresence mode="wait">
-            {!current ? (
+            {activeTab === "pages" && (!current ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -830,7 +947,7 @@ export default function AdminDashboardPage() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Loading sections...
+                        Chargement des sections…
                       </span>
                     </div>
                   ) : (
@@ -838,7 +955,7 @@ export default function AdminDashboardPage() {
                       <div className="w-16 h-16 rounded-2xl bg-gold/10 border border-gold/20 flex items-center justify-center mx-auto mb-4">
                         <FileText className="w-8 h-8 text-gold/60" />
                       </div>
-                      <p className="text-muted-foreground">No pages found. Start the server to seed pages.</p>
+                      <p className="text-muted-foreground mb-4">Aucune section trouvée. Vérifiez que Docker est lancé, puis cliquez sur « Synchroniser les sections ».</p>
                     </div>
                   )}
                 </Card>
@@ -862,12 +979,12 @@ export default function AdminDashboardPage() {
                         <div className="flex items-center gap-3 mb-1">
                           <h2 className="text-2xl font-bold gold-gradient-text">{sectionNavLabel(current.key)}</h2>
                           {current.key === "introduction" && (
-                            <span className="px-2 py-0.5 text-[10px] font-semibold bg-gold/20 text-gold rounded-full border border-gold/30">HOME PAGE</span>
+                            <span className="px-2 py-0.5 text-[10px] font-semibold bg-gold/20 text-gold rounded-full border border-gold/30">PAGE D&apos;ACCUEIL</span>
                           )}
                           {draft && (
                             <span className="px-2 py-0.5 text-[10px] font-semibold bg-amber-500/20 text-amber-400 rounded-full border border-amber-500/30 flex items-center gap-1">
                               <Sparkles className="w-3 h-3" />
-                              Unsaved Changes
+                              Non enregistré
                             </span>
                           )}
                         </div>
@@ -884,42 +1001,49 @@ export default function AdminDashboardPage() {
                       className="border-gold/30 hover:bg-gold/10 text-gold"
                     >
                       <Eye className="w-4 h-4 mr-2" />
-                      Preview
+                      Aperçu
                     </Button>
                   </div>
 
                   {/* Admin Guide Panel */}
-                  <div className="mb-6 rounded-xl border border-gold/20 bg-gradient-to-r from-gold/10 via-gold/5 to-transparent p-4">
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-gold/20 flex items-center justify-center shrink-0">
-                        <HelpCircle className="w-4 h-4 text-gold" />
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-sm font-semibold text-gold mb-1 flex items-center gap-2">
-                          Quick Guide
-                          <span className="text-[10px] font-normal text-muted-foreground">— How to edit this page</span>
-                        </h4>
-                        <ul className="space-y-1.5 text-xs text-muted-foreground">
+                  <Collapsible open={guideOpen} onOpenChange={setGuideOpen} className="mb-6">
+                    <div className="rounded-xl border border-gold/20 bg-gradient-to-r from-gold/10 via-gold/5 to-transparent p-4">
+                      <CollapsibleTrigger className="flex w-full items-start gap-3 text-left">
+                        <div className="w-8 h-8 rounded-lg bg-gold/20 flex items-center justify-center shrink-0">
+                          <HelpCircle className="w-4 h-4 text-gold" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between gap-2">
+                            <h4 className="text-sm font-semibold text-gold">
+                              Guide rapide
+                              <span className="ml-2 text-[10px] font-normal text-muted-foreground">— Comment modifier cette page</span>
+                            </h4>
+                            <ChevronDown className={`h-4 w-4 shrink-0 text-gold/70 transition-transform ${guideOpen ? "rotate-180" : ""}`} />
+                          </div>
+                        </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <ul className="mt-3 space-y-1.5 pl-11 text-xs text-muted-foreground">
                           <li className="flex items-center gap-2">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-gold/60" />
-                            <span>Fill in both <strong className="text-foreground/80">English</strong> and <strong className="text-foreground/80">French</strong> fields for bilingual content</span>
+                            <CheckCircle2 className="w-3.5 h-3.5 text-gold/60 shrink-0" />
+                            <span>Remplissez les champs <strong className="text-foreground/80">Français</strong> et <strong className="text-foreground/80">English</strong></span>
                           </li>
                           <li className="flex items-center gap-2">
-                            <FileEdit className="w-3.5 h-3.5 text-gold/60" />
-                            <span>Write content in paragraphs — each paragraph creates a new section on the public page</span>
+                            <FileEdit className="w-3.5 h-3.5 text-gold/60 shrink-0" />
+                            <span>Chaque paragraphe devient un bloc sur la page publique</span>
                           </li>
                           <li className="flex items-center gap-2">
-                            <Upload className="w-3.5 h-3.5 text-gold/60" />
-                            <span>Upload images to enhance the page — they appear in the gallery section</span>
+                            <Upload className="w-3.5 h-3.5 text-gold/60 shrink-0" />
+                            <span>Ajoutez des images via la section dédiée ci-dessous</span>
                           </li>
                           <li className="flex items-center gap-2">
-                            <Save className="w-3.5 h-3.5 text-gold/60" />
-                            <span>Scroll to the bottom and click <strong className="text-gold">Save Changes</strong> when done</span>
+                            <Save className="w-3.5 h-3.5 text-gold/60 shrink-0" />
+                            <span>Cliquez sur <strong className="text-gold">Enregistrer</strong> en bas de page pour publier</span>
                           </li>
                         </ul>
-                      </div>
+                      </CollapsibleContent>
                     </div>
-                  </div>
+                  </Collapsible>
 
               {isHistorySection ? (
                 <div className="grid gap-4 md:grid-cols-3">
@@ -983,7 +1107,7 @@ export default function AdminDashboardPage() {
                           : isGovernanceSection
                             ? "Use this area for the public governance page title and overview copy. The structured offices, indexes, and branches are edited below."
                             : isGlobalPerspectivesSection
-                              ? "Use this area for the Global Perspectives heading and introductory text. Countries and organizations are edited in the directory section below."
+                              ? "Use this area for the Global Perspectives heading and introductory text. Upload the Federation map and edit federation entries below."
                               : isCultureSection
                                 ? "Use this area for the Culture page title and introduction. Upload gallery images below and add culture videos in the media section."
                                 : isResourcesSection
@@ -1075,7 +1199,9 @@ export default function AdminDashboardPage() {
                 <div className="group">
                   <Label className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground/90">
                     <span className="h-4 w-1 rounded-full bg-gradient-to-b from-gold to-gold/50"></span>
-                    {isHistorySection
+                    {isIntroductionSection
+                      ? at.introSectionsLabel
+                      : isHistorySection
                       ? "Historical narrative"
                       : isGovernanceSection
                         ? "Governance overview"
@@ -1091,6 +1217,19 @@ export default function AdminDashboardPage() {
                                   ? "Academy introduction"
                           : "Content"}
                   </Label>
+                  {isIntroductionSection ? (
+                    <IntroductionSectionsEditor
+                      contentEn={current.content?.en ?? ""}
+                      contentFr={current.content?.fr ?? ""}
+                      onChange={({ en, fr }) =>
+                        setDraft({
+                          ...current,
+                          content: { ...(current.content ?? {}), en, fr },
+                        })
+                      }
+                    />
+                  ) : (
+                    <>
                   <div className="grid gap-3 md:grid-cols-2">
                     <div className="space-y-1.5">
                       <span className="text-[10px] uppercase tracking-[0.2em] text-gold/60 font-semibold">English</span>
@@ -1127,11 +1266,13 @@ export default function AdminDashboardPage() {
                             : isResourcesSection
                               ? "This introduction appears above the resource links and document library. Text auto-translates to English."
                               : isReferenceBureauSection
-                                ? "This introduction appears above the join, questions, and entrepreneur sections. Text auto-translates to English."
+                                ? "This introduction appears above the join, questions, and Cotiser sections. Text auto-translates to English."
                                 : isAcademySection
                                   ? "This introduction appears above the course sections. Text auto-translates to English."
                         : "Content auto-translates to English on the public site."}
                   </p>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -1148,25 +1289,56 @@ export default function AdminDashboardPage() {
                     onChange={(biographies) => setDraft({ ...current, biographies })}
                     token={token}
                   />
+                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  <AdminBiographyFilesPanel token={token} />
                 </>
               ) : null}
 
               {isGlobalPerspectivesSection ? (
                 <>
                   <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
-                  <AdminDirectoryEditor
-                    directory={current.directory ?? { countries: [], organizations: [] }}
-                    onChange={(directory) => setDraft({ ...current, directory })}
+                  <AdminFederationMapPanel
+                    mapUrl={current.featuredImage}
+                    onChange={(featuredImage) => setDraft({ ...current, featuredImage })}
+                    token={token}
                   />
+                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  <AdminCardImagesPanel
+                    section="global-perspectives"
+                    slots={cardImageKeysForSection("global-perspectives")}
+                    token={token}
+                    previewPath="/global-perspectives"
+                  />
+                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  <AdminFederationRegionsPanel token={token} />
                 </>
               ) : null}
 
               {isEconomySection ? (
                 <>
                   <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  <AdminCardImagesPanel
+                    section="economy"
+                    slots={cardImageKeysForSection("economy")}
+                    token={token}
+                    previewPath="/economy"
+                  />
+                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
                   <AdminEconomyEditor
                     economy={current.economy}
                     onChange={(economy) => setDraft({ ...current, economy })}
+                  />
+                </>
+              ) : null}
+
+              {isCommerceSection ? (
+                <>
+                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  <AdminCardImagesPanel
+                    section="commerce"
+                    slots={cardImageKeysForSection("commerce")}
+                    token={token}
+                    previewPath="/commerce"
                   />
                 </>
               ) : null}
@@ -1358,11 +1530,18 @@ export default function AdminDashboardPage() {
               {isUtilityCardsSection ? (
                 <>
                   <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  <AdminCardImagesPanel
+                    section={isReferenceBureauSection ? "reference-bureau" : "academy"}
+                    slots={cardImageKeysForSection(isReferenceBureauSection ? "reference-bureau" : "academy")}
+                    token={token}
+                    previewPath={isReferenceBureauSection ? "/reference-bureau" : "/academy"}
+                  />
+                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
                   <AdminUtilityCardsEditor
                     title={isReferenceBureauSection ? "Reference Bureau Items" : "Academy Courses"}
                     description={
                       isReferenceBureauSection
-                        ? "Edit the three cards linked from the Reference Bureau dropdown: join, questions, and entrepreneur."
+                        ? "Edit the three cards linked from the Reference Bureau dropdown: join, questions, and Cotiser."
                         : "Edit the three course cards linked from the Academy dropdown."
                     }
                     cards={current.utilityCards ?? []}
@@ -1385,6 +1564,13 @@ export default function AdminDashboardPage() {
 
               {isNianiSection && (
                 <>
+                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  <AdminCardImagesPanel
+                    section="niani"
+                    slots={cardImageKeysForSection("niani")}
+                    token={token}
+                    previewPath="/niani"
+                  />
                   <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
                   <AdminInstitutionsEditor
                     institutions={current.institutions ?? []}
@@ -1417,8 +1603,49 @@ export default function AdminDashboardPage() {
                       Upload videos for the Niani TV page. These will be displayed in a grid on the public Niani TV page.
                     </p>
                     <NianiTvEditor
-                      media={(current.media ?? []).filter((m) => m.type === "video")}
-                      onChange={(videos) => setDraft({ ...current, media: [...(current.media ?? []).filter((m) => m.type !== "video"), ...videos] })}
+                      media={current.media ?? []}
+                      onChange={(videos) => {
+                        const preserved = (current.media ?? []).filter(
+                          (m) => m.type !== "video" || m.category === "cartoon",
+                        );
+                        setDraft({
+                          ...current,
+                          media: [
+                            ...preserved,
+                            ...videos.map((v) => ({
+                              ...v,
+                              type: "video" as const,
+                              category: v.category === "cartoon" ? "cartoon" : v.category ?? "other",
+                            })),
+                          ],
+                        });
+                      }}
+                      token={token}
+                    />
+                  </div>
+                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  <div className="rounded-xl border border-gold/20 bg-gradient-to-br from-gold/10 to-transparent p-5">
+                    <Label className="flex items-center gap-2 text-sm font-medium text-foreground/90 mb-4">
+                      <span className="h-4 w-1 rounded-full bg-gradient-to-b from-gold to-gold/50"></span>
+                      Niani TV Cartoons
+                    </Label>
+                    <p className="text-xs text-muted-foreground mb-4">
+                      Animated cartoons shown in a dedicated section on the Niani TV page.
+                    </p>
+                    <NianiCartoonsEditor
+                      media={current.media ?? []}
+                      onChange={(cartoons) => {
+                        const preserved = (current.media ?? []).filter(
+                          (m) => !(m.type === "video" && m.category === "cartoon"),
+                        );
+                        setDraft({
+                          ...current,
+                          media: [
+                            ...preserved,
+                            ...cartoons.map((v) => ({ ...v, type: "video" as const, category: "cartoon" as const })),
+                          ],
+                        });
+                      }}
                       token={token}
                     />
                   </div>
@@ -1447,12 +1674,12 @@ export default function AdminDashboardPage() {
                     </div>
                     <div>
                       <p className="text-sm font-medium text-foreground">
-                        {hasChanges ? "Unsaved Changes" : "All Changes Saved"}
+                        {hasChanges ? "Modifications non enregistrées" : "Tout est enregistré"}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {hasChanges 
-                          ? "Don't forget to save your work!" 
-                          : "Your changes are live on the website"}
+                          ? "N'oubliez pas d'enregistrer avant de quitter." 
+                          : "Vos modifications sont visibles sur le site"}
                       </p>
                     </div>
                   </div>
@@ -1468,12 +1695,12 @@ export default function AdminDashboardPage() {
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        Saving Changes...
+                        Enregistrement…
                       </span>
                     ) : (
                       <span className="flex items-center gap-2">
                         <Save className="w-5 h-5" />
-                        {hasChanges ? "Save Changes" : "Saved"}
+                        {hasChanges ? "Enregistrer" : "Enregistré"}
                       </span>
                     )}
                   </Button>
@@ -1481,7 +1708,7 @@ export default function AdminDashboardPage() {
               </div>
             </Card>
           </motion.div>
-            )}
+            ))}
 
             {/* Content Editing Section */}
             {activeTab === "content" && currentContent && (
@@ -1920,6 +2147,39 @@ export default function AdminDashboardPage() {
             )}
 </AnimatePresence>
       </div>
+
+      {activeTab === "pages" && hasChanges && current ? (
+        <div className="fixed bottom-0 inset-x-0 z-50 border-t border-gold/30 bg-black/90 px-4 py-3 backdrop-blur-xl lg:pl-[calc(340px+3rem)]">
+          <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 sm:flex-row">
+            <div className="flex items-center gap-2 text-sm text-amber-300">
+              <Sparkles className="h-4 w-4" />
+              <span>Modifications non enregistrées — {sectionNavLabel(current.key)}</span>
+            </div>
+            <div className="flex w-full gap-2 sm:w-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 border-gold/30 sm:flex-none"
+                onClick={() => {
+                  if (confirmDiscardChanges("Annuler vos modifications sur cette section ?")) {
+                    setDraft(null);
+                  }
+                }}
+              >
+                Annuler
+              </Button>
+              <Button
+                size="sm"
+                className="flex-1 gold-gradient-bg text-black font-semibold sm:flex-none"
+                onClick={save}
+                disabled={updatePage.isPending}
+              >
+                {updatePage.isPending ? "Enregistrement…" : "Enregistrer"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   </div>
   );

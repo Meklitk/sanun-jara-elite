@@ -160,6 +160,355 @@ app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (
 });
 
 //
+// BIOGRAPHY PDFs — saved to public/biographies/ for inline viewing on profile pages
+//
+const BIOGRAPHIES_DIR =
+  process.env.BIOGRAPHIES_DIR || path.resolve(process.cwd(), "../public/biographies");
+
+try {
+  fs.mkdirSync(BIOGRAPHIES_DIR, { recursive: true });
+  console.log("Biographies directory:", BIOGRAPHIES_DIR);
+} catch (err) {
+  console.error("Failed to create biographies directory:", err);
+}
+
+const biographyUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 25 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const isPdf =
+      file.mimetype === "application/pdf" || file.originalname.toLowerCase().endsWith(".pdf");
+    if (isPdf) cb(null, true);
+    else cb(new Error("Only PDF files are allowed. Export your Word document as PDF first."));
+  },
+});
+
+const biographyPortraitUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 8 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Only image files are allowed."));
+  },
+});
+
+const PROFILES_FILE = path.join(BIOGRAPHIES_DIR, "profiles.json");
+
+function readBiographyProfiles() {
+  try {
+    const raw = fs.readFileSync(PROFILES_FILE, "utf8");
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeBiographyProfiles(profiles) {
+  fs.writeFileSync(PROFILES_FILE, JSON.stringify(profiles, null, 2));
+}
+
+function isValidBiographySlug(slug) {
+  return /^[a-z0-9-]+$/.test(slug);
+}
+
+app.use("/biographies", express.static(BIOGRAPHIES_DIR));
+
+app.get("/api/admin/biography-files", requireAdmin(JWT_SECRET), (_req, res) => {
+  try {
+    const files = fs
+      .readdirSync(BIOGRAPHIES_DIR)
+      .filter((name) => name.toLowerCase().endsWith(".pdf"));
+    res.json({ files });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "list_failed" });
+  }
+});
+
+app.post(
+  "/api/admin/biography-file",
+  requireAdmin(JWT_SECRET),
+  biographyUpload.single("file"),
+  (req, res) => {
+    try {
+      const slug = String(req.body.slug ?? "").trim();
+      const lang = String(req.body.lang ?? "").trim();
+
+      if (!slug || !["fr", "en"].includes(lang)) {
+        return res.status(400).json({ error: "invalid_params" });
+      }
+      if (!/^[a-z0-9-]+$/.test(slug)) {
+        return res.status(400).json({ error: "invalid_slug" });
+      }
+      if (!req.file) {
+        return res.status(400).json({ error: "missing_file" });
+      }
+
+      const filename = `${slug}-${lang}.pdf`;
+      fs.writeFileSync(path.join(BIOGRAPHIES_DIR, filename), req.file.buffer);
+
+      res.json({
+        ok: true,
+        filename,
+        url: `/biographies/${filename}`,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "upload_failed" });
+    }
+  }
+);
+
+app.get("/api/biography-profiles", (_req, res) => {
+  try {
+    res.json({ profiles: readBiographyProfiles() });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "read_failed" });
+  }
+});
+
+app.put("/api/admin/biography-profile", requireAdmin(JWT_SECRET), (req, res) => {
+  try {
+    const parsed = z
+      .object({
+        slug: z.string().min(1),
+        summary: z.object({
+          fr: z.string().optional(),
+          en: z.string().optional(),
+        }),
+      })
+      .safeParse(req.body);
+
+    if (!parsed.success) return res.status(400).json({ error: "invalid_body" });
+    if (!isValidBiographySlug(parsed.data.slug)) {
+      return res.status(400).json({ error: "invalid_slug" });
+    }
+
+    const profiles = readBiographyProfiles();
+    const current = profiles[parsed.data.slug] ?? {};
+    profiles[parsed.data.slug] = {
+      ...current,
+      summary: {
+        fr: parsed.data.summary.fr ?? "",
+        en: parsed.data.summary.en ?? "",
+      },
+    };
+    writeBiographyProfiles(profiles);
+
+    res.json({ ok: true, profile: profiles[parsed.data.slug] });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "save_failed" });
+  }
+});
+
+app.post(
+  "/api/admin/biography-portrait",
+  requireAdmin(JWT_SECRET),
+  biographyPortraitUpload.single("file"),
+  (req, res) => {
+    try {
+      const slug = String(req.body.slug ?? "").trim();
+      if (!slug || !isValidBiographySlug(slug)) {
+        return res.status(400).json({ error: "invalid_slug" });
+      }
+      if (!req.file) {
+        return res.status(400).json({ error: "missing_file" });
+      }
+
+      const ext = path.extname(req.file.originalname).toLowerCase() || ".jpg";
+      const filename = `${slug}-portrait${ext}`;
+      fs.writeFileSync(path.join(BIOGRAPHIES_DIR, filename), req.file.buffer);
+
+      const portraitUrl = `/biographies/${filename}`;
+      const profiles = readBiographyProfiles();
+      const current = profiles[slug] ?? {};
+      profiles[slug] = {
+        ...current,
+        portrait: portraitUrl,
+      };
+      writeBiographyProfiles(profiles);
+
+      res.json({ ok: true, portrait: portraitUrl, profile: profiles[slug] });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "upload_failed" });
+    }
+  }
+);
+
+//
+// CARD ILLUSTRATIONS — saved to public/images/cards/ for section cards
+//
+const CARDS_DIR =
+  process.env.CARDS_DIR || path.resolve(process.cwd(), "../public/images/cards");
+
+const CARD_IMAGE_FILENAMES = {
+  affiliationHero: "affiliation-bowing.jpg",
+  organizationHero: "organization-mansa-musa.jpg",
+  referenceBureauJoin: "join-dozo-hunter.jpg",
+  referenceBureauQuestions: "questions.jpg",
+  referenceBureauCotiser: "cotiser.jpg",
+  nianiInstitutions: "niani-institutions.jpg",
+  nianiArchitecture: "niani-architecture.jpg",
+  nianiTv: "niani-tv.jpg",
+  nianiCartoons: "niani-cartoons.jpg",
+  nianiWomen: "niani-women.jpg",
+  academyNko: "academy-nko.jpg",
+  academyHistory: "academy-history.jpg",
+  academyOthers: "academy-others.jpg",
+  commerceMarket: "commerce-market.jpg",
+  economyHero: "economy-hero.jpg",
+};
+
+try {
+  fs.mkdirSync(CARDS_DIR, { recursive: true });
+} catch (err) {
+  console.error("Failed to create cards directory:", err);
+}
+
+const cardImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 12 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Only image files are allowed."));
+  },
+});
+
+app.use("/images/cards", express.static(CARDS_DIR));
+
+app.get("/api/card-images", (_req, res) => {
+  try {
+    const existing = new Set(fs.readdirSync(CARDS_DIR));
+    const files = Object.fromEntries(
+      Object.entries(CARD_IMAGE_FILENAMES).map(([slot, filename]) => [
+        slot,
+        existing.has(filename),
+      ])
+    );
+    res.json({ files });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "list_failed" });
+  }
+});
+
+app.post(
+  "/api/admin/card-image",
+  requireAdmin(JWT_SECRET),
+  cardImageUpload.single("file"),
+  (req, res) => {
+    try {
+      const slot = String(req.body.slot ?? "").trim();
+      const filename = CARD_IMAGE_FILENAMES[slot];
+      if (!filename) {
+        return res.status(400).json({ error: "invalid_slot" });
+      }
+      if (!req.file) {
+        return res.status(400).json({ error: "missing_file" });
+      }
+
+      fs.writeFileSync(path.join(CARDS_DIR, filename), req.file.buffer);
+
+      res.json({
+        ok: true,
+        slot,
+        filename,
+        url: `/images/cards/${filename}`,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "upload_failed" });
+    }
+  }
+);
+
+//
+// FEDERATION REGION IMAGES — saved to public/images/maps/regions/
+//
+const FEDERATION_REGIONS_DIR =
+  process.env.FEDERATION_REGIONS_DIR ||
+  path.resolve(process.cwd(), "../public/images/maps/regions");
+
+const FEDERATION_REGION_FILENAMES = {
+  GB: "GB.jpg",
+  F: "F.jpg",
+  Ma: "Ma.jpg",
+  GN: "GN.jpg",
+  N: "N.jpg",
+  B: "B.jpg",
+  P: "P.jpg",
+  DJ: "DJ.jpg",
+  CH: "CH.jpg",
+  D: "D.jpg",
+  HM: "HM.jpg",
+};
+
+if (!fs.existsSync(FEDERATION_REGIONS_DIR)) {
+  fs.mkdirSync(FEDERATION_REGIONS_DIR, { recursive: true });
+}
+
+const federationRegionUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 12 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) cb(null, true);
+    else cb(new Error("Only image files are allowed."));
+  },
+});
+
+app.use("/images/maps/regions", express.static(FEDERATION_REGIONS_DIR));
+
+app.get("/api/federation-regions", (_req, res) => {
+  try {
+    const existing = new Set(fs.readdirSync(FEDERATION_REGIONS_DIR));
+    const regions = Object.fromEntries(
+      Object.entries(FEDERATION_REGION_FILENAMES).map(([code, filename]) => [
+        code,
+        existing.has(filename),
+      ])
+    );
+    res.json({ regions });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "list_failed" });
+  }
+});
+
+app.post(
+  "/api/admin/federation-region",
+  requireAdmin(JWT_SECRET),
+  federationRegionUpload.single("file"),
+  (req, res) => {
+    try {
+      const code = String(req.body.code ?? "").trim();
+      const filename = FEDERATION_REGION_FILENAMES[code];
+      if (!filename) {
+        return res.status(400).json({ error: "invalid_code" });
+      }
+      if (!req.file) {
+        return res.status(400).json({ error: "missing_file" });
+      }
+
+      fs.writeFileSync(path.join(FEDERATION_REGIONS_DIR, filename), req.file.buffer);
+
+      res.json({
+        ok: true,
+        code,
+        filename,
+        url: `/images/maps/regions/${filename}`,
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "upload_failed" });
+    }
+  }
+);
+
+//
 // UPLOAD VIDEO - streams buffer to Cloudinary
 //
 app.post("/api/upload-video", requireAdmin(JWT_SECRET), uploadVideo.single("file"), async (req, res) => {
@@ -707,9 +1056,16 @@ app.use((req, res) => {
 // ✅ START SERVER
 //
 async function main() {
-  // Start listening first so healthcheck can respond immediately
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`🚀 API running on port ${PORT}`);
+  });
+
+  server.on("error", (err) => {
+    if (err.code === "EADDRINUSE") {
+      console.error(`❌ Port ${PORT} is already in use. Stop the other API process and restart.`);
+      process.exit(1);
+    }
+    throw err;
   });
 
   try {

@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { Building2, Image as ImageIcon, Hammer } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import ImageLightbox from "@/components/ImageLightbox";
+import SectionHeroImage from "@/components/SectionHeroImage";
+import { CARD_IMAGES } from "@/lib/card-images";
 import {
   PageErrorState,
   PageLoadingState,
@@ -36,14 +38,9 @@ export default function NianiArchitecturalProjectsPage() {
         </p>
       </section>
 
-      {projects.length === 0 ? (
-        <div className="rounded-[1.8rem] border border-dashed border-gold/20 bg-gradient-to-b from-gold/5 to-transparent px-6 py-16 text-center">
-          <Building2 className="h-12 w-12 text-gold/40 mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">
-            {t.noProjectsYet}
-          </p>
-        </div>
-      ) : (
+      <SectionHeroImage src={CARD_IMAGES.nianiArchitecture} alt={t.architecturalProjects} />
+
+      {projects.length === 0 ? null : (
         <div className="space-y-8">
           {projects.map((project, index) => (
             <motion.div

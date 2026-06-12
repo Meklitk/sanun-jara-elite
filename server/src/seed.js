@@ -7,8 +7,8 @@ const DEFAULT_PAGES = [
     key: "introduction",
     title: { en: "Manden Empire" },
     content: {
-      en: `## Sanun Jara\n\nSanun Jara is the administration that facilitates the reincarnation of Manden Mansaya. Sanun Jara signifies "golden lion."\n\n## Manden\n\nManden means "union." It is the amalgamation of all of the people of the land, irrespective of nationality, ethnicity, religious or political background.\n\n## Vision\n\nContent to be supplied by the client.\n\n## Mission\n\nContent to be supplied by the client.\n\n## Fundamental Values\n\nManden respects the Kouroukan Fouga, the world's first constitution that universally declares the rights of man.\n\n## Culture\n\nContent to be supplied by the client.`,
-      fr: `## Sanun Jara\n\nSanun Jara est l'administration qui facilite la réincarnation du Manden Mansaya. Sanun Jara signifie « lion d'or ».\n\n## Manden\n\nManden signifie « union ». C'est l'amalgamation de tous les peuples du pays, quelle que soit leur nationalité, leur ethnie, leur appartenance religieuse ou politique.\n\n## Vision\n\nContenu à fournir par le client.\n\n## Mission\n\nContenu à fournir par le client.\n\n## Valeurs fondamentales\n\nManden respecte la Kouroukan Fouga, la première constitution au monde qui déclare universellement les droits de l'homme.\n\n## Culture\n\nContenu à fournir par le client.`
+      en: `## Sanun Jara\n\nSanun Jara is the administration that facilitates the reincarnation of Manden Mansaya. Sanun Jara signifies "golden lion."\n\n## Manden\n\nManden means "union." It is the amalgamation of all of the people of the land, irrespective of nationality, ethnicity, religious or political background.\n\n## Vision\n\nA unified Manden where monarchic governance, cultural memory, and modern education serve every people of the empire — preserved for UNESCO-aligned intangible heritage documentation and future generations.\n\n## Mission\n\nSanun Jara facilitates the reincarnation of Manden Mansaya: governing with transparency, welcoming membership through the Reference Bureau, teaching N'Ko and history through the Academy, documenting leaders and traditions, and connecting the global Manden diaspora.\n\n## Fundamental Values\n\nManden respects the Kouroukan Fouga, the world's first constitution that universally declares the rights of man.\n\n## Culture\n\nManden culture lives through the jelis (oral historians), Donso hunters, Carri traditions, N'Ko writing, music, architecture, and the Sunday general assembly. Sanun Jara documents and broadcasts these living traditions through Niani TV, the Academy, and UNESCO-aligned archives.`,
+      fr: `## Sanun Jara\n\nSanun Jara est l'administration qui facilite la réincarnation du Manden Mansaya. Sanun Jara signifie « lion d'or ».\n\n## Manden\n\nManden signifie « union ». C'est l'amalgamation de tous les peuples du pays, quelle que soit leur nationalité, leur ethnie, leur appartenance religieuse ou politique.\n\n## Vision\n\nUn Manden uni où la gouvernance monarchique, la mémoire culturelle et l'éducation moderne servent tous les peuples de l'empire — préservés pour la documentation UNESCO du patrimoine immatériel et pour les générations futures.\n\n## Mission\n\nSanun Jara facilite la réincarnation du Manden Mansaya : gouverner avec transparence, accueillir les adhésions via le Bureau de références, enseigner le N'Ko et l'histoire par l'Académie, documenter les dirigeants et les traditions, et relier la diaspora mondiale du Manden.\n\n## Valeurs fondamentales\n\nManden respecte la Kouroukan Fouga, la première constitution au monde qui déclare universellement les droits de l'homme.\n\n## Culture\n\nLa culture du Manden vit à travers les djélis (historiens oraux), les chasseurs Donso, les traditions Carri, l'écriture N'Ko, la musique, l'architecture et l'assemblée générale du dimanche. Sanun Jara documente et diffuse ces traditions vivantes via Niani TV, l'Académie et les archives alignées sur l'UNESCO.`
     },
     images: [],
     links: []
@@ -232,8 +232,8 @@ const DEFAULT_PAGES = [
     key: "tombouctou",
     title: { en: "Tombouctou", fr: "Tombouctou" },
     content: {
-      en: "Tombouctou — the city of 333 saints and a pillar of Manden heritage.\n\nContent and images can be added from the admin dashboard.",
-      fr: "Tombouctou — la ville des 333 saints et un pilier du patrimoine du Manden.\n\nLe contenu et les images peuvent être ajoutés depuis le tableau de bord administrateur."
+      en: "Tombouctou — the city of 333 saints — stands among the great learning centers of West Africa and a pillar of Manden heritage.\n\nFor centuries, scholars at Sankoré and other mosques preserved Islamic, scientific, and Manden knowledge. The city flourished as a crossroads of trade and education under the Mali Empire, including the historic pilgrimage of Mansa Musa.\n\nSanun Jara honors Tombouctou as part of the living memory of Manden — its manuscripts, saints, and university tradition. Additional texts and images can be refined from the admin dashboard.",
+      fr: "Tombouctou — la ville des 333 saints — compte parmi les grands centres de savoir d'Afrique de l'Ouest et constitue un pilier du patrimoine du Manden.\n\nPendant des siècles, les savants de Sankoré et d'autres mosquées ont préservé les connaissances islamiques, scientifiques et du Manden. La ville s'est épanouie comme carrefour du commerce et de l'éducation sous l'Empire du Mali, notamment lors du pèlerinage historique de Mansa Musa.\n\nSanun Jara honore Tombouctou comme partie de la mémoire vivante du Manden — ses manuscrits, ses saints et sa tradition universitaire. Des textes et images supplémentaires peuvent être affinés depuis le tableau de bord administrateur."
     },
     images: [],
     links: []
@@ -290,6 +290,54 @@ export async function ensureDefaultPages() {
   if (added > 0) console.log(`✅ Added ${added} missing pages`);
   if (updated > 0) console.log(`✅ Updated ${updated} pages with missing fields`);
   await migrateReferenceBureauCards();
+  await migrateStarterContent();
+}
+
+const INTRO_PLACEHOLDER_MARKERS = [
+  "Content to be supplied by the client",
+  "Contenu à fournir par le client",
+];
+
+const TOMB_PLACEHOLDER_MARKERS = [
+  "Content and images can be added from the admin dashboard",
+  "Le contenu et les images peuvent être ajoutés depuis le tableau de bord administrateur",
+];
+
+function contentHasPlaceholder(value, markers) {
+  return typeof value === "string" && markers.some((marker) => value.includes(marker));
+}
+
+/** Replace starter placeholders when the client has not yet edited those pages. */
+async function migrateStarterContent() {
+  const introDefault = DEFAULT_PAGES.find((page) => page.key === "introduction");
+  const tombDefault = DEFAULT_PAGES.find((page) => page.key === "tombouctou");
+  if (!introDefault || !tombDefault) return;
+
+  const intro = await Page.findOne({ key: "introduction" });
+  if (
+    intro &&
+    (contentHasPlaceholder(intro.content?.en, INTRO_PLACEHOLDER_MARKERS) ||
+      contentHasPlaceholder(intro.content?.fr, INTRO_PLACEHOLDER_MARKERS))
+  ) {
+    await Page.updateOne(
+      { key: "introduction" },
+      { $set: { content: introDefault.content } },
+    );
+    console.log("✅ Updated introduction starter content (Vision, Mission, Culture)");
+  }
+
+  const tomb = await Page.findOne({ key: "tombouctou" });
+  if (
+    tomb &&
+    (contentHasPlaceholder(tomb.content?.en, TOMB_PLACEHOLDER_MARKERS) ||
+      contentHasPlaceholder(tomb.content?.fr, TOMB_PLACEHOLDER_MARKERS))
+  ) {
+    await Page.updateOne(
+      { key: "tombouctou" },
+      { $set: { content: tombDefault.content } },
+    );
+    console.log("✅ Updated Tombouctou starter content");
+  }
 }
 
 async function migrateReferenceBureauCards() {

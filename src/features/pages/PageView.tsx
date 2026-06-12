@@ -4,6 +4,8 @@ import { useI18n } from "@/lib/i18n";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
+import SectionHeroImage from "@/components/SectionHeroImage";
+import { CARD_IMAGES } from "@/lib/card-images";
 
 function Paragraphs({ text }: { text: string }) {
   const parts = text.split(/\n\s*\n/g).map((p) => p.trim()).filter(Boolean);
@@ -105,6 +107,14 @@ export default function PageView({ pageKey }: { pageKey: string }) {
             <div className="mb-3 h-1 w-20 rounded-full bg-gradient-to-r from-gold/70 to-gold/10" />
             <h1 className="text-3xl font-bold gold-gradient-text">{title || page.key}</h1>
           </header>
+        ) : null}
+
+        {pageKey === "commerce" ? (
+          <SectionHeroImage
+            src={CARD_IMAGES.commerceMarket}
+            alt={title || t.commerce}
+            className="mb-8"
+          />
         ) : null}
 
       {pageKey === "history" && page.timeline?.length ? (

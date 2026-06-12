@@ -2,7 +2,6 @@ import { useDeferredValue, useState, useMemo } from "react";
 import { Search, FileText, FolderOpen, Layers, ChevronDown } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
@@ -20,7 +19,7 @@ export default function SidebarNav({
   includeUtilityNav = false,
   onNavigate,
 }: SidebarNavProps) {
-  const { t, lang, setLang, localize } = useI18n();
+  const { t, localize } = useI18n();
   const location = useLocation();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
@@ -50,7 +49,12 @@ export default function SidebarNav({
   }
 
   function isActive(path: string) {
-    return location.pathname === path;
+    const current = location.pathname;
+    if (path === current) return true;
+    if (path === "/introduction" && current === "/") return true;
+    if (path === "/gouvernement" && current === "/governance") return true;
+    if (path === "/bureau/cotiser" && current === "/reference-bureau/cotiser") return true;
+    return false;
   }
 
   function toggleDropdown(path: string) {
@@ -65,8 +69,8 @@ export default function SidebarNav({
       className={cn(
         "flex flex-col gap-6",
         mode === "desktop"
-          ? "sticky top-24 hidden h-[calc(100vh-7rem)] w-[244px] shrink-0 rounded-[1.75rem] border border-gold/15 bg-black/30 p-5 shadow-[0_28px_90px_rgba(0,0,0,0.32)] lg:flex"
-          : "flex h-full min-h-0 flex-col overflow-y-auto rounded-none border-none bg-transparent p-0 shadow-none",
+          ? "sticky top-24 hidden h-[calc(100vh-7rem)] w-[252px] shrink-0 overflow-y-auto rounded-[24px] border border-gold/20 bg-[#050505]/55 p-6 shadow-[0_28px_90px_rgba(0,0,0,0.4)] backdrop-blur-xl xl:flex xl:flex-col xl:gap-7"
+          : "flex h-full min-h-0 flex-col gap-5 overflow-y-auto rounded-none border-none bg-transparent p-0 shadow-none",
       )}
     >
       <div className="space-y-3">
@@ -91,7 +95,7 @@ export default function SidebarNav({
                 window.setTimeout(() => setSearchActive(false), 120);
               }}
               placeholder={t.quickSearchPlaceholder}
-              className="h-11 rounded-xl border-gold/15 bg-black/35 pl-10 text-sm text-foreground placeholder:text-muted-foreground/80 focus-visible:ring-gold/40"
+              className="h-11 rounded-xl border-gold/20 bg-[#050505]/50 pl-10 text-sm text-foreground backdrop-blur-sm transition duration-300 placeholder:text-muted-foreground/80 focus-visible:border-gold/35 focus-visible:ring-gold/30"
             />
           </form>
 
@@ -133,14 +137,22 @@ export default function SidebarNav({
 
       {includeUtilityNav ? (
         <div className="space-y-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-gold/65">
-            {t.overview}
-          </p>
+          {mode === "mobile" ? (
+            <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-gold/65">
+              {t.mobileMenu}
+            </p>
+          ) : null}
           <div className="space-y-2">
             {utilityNavItems.map((item) => {
               const isOpen = mode === "desktop" ? true : openDropdowns[item.path] || false;
               return (
-                <div key={item.path} className="rounded-2xl border border-gold/12 bg-black/20 p-3">
+                <div
+                  key={item.path}
+                  className={cn(
+                    "overflow-hidden rounded-2xl border border-gold/12 bg-black/20",
+                    mode === "mobile" && "bg-black/40",
+                  )}
+                >
                   <button
                     type="button"
                     onClick={() => {
@@ -151,26 +163,26 @@ export default function SidebarNav({
                       }
                     }}
                     className={cn(
-                      "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-semibold transition",
-                      isActive(item.path)
-                        ? "bg-gold/12 text-gold"
-                        : "text-foreground/80 hover:bg-white/5 hover:text-foreground",
+                      "flex w-full items-center justify-between px-4 py-3.5 text-left text-sm font-semibold transition",
+                      isActive(item.path) || isOpen
+                        ? "bg-gold/10 text-gold"
+                        : "text-foreground/85 hover:bg-white/5 hover:text-foreground",
                     )}
                   >
                     {t[item.key]}
-                    {mode === "mobile" && (
+                    {mode === "mobile" ? (
                       <ChevronDown
                         className={cn(
-                          "h-4 w-4 transition-transform duration-200",
-                          isOpen ? "rotate-180" : ""
+                          "h-4 w-4 shrink-0 transition-transform duration-300",
+                          isOpen ? "rotate-180 text-gold" : "text-muted-foreground",
                         )}
                       />
-                    )}
+                    ) : null}
                   </button>
                   <div
                     className={cn(
-                      "mt-2 space-y-1 pl-2 overflow-hidden transition-all duration-200",
-                      mode === "desktop" ? "" : isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                      "space-y-0.5 overflow-hidden border-t border-gold/10 transition-all duration-300",
+                      mode === "desktop" ? "px-3 pb-3 pt-2" : isOpen ? "max-h-96 opacity-100 px-2 pb-3 pt-1" : "max-h-0 opacity-0",
                     )}
                   >
                     {item.children.map((child) => (
@@ -184,7 +196,7 @@ export default function SidebarNav({
                             goTo(child.path || `${item.path}#${child.id}`);
                           }
                         }}
-                        className="w-full rounded-lg px-3 py-2 text-left text-sm text-muted-foreground transition hover:bg-white/5 hover:text-foreground"
+                        className="w-full rounded-xl px-3 py-2.5 text-left text-sm text-muted-foreground transition hover:bg-gold/10 hover:text-gold"
                       >
                         {t[child.key]}
                       </button>
@@ -199,49 +211,27 @@ export default function SidebarNav({
 
       <div className={cn("space-y-2", mode === "desktop" && "flex-1 overflow-y-auto pr-1")}>
         {mode === "mobile" ? (
-          <div className="rounded-2xl border border-gold/12 bg-black/20 p-3">
-            <button
-              type="button"
-              onClick={() => toggleDropdown("core-overview")}
-              className={cn(
-                "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm font-semibold transition",
-                coreNavItems.some((item) => isActive(item.path))
-                  ? "bg-gold/12 text-gold"
-                  : "text-foreground/80 hover:bg-white/5 hover:text-foreground",
-              )}
-            >
-              {t.overview}
-              <ChevronDown
+          <>
+            <p className="pt-2 text-[11px] font-semibold uppercase tracking-[0.32em] text-gold/65">
+              {t.resourcesDirectory}
+            </p>
+            {coreNavItems.map((item) => (
+              <button
+                key={item.path}
+                type="button"
+                onClick={() => goTo(item.path)}
                 className={cn(
-                  "h-4 w-4 transition-transform duration-200",
-                  openDropdowns["core-overview"] ? "rotate-180" : ""
+                  "flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left text-sm transition duration-300",
+                  isActive(item.path)
+                    ? "border-gold/30 bg-gold/12 text-gold"
+                    : "border-white/5 bg-white/[0.03] text-foreground/80 hover:border-gold/15 hover:bg-white/[0.06]",
                 )}
-              />
-            </button>
-            <div
-              className={cn(
-                "mt-2 space-y-1 overflow-hidden transition-all duration-200",
-                openDropdowns["core-overview"] ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-              )}
-            >
-              {coreNavItems.map((item) => (
-                <button
-                  key={item.path}
-                  type="button"
-                  onClick={() => goTo(item.path)}
-                  className={cn(
-                    "flex w-full items-center justify-between rounded-xl px-3 py-2 text-left text-sm transition",
-                    isActive(item.path)
-                      ? "bg-gold/12 text-gold"
-                      : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
-                  )}
-                >
-                  <span>{t[item.key]}</span>
-                  {isActive(item.path) ? <div className="h-2 w-2 rounded-full bg-gold/70" /> : null}
-                </button>
-              ))}
-            </div>
-          </div>
+              >
+                <span>{t[item.key]}</span>
+                {isActive(item.path) ? <div className="h-2 w-2 rounded-full bg-gold/70" /> : null}
+              </button>
+            ))}
+          </>
         ) : (
           <>
             <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-gold/65">
@@ -253,10 +243,10 @@ export default function SidebarNav({
                 type="button"
                 onClick={() => goTo(item.path)}
                 className={cn(
-                  "flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left transition duration-300",
+                  "flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-left transition-all duration-300",
                   isActive(item.path)
-                    ? "border-gold/30 bg-gold/12 text-gold shadow-[inset_0_1px_0_hsl(var(--gold)/0.15)]"
-                    : "border-white/5 bg-white/[0.03] text-foreground/78 hover:border-gold/15 hover:bg-white/[0.06] hover:text-foreground",
+                    ? "border-gold/35 bg-gold/12 text-gold shadow-[0_0_24px_rgba(212,175,55,0.12),inset_0_1px_0_rgba(212,175,55,0.15)]"
+                    : "border-white/5 bg-white/[0.03] text-foreground/78 hover:-translate-y-0.5 hover:border-gold/20 hover:bg-white/[0.06] hover:text-foreground hover:shadow-[0_8px_30px_rgba(212,175,55,0.06)]",
                 )}
               >
                 <span className="font-display text-sm tracking-[0.08em]">{t[item.key]}</span>
@@ -297,35 +287,6 @@ export default function SidebarNav({
             })}
           </>
         )}
-      </div>
-
-      <div className="space-y-4 border-t border-gold/10 pt-4">
-        <div className="grid grid-cols-2 gap-2 rounded-2xl bg-black/20 p-1.5">
-          <button
-            type="button"
-            onClick={() => setLang("en")}
-            className={cn(
-              "rounded-xl px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] transition",
-              lang === "en"
-                ? "gold-gradient-bg text-secondary-foreground"
-                : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
-            )}
-          >
-            EN
-          </button>
-          <button
-            type="button"
-            onClick={() => setLang("fr")}
-            className={cn(
-              "rounded-xl px-3 py-2 text-xs font-semibold uppercase tracking-[0.22em] transition",
-              lang === "fr"
-                ? "gold-gradient-bg text-secondary-foreground"
-                : "text-muted-foreground hover:bg-white/5 hover:text-foreground",
-            )}
-          >
-            FR
-          </button>
-        </div>
       </div>
     </aside>
   );

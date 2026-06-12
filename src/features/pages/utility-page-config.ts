@@ -12,6 +12,12 @@ export type UtilityCardDefinition = {
   accent?: "gold" | "crimson";
 };
 
+export const referenceBureauDefaultPaths: Record<string, string> = {
+  join: "/bureau/rejoindre",
+  questions: "/bureau/contact",
+  cotiser: "/bureau/cotiser",
+};
+
 export const referenceBureauCardDefinitions: UtilityCardDefinition[] = [
   {
     id: "join",

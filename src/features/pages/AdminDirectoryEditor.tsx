@@ -122,9 +122,9 @@ export default function AdminDirectoryEditor({ directory, onChange }: Props) {
       <div className="grid gap-4 md:grid-cols-2">
         {[
           {
-            label: "Country entries",
+            label: "Federation entries",
             value: directory.countries.length,
-            note: "Displayed alphabetically on the public page",
+            note: "Displayed alphabetically under Federation on the public page",
           },
           {
             label: "Organization entries",
@@ -150,10 +150,10 @@ export default function AdminDirectoryEditor({ directory, onChange }: Props) {
 
       <DirectoryGroup
         icon={Globe}
-        title="By Country"
-        description="Add countries and their relevant information. The public page sorts this list alphabetically by country name."
+        title="Federation"
+        description="Add federation members and their information. The public page shows the medieval map above this list."
         items={directory.countries}
-        addLabel="Add Country"
+        addLabel="Add Federation entry"
         onChange={(countries) => onChange({ ...directory, countries })}
       />
 

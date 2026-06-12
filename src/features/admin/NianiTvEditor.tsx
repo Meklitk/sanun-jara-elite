@@ -40,7 +40,7 @@ type Props = {
 };
 
 export function NianiTvEditor({ media, onChange, token }: Props) {
-  const list = media.filter((m) => m.type === "video");
+  const list = media.filter((m) => m.type === "video" && m.category !== "cartoon");
   const [uploading, setUploading] = useState<number | null>(null);
 
   function setAt(i: number, next: MediaItem) {

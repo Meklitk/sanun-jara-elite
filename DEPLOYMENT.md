@@ -117,6 +117,50 @@ Update your server's `index.js` to use this variable.
 
 ---
 
+## Step 6: Email (info@sanunjara.com)
+
+Form submissions (membership questionnaire, questions) are saved in MongoDB and emailed when SMTP is configured.
+
+In **Railway** → **Variables**, add:
+
+```
+SMTP_HOST=smtp.your-provider.com
+SMTP_PORT=587
+SMTP_USER=info@sanunjara.com
+SMTP_PASS=your-app-password
+SMTP_FROM=info@sanunjara.com
+SMTP_TO=info@sanunjara.com
+```
+
+Common providers: Google Workspace, Zoho Mail, Microsoft 365, or your domain registrar’s email hosting.
+
+**Test:** Submit a question from `/bureau/questions` and confirm the message arrives at `info@sanunjara.com`. Submissions also appear under Admin → Formulaires.
+
+---
+
+## Step 7: Second domain (manden-gov.org)
+
+For UNESCO application purposes, point `www.manden-gov.org` to the same Vercel project:
+
+1. Client purchases `manden-gov.org`.
+2. Vercel → Project → **Domains** → Add `www.manden-gov.org` and `manden-gov.org`.
+3. At the registrar, add the DNS records Vercel provides (same as Step 4).
+4. Optional: set `manden-gov.org` as redirect to `www.sanunjara.com` or serve both as primary.
+
+---
+
+## Step 8: Backups
+
+See **[BACKUP.md](./BACKUP.md)** for MongoDB export, restore, and asset backup steps.
+
+Local quick backup (Docker running):
+
+```powershell
+npm run backup:local
+```
+
+---
+
 ## Testing After Deployment
 
 1. Visit `https://www.sanunjara.com`

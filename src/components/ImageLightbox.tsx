@@ -5,9 +5,10 @@ type ImageLightboxProps = {
   src: string;
   alt: string;
   className?: string;
+  onError?: () => void;
 };
 
-export default function ImageLightbox({ src, alt, className }: ImageLightboxProps) {
+export default function ImageLightbox({ src, alt, className, onError }: ImageLightboxProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -18,7 +19,7 @@ export default function ImageLightbox({ src, alt, className }: ImageLightboxProp
         className="block w-full cursor-zoom-in focus:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 rounded-lg"
         aria-label={`Enlarge ${alt}`}
       >
-        <img src={src} alt={alt} className={className} />
+        <img src={src} alt={alt} className={className} onError={onError} />
       </button>
 
       <Dialog open={open} onOpenChange={setOpen}>

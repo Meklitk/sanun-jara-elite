@@ -10,6 +10,7 @@ import HistoryPage from "./pages/HistoryPage";
 import HistoryTimelineEventPage from "./pages/HistoryTimelineEventPage";
 import GovernancePage from "./pages/GovernancePage";
 import GovernanceBiographyPage from "./pages/GovernanceBiographyPage";
+import GovernmentBiographyViewerPage from "./pages/GovernmentBiographyViewerPage";
 import GlobalPerspectivesPage from "./pages/GlobalPerspectivesPage";
 import ReferenceBureauPage from "./pages/ReferenceBureauPage";
 import NianiPage from "./pages/NianiPage";
@@ -41,9 +42,12 @@ const App = () => (
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route element={<MainLayout />}>
               <Route path="/" element={<IntroductionPage />} />
+              <Route path="/introduction" element={<IntroductionPage />} />
               <Route path="/history" element={<HistoryPage />} />
               <Route path="/history/timeline/:slug" element={<HistoryTimelineEventPage />} />
               <Route path="/governance" element={<GovernancePage />} />
+              <Route path="/gouvernement" element={<GovernancePage />} />
+              <Route path="/gouvernement/:slug" element={<GovernmentBiographyViewerPage />} />
               <Route path="/governance/biographies/:slug" element={<GovernanceBiographyPage />} />
               <Route path="/economy" element={<EconomyPage />} />
               <Route path="/commerce" element={<PageView pageKey="commerce" />} />
@@ -58,12 +62,16 @@ const App = () => (
               <Route path="/reference-bureau/join" element={<ReferenceBureauPage section="join" />} />
               <Route path="/reference-bureau/questions" element={<ReferenceBureauPage section="questions" />} />
               <Route path="/reference-bureau/cotiser" element={<ReferenceBureauPage section="cotiser" />} />
+              <Route path="/bureau/rejoindre" element={<ReferenceBureauPage section="join" />} />
+              <Route path="/bureau/contact" element={<ReferenceBureauPage section="questions" />} />
+              <Route path="/bureau/cotiser" element={<ReferenceBureauPage section="cotiser" />} />
               <Route path="/niani" element={<NianiPage />} />
               <Route path="/niani/institutions" element={<NianiInstitutionsPage />} />
               <Route path="/niani/architectural-projects" element={<NianiArchitecturalProjectsPage />} />
               <Route path="/niani/niani-tv" element={<NianiPage section="niani-tv" />} />
               <Route path="/academy" element={<AcademyPage />} />
               <Route path="/academy/nko" element={<AcademyPage section="nko" />} />
+              <Route path="/academy/cours-nko" element={<AcademyPage section="nko" />} />
               <Route path="/academy/history-courses" element={<AcademyPage section="history-courses" />} />
               <Route path="/academy/others" element={<AcademyPage section="others" />} />
               <Route path="/intranet" element={<IntranetPage />} />

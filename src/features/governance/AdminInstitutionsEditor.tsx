@@ -67,7 +67,8 @@ export function AdminInstitutionsEditor({ institutions, onChange, token }: Insti
               Institutions
             </Label>
             <p className="mt-2 text-xs text-muted-foreground max-w-xl">
-              Add institutions with images and videos for the Niani page.
+              Add institutions with images and videos for the Niani page. Upload a card image for Women under
+              Illustrations des cartes, or add photos here for the Women institution (id: women).
             </p>
           </div>
           <Button
@@ -105,6 +106,7 @@ export function AdminInstitutionsEditor({ institutions, onChange, token }: Insti
                     </div>
                     <span className="text-xs font-display font-bold uppercase tracking-wider text-gold">
                       Institution {i + 1}
+                      {item.id === "women" ? " — Women" : ""}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">

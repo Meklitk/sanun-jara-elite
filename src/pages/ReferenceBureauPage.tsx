@@ -8,7 +8,12 @@ import {
   PageNotFoundState,
   useCmsPage,
 } from "@/features/pages/page-content";
-import { findUtilityCard, referenceBureauCardDefinitions } from "@/features/pages/utility-page-config";
+import {
+  findUtilityCard,
+  referenceBureauCardDefinitions,
+  referenceBureauDefaultPaths,
+} from "@/features/pages/utility-page-config";
+import { CARD_IMAGES } from "@/lib/card-images";
 import { useI18n } from "@/lib/i18n";
 import { MembershipForm, QuestionsForm, CotiserSection } from "@/components/forms/ReferenceBureauForms";
 
@@ -24,12 +29,18 @@ export default function ReferenceBureauPage({ section }: ReferenceBureauPageProp
   if (error) return <PageErrorState />;
   if (!page) return <PageNotFoundState />;
 
+  const cardImages: Record<string, string> = {
+    join: CARD_IMAGES.referenceBureauJoin,
+    questions: CARD_IMAGES.referenceBureauQuestions,
+    cotiser: CARD_IMAGES.referenceBureauCotiser,
+  };
+
   const allCards = referenceBureauCardDefinitions
     .map((definition) => {
       const card = findUtilityCard(page.utilityCards, definition.id);
       const resolvedTitle = localize(card?.title) || t[definition.titleKey];
       const resolvedDescription = localize(card?.description) || t[definition.descriptionKey];
-      const href = card?.url?.trim() || `/reference-bureau/${definition.id}`;
+      const href = card?.url?.trim() || referenceBureauDefaultPaths[definition.id] || `/reference-bureau/${definition.id}`;
 
       if (!resolvedTitle && !resolvedDescription && !href) return null;
 
@@ -41,6 +52,7 @@ export default function ReferenceBureauPage({ section }: ReferenceBureauPageProp
         ctaLabel: t.learnMore,
         accent: definition.accent,
         href,
+        imageUrl: cardImages[definition.id],
       };
     })
     .filter((card): card is NonNullable<typeof card> => Boolean(card));

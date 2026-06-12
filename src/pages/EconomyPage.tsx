@@ -3,6 +3,8 @@ import { useI18n } from "@/lib/i18n";
 import { useMemo } from "react";
 import { usePages } from "@/api/pages";
 import { Card } from "@/components/ui/card";
+import SectionHeroImage from "@/components/SectionHeroImage";
+import { CARD_IMAGES } from "@/lib/card-images";
 import type { Page } from "@/api/types";
 
 function Paragraphs({ text }: { text: string }) {
@@ -29,7 +31,7 @@ function Paragraphs({ text }: { text: string }) {
 }
 
 export default function EconomyPage() {
-  const { localize } = useI18n();
+  const { localize, t } = useI18n();
   const { data, isLoading, error } = usePages();
 
   const page = useMemo<Page | undefined>(
@@ -74,7 +76,7 @@ export default function EconomyPage() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-4xl"
+        className="w-full max-w-4xl space-y-8"
       >
         <Card className="relative overflow-hidden rounded-[2rem] border border-gold/20 bg-[linear-gradient(145deg,rgba(10,10,10,0.95),rgba(40,30,10,0.85))] p-10 shadow-[0_25px_80px_rgba(0,0,0,0.5)] backdrop-blur-xl">
           {/* Decorative top line */}
@@ -90,10 +92,18 @@ export default function EconomyPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="mb-6 text-4xl font-bold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-200 to-gold md:text-5xl"
+            className="text-4xl font-bold leading-tight text-transparent bg-clip-text bg-gradient-to-r from-gold via-yellow-200 to-gold md:text-5xl"
           >
             {title || "Economy"}
           </motion.h1>
+
+          <div className="my-8">
+            <SectionHeroImage
+              src={CARD_IMAGES.economyHero}
+              alt={title || t.economy}
+              className="overflow-hidden rounded-[1.25rem] border border-gold/15"
+            />
+          </div>
 
           {/* Divider */}
           <div className="mb-8 h-px w-full bg-gradient-to-r from-transparent via-gold/40 to-transparent" />

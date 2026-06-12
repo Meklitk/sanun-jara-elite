@@ -9,6 +9,8 @@ import {
   PageNotFoundState,
   useCmsPage,
 } from "@/features/pages/page-content";
+import SectionHeroImage from "@/components/SectionHeroImage";
+import { CARD_IMAGES } from "@/lib/card-images";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
@@ -133,6 +135,10 @@ export default function NkoAlphabetLesson() {
 
   return (
     <div className="space-y-8">
+      <SectionHeroImage
+        src={CARD_IMAGES.academyNko}
+        alt={lang === "fr" ? "Apprentissage de l'alphabet N'Ko" : "Learning the N'Ko alphabet"}
+      />
       <section className="rounded-[2rem] border border-gold/15 bg-[linear-gradient(145deg,rgba(0,0,0,0.94),rgba(39,25,8,0.9))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.35)] sm:p-8 lg:p-10">
         <div className="flex items-center gap-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/20 bg-gold/10 text-gold">
@@ -152,13 +158,6 @@ export default function NkoAlphabetLesson() {
             ? `Cliquez sur chaque lettre pour entendre sa prononciation. ${recordedLetters.size}/${countExpectedRecordings()} enregistrements disponibles.`
             : `Click each letter to hear its pronunciation. ${recordedLetters.size}/${countExpectedRecordings()} recordings available.`}
         </p>
-        {recordedLetters.size < countExpectedRecordings() ? (
-          <p className="mt-2 text-sm text-muted-foreground">
-            {lang === "fr"
-              ? "Il manque encore la lettre ߑ (ŋ) — ajoutez public/audio/nko/ߑ.ogg quand elle est prête."
-              : "Still missing letter ߑ (ŋ) — add public/audio/nko/ߑ.ogg when ready."}
-          </p>
-        ) : null}
         {usingFallback ? (
           <p className="mt-3 text-sm text-gold/70">
             {lang === "fr"

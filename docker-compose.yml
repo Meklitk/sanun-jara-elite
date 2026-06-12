@@ -23,9 +23,11 @@ services:
       - "5050:5050"
     volumes:
       - ./server:/app
+      - ./public/biographies:/biographies
       - sanun_jara_api_node_modules:/app/node_modules
     environment:
       PORT: 5050
+      BIOGRAPHIES_DIR: /biographies
       MONGODB_URI: mongodb://mongo:27017/sanun_jara_elite
       JWT_SECRET: local_dev_secret_change_me
       ADMIN_USERNAME: admin

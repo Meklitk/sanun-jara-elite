@@ -1,7 +1,11 @@
 import { usePages } from "@/api/pages";
 import { useI18n } from "@/lib/i18n";
 
-const defaultEmblemImage = "/images/coat-of-arms-mandenbB.jpeg";
+export const DEFAULT_COAT_OF_ARMS = "/images/coat-of-arms-mandenbB.jpeg";
+
+export function resolveCoatOfArmsImage(introductionPage?: { images?: string[] }) {
+  return introductionPage?.images?.[1] || DEFAULT_COAT_OF_ARMS;
+}
 
 type SiteCoatOfArmsProps = {
   className?: string;
@@ -11,7 +15,7 @@ export default function SiteCoatOfArms({ className = "" }: SiteCoatOfArmsProps) 
   const { t } = useI18n();
   const { data } = usePages();
   const introductionPage = data?.pages.find((page) => page.key === "introduction");
-  const emblemImage = introductionPage?.images?.[1] || defaultEmblemImage;
+  const emblemImage = resolveCoatOfArmsImage(introductionPage);
 
   return (
     <section

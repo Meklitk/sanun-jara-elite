@@ -21,7 +21,7 @@ export const NKO_ALPHABET: NkoLetter[] = [
   { char: "ߗ", romanization: "nb" },
   { char: "ߘ", romanization: "n" },
   { char: "ߙ", romanization: "r" },
-  { char: "ߚ", romanization: "s" },
+  { char: "ߚ", romanization: "rr" },
   { char: "ߛ", romanization: "sh" },
   { char: "ߜ", romanization: "j" },
   { char: "ߝ", romanization: "h" },

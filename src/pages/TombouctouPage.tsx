@@ -95,7 +95,7 @@ export default function TombouctouPage() {
           ))
         ) : (
           <div className="rounded-[1.5rem] border border-dashed border-gold/20 bg-black/15 px-6 py-10 text-center text-sm text-muted-foreground">
-            Content for Tombouctou will appear here once added from the admin dashboard.
+            {t.tombouctouEmpty}
           </div>
         )}
       </section>

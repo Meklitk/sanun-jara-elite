@@ -7,6 +7,7 @@ import {
   useCmsPage,
 } from "@/features/pages/page-content";
 import { academyCardDefinitions, findUtilityCard } from "@/features/pages/utility-page-config";
+import { CARD_IMAGES } from "@/lib/card-images";
 import { useI18n } from "@/lib/i18n";
 
 type AcademyPageProps = {
@@ -25,6 +26,12 @@ export default function AcademyPage({ section }: AcademyPageProps) {
     return <NkoAlphabetLesson />;
   }
 
+  const cardImages: Record<string, string> = {
+    nko: CARD_IMAGES.academyNko,
+    "history-courses": CARD_IMAGES.academyHistory,
+    others: CARD_IMAGES.academyOthers,
+  };
+
   const allCards = academyCardDefinitions
     .map((definition) => {
       const card = findUtilityCard(page.utilityCards, definition.id);
@@ -42,6 +49,7 @@ export default function AcademyPage({ section }: AcademyPageProps) {
         ctaLabel: t.learnMore,
         accent: definition.accent,
         href,
+        imageUrl: cardImages[definition.id],
       };
     })
     .filter((card): card is NonNullable<typeof card> => Boolean(card));

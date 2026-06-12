@@ -9,6 +9,7 @@
     "docker:up": "docker compose up -d",
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
+    "backup:local": "powershell -ExecutionPolicy Bypass -File scripts/backup-mongo.ps1",
     "dev:docker": "docker compose up -d && npm run dev",
     "build": "vite build",
     "lint": "eslint .",

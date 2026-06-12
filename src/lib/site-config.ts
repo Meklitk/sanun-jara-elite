@@ -18,14 +18,15 @@ export type UtilityNavItem = {
 };
 
 export const coreNavItems: CoreNavItem[] = [
-  { key: "introduction", path: "/" },
+  { key: "introduction", path: "/introduction" },
   { key: "history", path: "/history" },
-  { key: "governance", path: "/governance" },
+  { key: "governance", path: "/gouvernement" },
   { key: "economy", path: "/economy" },
   { key: "commerce", path: "/commerce" },
   { key: "culture", path: "/culture" },
   { key: "resources", path: "/resources" },
   { key: "tombouctou", path: "/tombouctou" },
+  { key: "iAmEntrepreneur", path: "/bureau/cotiser" },
 ];
 
 export const utilityNavItems: UtilityNavItem[] = [
@@ -33,6 +34,7 @@ export const utilityNavItems: UtilityNavItem[] = [
     key: "globalPerspectives",
     path: "/global-perspectives",
     children: [
+      { id: "overview", key: "overview", path: "/global-perspectives" },
       { id: "country", key: "byCountry", path: "/global-perspectives/country" },
       { id: "organization", key: "byOrganization", path: "/global-perspectives/organization" },
       { id: "affiliation", key: "byAffiliation", path: "/global-perspectives/affiliation" },
@@ -42,9 +44,9 @@ export const utilityNavItems: UtilityNavItem[] = [
     key: "referenceBureau",
     path: "/reference-bureau",
     children: [
-      { id: "join", key: "wantToJoin", path: "/reference-bureau/join" },
-      { id: "questions", key: "haveQuestions", path: "/reference-bureau/questions" },
-      { id: "cotiser", key: "iAmEntrepreneur", path: "/reference-bureau/cotiser" },
+      { id: "join", key: "wantToJoin", path: "/bureau/rejoindre" },
+      { id: "questions", key: "haveQuestions", path: "/bureau/contact" },
+      { id: "cotiser", key: "iAmEntrepreneur", path: "/bureau/cotiser" },
     ],
   },
   {
@@ -60,7 +62,7 @@ export const utilityNavItems: UtilityNavItem[] = [
     key: "academy",
     path: "/academy",
     children: [
-      { id: "nko", key: "coursesNko", path: "/academy/nko" },
+      { id: "nko", key: "coursesNko", path: "/academy/cours-nko" },
       { id: "history-courses", key: "historyCourses", path: "/academy/history-courses" },
       { id: "others", key: "otherCourses", path: "/academy/others" },
     ],

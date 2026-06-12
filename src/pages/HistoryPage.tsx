@@ -1,7 +1,10 @@
 import { useEffect, type KeyboardEvent } from "react";
 import { motion } from "framer-motion";
+import { Clock3, ScrollText } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import { resolveCoatOfArmsImage } from "@/components/SiteCoatOfArms";
+import { usePages } from "@/api/pages";
 import {
   PageErrorState,
   PageLoadingState,
@@ -15,11 +18,16 @@ import {
   isInternalAppPath,
   resolveHistoryTimelineLink,
 } from "@/features/history/history-timeline";
+
 export default function HistoryPage() {
   const { t, localize } = useI18n();
   const { page, title, content, isLoading, error } = useCmsPage("history");
+  const { data: pagesData } = usePages();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const introductionPage = pagesData?.pages.find((p) => p.key === "introduction");
+  const coatOfArmsImage = resolveCoatOfArmsImage(introductionPage);
 
   const paragraphs = splitParagraphs(content);
   const intro = paragraphs[0] ?? "";
@@ -67,81 +75,97 @@ export default function HistoryPage() {
   if (!hasContent) return <PageNotFoundState />;
 
   return (
-    <div className="space-y-12">
+    <div className="mx-auto w-full max-w-6xl space-y-10 sm:space-y-14">
+      {/* Coat of arms beside title */}
+      <section className="relative overflow-hidden rounded-[1.75rem] border border-gold/20 bg-[linear-gradient(160deg,rgba(255,205,86,0.08),rgba(0,0,0,0.88))] px-4 py-6 shadow-[0_32px_100px_rgba(0,0,0,0.45)] sm:rounded-[2rem] sm:px-8 sm:py-8">
+        <div
+          className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,hsl(var(--gold)/0.14),transparent_55%)]"
+          aria-hidden
+        />
 
-      {/* ✅ HERO - Logo + Content Side by Side */}
-      <section className="max-w-6xl mx-auto overflow-hidden rounded-[1.25rem] sm:rounded-[2rem] border border-gold/15 bg-[linear-gradient(145deg,rgba(0,0,0,0.92),rgba(38,23,7,0.86))] p-4 sm:p-6 sm:p-8 lg:p-10 shadow-[0_30px_100px_rgba(0,0,0,0.35)]">
-        <div className="grid gap-4 sm:gap-8 lg:grid-cols-[1fr_360px] items-start">
-          {/* Content Left */}
-          <div className="space-y-3 sm:space-y-6">
-            <h1 className="text-2xl sm:text-4xl font-bold gold-gradient-text sm:text-5xl">
-              {title || page.key}
+        <div className="relative grid items-center gap-6 lg:grid-cols-[1fr_240px] lg:gap-10">
+          <div className="space-y-3 sm:space-y-4">
+            <h1 className="text-3xl font-bold gold-gradient-text sm:text-4xl lg:text-5xl">
+              {title || t.historyTitle}
             </h1>
-
-            {intro && (
-              <p className="max-w-4xl text-sm sm:text-base leading-7 sm:leading-8 text-foreground/76 sm:text-lg">
-                {intro}
-              </p>
-            )}
+            <p className="text-sm uppercase tracking-[0.28em] text-gold/65 sm:text-xs">
+              {t.historySubtitle}
+            </p>
           </div>
 
-          {/* Hero Image Right */}
-          {heroImage && (
-            <div className="overflow-hidden rounded-[1.75rem] border border-gold/15 bg-black/25 shadow-[0_24px_80px_rgba(0,0,0,0.28)]">
+          <div className="mx-auto w-full max-w-[220px] lg:mx-0 lg:max-w-none">
+            <div className="relative overflow-hidden rounded-[1.35rem] border border-gold/25 bg-black/70 p-3 shadow-[0_20px_60px_rgba(0,0,0,0.35)] sm:p-4">
               <img
-                src={heroImage}
-                alt={title || page.key}
-                className="h-[220px] w-full object-cover sm:h-[280px]"
+                src={coatOfArmsImage}
+                alt={t.coatOfArms}
+                className="mx-auto h-36 w-full object-contain sm:h-40"
               />
             </div>
-          )}
+            <p className="mt-2 text-center text-[10px] uppercase tracking-[0.26em] text-gold/65 lg:text-right">
+              {t.coatOfArms}
+            </p>
+          </div>
         </div>
+
+        {intro ? (
+          <p className="relative mt-6 max-w-4xl text-base leading-8 text-foreground/78 sm:mt-8 sm:text-lg">
+            {intro}
+          </p>
+        ) : null}
+
+        {heroImage ? (
+          <div className="relative mt-6 overflow-hidden rounded-[1.25rem] border border-gold/15 shadow-[0_20px_60px_rgba(0,0,0,0.3)] sm:mt-8">
+            <img
+              src={heroImage}
+              alt={title || page.key}
+              className="h-44 w-full object-cover sm:h-56 md:h-64"
+            />
+          </div>
+        ) : null}
       </section>
 
-      {/* ✅ NARRATIVE - Full Width */}
-      {narrative.length > 0 && (
-        <section className="w-full px-4 sm:px-6 lg:px-12">
-          <div className="grid gap-4 lg:grid-cols-2">
-            {narrative.map((paragraph, index) => (
-              <motion.article
-                key={index}
-                initial={{ opacity: 0, y: 18 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="rounded-[1.75rem] border border-gold/12 bg-black/28 p-6"
-              >
-                <p className="text-base leading-8 text-foreground/76">{paragraph}</p>
-              </motion.article>
-            ))}
-          </div>
+      {narrative.length > 0 ? (
+        <section className="grid gap-4 md:grid-cols-2">
+          {narrative.map((paragraph, index) => (
+            <motion.article
+              key={index}
+              initial={{ opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.05 }}
+              className="rounded-[1.5rem] border border-gold/12 bg-black/30 p-6 shadow-[0_18px_55px_rgba(0,0,0,0.2)]"
+            >
+              <ScrollText className="mb-3 h-5 w-5 text-gold/70" />
+              <p className="text-base leading-8 text-foreground/76">{paragraph}</p>
+            </motion.article>
+          ))}
         </section>
-      )}
+      ) : null}
 
-      {/* 🔥 FULL WIDTH TIMELINE */}
-      {events.length > 0 && (
-        <section
-          id="timeline"
-          className="w-full px-2 sm:px-4 sm:px-6 lg:px-12"
-        >
-          <div className="relative rounded-[1.25rem] sm:rounded-[2rem] border border-gold/15 bg-black/30 p-4 sm:p-6 sm:p-10 shadow-[0_30px_100px_rgba(0,0,0,0.25)]">
+      {events.length > 0 ? (
+        <section id="timeline" className="scroll-mt-28">
+          <div className="mb-8 flex flex-col items-center gap-3 text-center sm:mb-10">
+            <div className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">
+              <Clock3 className="h-3.5 w-3.5" />
+              {t.historyTimeline}
+            </div>
+            <div className="h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+          </div>
 
-            {/* center line - hidden on mobile */}
-            <div className="absolute left-4 sm:left-1/2 top-0 bottom-0 w-px sm:-translate-x-1/2 bg-gradient-to-b from-gold/40 via-gold/20 to-transparent" />
+          <div className="relative rounded-[1.75rem] border border-gold/15 bg-black/35 p-4 shadow-[0_30px_100px_rgba(0,0,0,0.28)] sm:p-8 lg:p-10">
+            <div className="absolute bottom-0 left-4 top-0 w-px bg-gradient-to-b from-gold/50 via-gold/25 to-transparent sm:left-1/2 sm:-translate-x-1/2" />
 
-            <div className="space-y-6 sm:space-y-10">
+            <div className="space-y-8 sm:space-y-12">
               {events.map((event, index) => (
                 <div
                   key={index}
                   id={event.slug}
-                  className="grid grid-cols-[auto_1fr] sm:grid-cols-[1fr_auto_1fr] gap-3 sm:gap-6 items-start sm:items-center"
+                  className="grid grid-cols-[auto_1fr] items-start gap-4 sm:grid-cols-[1fr_auto_1fr] sm:items-center sm:gap-8"
                 >
-
-                  {/* Mobile: Dot first, then card */}
-                  <div className="flex sm:hidden flex-col items-center pt-2">
-                    <Dot index={index} />
+                  <div className="flex flex-col items-center pt-3 sm:hidden">
+                    <TimelineDot index={index} />
                   </div>
 
-                  {/* LEFT - Desktop only */}
                   {event.side === "left" ? (
                     <>
                       <TimelineCard
@@ -151,16 +175,16 @@ export default function HistoryPage() {
                         onActivate={() => navigateToEvent(event.href)}
                         onKeyDown={(keyboardEvent) => handleEventKeyDown(keyboardEvent, event.href)}
                       />
-                      <div className="hidden sm:block">
-                        <Dot index={index} />
+                      <div className="hidden sm:flex sm:justify-center">
+                        <TimelineDot index={index} />
                       </div>
                       <div className="hidden sm:block" />
                     </>
                   ) : (
                     <>
                       <div className="hidden sm:block" />
-                      <div className="hidden sm:block">
-                        <Dot index={index} />
+                      <div className="hidden sm:flex sm:justify-center">
+                        <TimelineDot index={index} />
                       </div>
                       <TimelineCard
                         event={event}
@@ -171,35 +195,32 @@ export default function HistoryPage() {
                       />
                     </>
                   )}
-
                 </div>
               ))}
             </div>
           </div>
         </section>
-      )}
+      ) : null}
 
-      {/* ✅ GALLERY - Full Width */}
-      {galleryImages.length > 0 && (
-        <section className="w-full px-2 sm:px-4 sm:px-6 lg:px-12 grid gap-2 sm:gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+      {galleryImages.length > 0 ? (
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {galleryImages.map((src, index) => (
             <motion.div
               key={src}
               initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
               transition={{ delay: index * 0.05 }}
-              className="overflow-hidden rounded-[1.25rem] sm:rounded-[1.6rem] border border-gold/12"
+              className="overflow-hidden rounded-[1.5rem] border border-gold/12 shadow-[0_18px_55px_rgba(0,0,0,0.22)]"
             >
-              <img src={src} className="h-48 sm:h-60 w-full object-cover" />
+              <img src={src} alt="" className="h-52 w-full object-cover sm:h-60" />
             </motion.div>
           ))}
         </section>
-      )}
+      ) : null}
     </div>
   );
 }
-
-/* 🔥 COMPONENTS */
 
 function TimelineCard({
   event,
@@ -224,56 +245,60 @@ function TimelineCard({
 
   return (
     <motion.article
-      initial={{ opacity: 0, x: align === "left" ? 40 : -40 }}
+      initial={{ opacity: 0, x: align === "left" ? 36 : -36 }}
       whileInView={{ opacity: 1, x: 0 }}
-      transition={{ delay: index * 0.05 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ delay: index * 0.06, duration: 0.45 }}
       role="link"
       tabIndex={0}
       onClick={onActivate}
       onKeyDown={onKeyDown}
-      className={`cursor-pointer rounded-[1.25rem] sm:rounded-[1.6rem] border border-gold/12 bg-white/[0.03] p-3 sm:p-5 shadow transition hover:border-gold/30 hover:bg-white/[0.05] focus:outline-none focus:ring-2 focus:ring-gold/40 ${
+      className={`group cursor-pointer rounded-[1.35rem] border border-gold/15 bg-[linear-gradient(145deg,rgba(255,205,86,0.06),rgba(0,0,0,0.35))] p-4 shadow-[0_16px_50px_rgba(0,0,0,0.22)] transition hover:-translate-y-0.5 hover:border-gold/35 hover:shadow-[0_22px_60px_rgba(0,0,0,0.32)] focus:outline-none focus:ring-2 focus:ring-gold/40 sm:rounded-[1.6rem] sm:p-6 ${
         align === "right" ? "sm:text-right" : ""
       }`}
     >
-      {event.year && (
-        <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.28em] text-gold/72">
-          {event.year}
-        </p>
-      )}
-      <h2 className="mt-2 sm:mt-3 text-lg sm:text-xl font-semibold">{event.title}</h2>
-      <p className="mt-2 sm:mt-3 text-xs sm:text-sm text-foreground/70">{event.description}</p>
-      {event.image && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: index * 0.05 + 0.1 }}
-          className="mt-4 overflow-hidden rounded-xl border border-gold/10 bg-black/20"
+      {event.year ? (
+        <span
+          className={`inline-flex rounded-full border border-gold/25 bg-gold/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.24em] text-gold sm:text-[11px] ${
+            align === "right" ? "sm:float-right sm:ml-3" : ""
+          }`}
         >
+          {event.year}
+        </span>
+      ) : null}
+      <h2 className="clear-both mt-1 text-lg font-semibold text-foreground sm:text-xl">{event.title}</h2>
+      <p className="mt-3 text-sm leading-7 text-foreground/72">{event.description}</p>
+      {event.image ? (
+        <div className="mt-4 overflow-hidden rounded-xl border border-gold/12 bg-black/25">
           <img
             src={event.image}
             alt={event.title || "Timeline event"}
-            className="h-32 w-full object-cover"
+            className="h-36 w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:h-40"
           />
-        </motion.div>
-      )}
-      <p className={`mt-3 sm:mt-4 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.22em] text-gold/75 ${align === "right" ? "sm:text-right" : ""}`}>
-        {t.openTimelineEntry}
+        </div>
+      ) : null}
+      <p
+        className={`mt-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-gold/80 transition group-hover:text-gold sm:text-xs ${
+          align === "right" ? "sm:text-right" : ""
+        }`}
+      >
+        {t.openTimelineEntry} →
       </p>
     </motion.article>
   );
 }
 
-function Dot({ index }: any) {
+function TimelineDot({ index }: { index: number }) {
   return (
-    <div className="flex justify-center">
-      <motion.div
-        initial={{ scale: 0.5, opacity: 0 }}
-        whileInView={{ scale: 1, opacity: 1 }}
-        transition={{ delay: index * 0.05 }}
-        className="h-4 w-4 rounded-full bg-gold shadow-[0_0_20px_hsl(var(--gold)/0.45)]"
-      />
-    </div>
+    <motion.div
+      initial={{ scale: 0.4, opacity: 0 }}
+      whileInView={{ scale: 1, opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ delay: index * 0.05 }}
+      className="relative flex h-5 w-5 items-center justify-center"
+    >
+      <span className="absolute h-5 w-5 rounded-full bg-gold/25 blur-[2px]" />
+      <span className="relative h-3.5 w-3.5 rounded-full border-2 border-gold bg-black shadow-[0_0_18px_hsl(var(--gold)/0.55)]" />
+    </motion.div>
   );
 }
-    

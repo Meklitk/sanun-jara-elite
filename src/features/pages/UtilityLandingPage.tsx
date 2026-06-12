@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
@@ -11,6 +12,7 @@ type UtilityCard = {
   ctaLabel: string;
   accent?: "gold" | "crimson";
   href?: string;
+  imageUrl?: string;
 };
 
 type UtilityLandingPageProps = {
@@ -29,6 +31,35 @@ function splitParagraphs(text: string) {
 
 function isExternalHref(href: string) {
   return /^[a-z][a-z\d+.-]*:/i.test(href) || href.startsWith("//");
+}
+
+function UtilityCardVisual({
+  card,
+  accentClass,
+}: {
+  card: UtilityCard;
+  accentClass: string;
+}) {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  if (card.imageUrl && !imageFailed) {
+    return (
+      <div className="mb-4 sm:mb-6 overflow-hidden rounded-xl sm:rounded-2xl border border-gold/15 bg-black/30">
+        <img
+          src={card.imageUrl}
+          alt={card.title}
+          onError={() => setImageFailed(true)}
+          className="aspect-[16/10] w-full object-cover"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={`mb-4 sm:mb-6 inline-flex h-10 sm:h-14 w-10 sm:w-14 items-center justify-center rounded-xl sm:rounded-2xl ${accentClass}`}>
+      <card.icon className="h-5 sm:h-6 w-5 sm:w-6" />
+    </div>
+  );
 }
 
 export default function UtilityLandingPage({
@@ -70,9 +101,7 @@ export default function UtilityLandingPage({
               transition={{ delay: index * 0.08, duration: 0.45 }}
               className="group rounded-[1.25rem] sm:rounded-[1.75rem] border border-gold/15 bg-black/30 p-4 sm:p-7 shadow-[0_22px_80px_rgba(0,0,0,0.28)] transition duration-300 hover:border-gold/30 hover:bg-black/40 block"
             >
-              <div className={`mb-4 sm:mb-6 inline-flex h-10 sm:h-14 w-10 sm:w-14 items-center justify-center rounded-xl sm:rounded-2xl ${accentClass}`}>
-                <card.icon className="h-5 sm:h-6 w-5 sm:w-6" />
-              </div>
+              <UtilityCardVisual card={card} accentClass={accentClass} />
               <h2 className="text-lg sm:text-2xl font-semibold text-foreground">{card.title}</h2>
               <p className="mt-2 sm:mt-4 text-xs sm:text-sm leading-6 sm:leading-7 text-foreground/72">{card.description}</p>
               <div className="mt-4 sm:mt-7 inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-gold">

@@ -3,11 +3,16 @@ import { Outlet, useLocation } from "react-router-dom";
 import SiteCoatOfArms from "@/components/SiteCoatOfArms";
 import SidebarNav from "@/components/SidebarNav";
 import TopBar from "@/components/TopBar";
+import CotiserCta from "@/components/CotiserCta";
 import Footer from "@/components/Footer";
 
 export default function MainLayout() {
   const location = useLocation();
-  const showCoatOfArms = location.pathname !== "/governance";
+  const isGovernancePage =
+    location.pathname === "/governance" || location.pathname === "/gouvernement";
+  const isHistoryPage = location.pathname.startsWith("/history");
+  const showCoatOfArms =
+    !isGovernancePage && !location.pathname.startsWith("/gouvernement/") && !isHistoryPage;
 
   return (
     <div className="relative min-h-screen bg-background">
@@ -44,6 +49,7 @@ export default function MainLayout() {
         </div>
 
         <Footer />
+        <CotiserCta />
       </div>
     </div>
   );

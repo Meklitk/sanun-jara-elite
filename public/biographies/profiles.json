@@ -1,0 +1,16 @@
+{
+  "mansa-mari-diata-v-keita": {
+    "portrait": null,
+    "summary": {
+      "fr": "Mansa du Manden — biographie PDF à téléverser depuis l'administration.",
+      "en": "Mansa of Manden — upload French and English PDF biographies from the admin panel."
+    }
+  },
+  "sitan-foune-diakite": {
+    "portrait": "/biographies/sitan-foune-diakite-portrait.jpg",
+    "summary": {
+      "fr": "Trésorier en chef, dirigeant régional du Mali et porte-parole du\nministère de l'Économie et des Finances",
+      "en": "Chief Treasurer, Regional Leader of Mali, and Spokesperson for the Ministry of Economics and Finance"
+    }
+  }
+}

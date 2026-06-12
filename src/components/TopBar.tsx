@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, Menu, Languages, X } from "lucide-react";
+import { ChevronDown, Menu, Languages, X, Facebook } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import SidebarNav from "@/components/SidebarNav";
@@ -33,8 +33,8 @@ export default function TopBar() {
   const toggleLang = () => setLang(lang === "en" ? "fr" : "en");
 
   return (
-    <header className="sticky top-0 z-50 border-b border-gold/10 bg-background/88 backdrop-blur-2xl">
-      <div className="mx-auto flex max-w-[1700px] items-center justify-between gap-4 px-3 py-3 sm:px-4 lg:px-6">
+    <header className="sticky top-0 z-50 overflow-visible border-b border-gold/10 bg-background/95 backdrop-blur-2xl">
+      <div className="mx-auto flex max-w-[1700px] items-center justify-between gap-4 overflow-visible px-3 py-3 sm:px-4 lg:px-6">
         <div className="flex items-center gap-3">
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
             <SheetTrigger asChild>
@@ -42,7 +42,7 @@ export default function TopBar() {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="rounded-2xl border border-gold/12 bg-black/20 text-foreground hover:bg-white/5 lg:hidden"
+                className="rounded-2xl border border-gold/12 bg-black/20 text-foreground hover:bg-white/5 xl:hidden"
               >
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">{t.mobileMenu}</span>
@@ -50,31 +50,77 @@ export default function TopBar() {
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="w-[92vw] max-w-sm overflow-y-auto border-gold/15 bg-background/98 px-5 py-8"
+              className="flex w-full max-w-[min(100vw,22rem)] flex-col border-gold/20 bg-[#050505]/98 p-0 backdrop-blur-xl"
             >
-              <SheetHeader className="mb-6">
-                <SheetTitle className="font-display text-2xl gold-gradient-text">Sanun jara</SheetTitle>
-                <SheetDescription>{t.quickSearchPlaceholder}</SheetDescription>
-              </SheetHeader>
-              <SidebarNav
-                mode="mobile"
-                includeUtilityNav
-                onNavigate={() => setMobileOpen(false)}
-              />
-              <div className="mt-6 pt-6 border-t border-gold/10">
+              <div className="flex items-center justify-between border-b border-gold/10 px-5 py-4">
+                <SheetHeader className="space-y-1 text-left">
+                  <SheetTitle className="font-display text-xl gold-gradient-text">Sanun Jara</SheetTitle>
+                  <SheetDescription className="text-xs">{t.mobileMenu}</SheetDescription>
+                </SheetHeader>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setMobileOpen(false)}
+                  className="shrink-0 rounded-xl border border-gold/15 text-gold hover:bg-gold/10"
+                >
+                  <X className="h-5 w-5" />
+                  <span className="sr-only">Close</span>
+                </Button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto px-5 py-5">
+                <SidebarNav
+                  mode="mobile"
+                  includeUtilityNav
+                  onNavigate={() => setMobileOpen(false)}
+                />
+              </div>
+
+              <div className="space-y-2 border-t border-gold/10 px-5 py-4">
+                <Button
+                  type="button"
                   size="sm"
                   onClick={() => {
-                    toggleLang();
+                    navigate("/bureau/cotiser");
                     setMobileOpen(false);
                   }}
-                  className="w-full rounded-xl border-gold/20 bg-black/20 text-gold hover:bg-gold/10 hover:text-gold"
+                  className="w-full rounded-xl border border-gold/30 bg-gold/15 text-gold hover:bg-gold/25"
                 >
-                  <Languages className="mr-2 h-4 w-4" />
-                  {lang === "en" ? "Français" : "English"}
+                  {t.iAmEntrepreneur}
                 </Button>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      toggleLang();
+                      setMobileOpen(false);
+                    }}
+                    className="rounded-xl border-gold/20 bg-black/20 text-gold hover:bg-gold/10"
+                  >
+                    <Languages className="mr-2 h-4 w-4" />
+                    {lang === "en" ? "FR" : "EN"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="rounded-xl border-gold/20 bg-black/20 text-gold hover:bg-gold/10"
+                  >
+                    <a
+                      href="https://www.facebook.com/profile.php?id=61555027864138"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() => setMobileOpen(false)}
+                    >
+                      <Facebook className="mr-2 h-4 w-4" />
+                      {t.facebook}
+                    </a>
+                  </Button>
+                </div>
               </div>
             </SheetContent>
           </Sheet>
@@ -96,7 +142,7 @@ export default function TopBar() {
           </button>
         </div>
 
-        <nav className="hidden items-center gap-2 xl:flex">
+        <nav className="hidden items-center gap-2 overflow-visible xl:flex">
           {utilityNavItems.map((item) => {
             const isActive = location.pathname === item.path;
             const isOpen = activeMenu === item.path;
@@ -113,7 +159,7 @@ export default function TopBar() {
                   onClick={() => setActiveMenu(isOpen ? null : item.path)}
                   className={cn(
                     "inline-flex items-center gap-2 rounded-2xl px-4 py-3 text-sm font-semibold transition",
-                    isActive
+                    isActive || isOpen
                       ? "bg-gold/10 text-gold"
                       : "text-foreground/78 hover:bg-white/5 hover:text-foreground",
                   )}
@@ -129,21 +175,25 @@ export default function TopBar() {
 
                 <div
                   className={cn(
-                    "pointer-events-none absolute left-0 top-[calc(100%+0.75rem)] w-72 rounded-[1.5rem] border border-gold/15 bg-background/96 p-3 opacity-0 shadow-[0_26px_70px_rgba(0,0,0,0.45)] backdrop-blur-xl transition duration-200",
-                    "before:absolute before:-top-3 before:left-0 before:right-0 before:h-3 before:content-['']",
-                    isOpen && "pointer-events-auto opacity-100",
+                    "absolute left-0 top-full z-[60] w-72 pt-2 transition-opacity duration-200",
+                    isOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
                   )}
                 >
-                  {item.children.map((child) => (
-                    <button
-                      key={child.id}
-                      type="button"
-                      onClick={() => navigate(child.path || `${item.path}#${child.id}`)}
-                      className="block w-full rounded-xl px-4 py-3 text-left text-sm text-foreground/80 transition hover:bg-white/5 hover:text-foreground"
-                    >
-                      {t[child.key]}
-                    </button>
-                  ))}
+                  <div className="rounded-[1.5rem] border border-gold/25 bg-black p-2 shadow-[0_26px_70px_rgba(0,0,0,0.65)] ring-1 ring-gold/10">
+                    {item.children.map((child) => (
+                      <button
+                        key={child.id}
+                        type="button"
+                        onClick={() => {
+                          setActiveMenu(null);
+                          navigate(child.path || `${item.path}#${child.id}`);
+                        }}
+                        className="block w-full rounded-xl px-4 py-3 text-left text-sm font-medium text-foreground transition hover:bg-gold/10 hover:text-gold"
+                      >
+                        {t[child.key]}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             );
@@ -151,10 +201,27 @@ export default function TopBar() {
         </nav>
 
         <div className="flex items-center gap-2 lg:gap-3">
+          <a
+            href="https://www.facebook.com/profile.php?id=61555027864138"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex rounded-xl border border-gold/15 bg-black/20 p-2 text-gold/80 transition hover:border-gold/30 hover:bg-gold/10 hover:text-gold"
+            aria-label={t.facebook}
+          >
+            <Facebook className="h-4 w-4" />
+          </a>
+          <Button
+            type="button"
+            size="sm"
+            onClick={() => navigate("/bureau/cotiser")}
+            className="hidden rounded-xl border border-gold/30 bg-gold/15 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gold hover:bg-gold/25 hover:text-gold sm:inline-flex"
+          >
+            {t.iAmEntrepreneur}
+          </Button>
           <button
             type="button"
             onClick={() => setFlagOpen(true)}
-            className="rounded-xl border border-gold/15 bg-black/25 p-2 transition hover:border-gold/30 hover:bg-gold/5 lg:hidden"
+            className="rounded-xl border border-gold/15 bg-black/25 p-2 transition hover:border-gold/30 hover:bg-gold/5 xl:hidden"
           >
             <img
               src="/images/manden-flag-lion.svg"
@@ -162,7 +229,7 @@ export default function TopBar() {
               className="h-8 w-12 object-contain"
             />
           </button>
-          <div className="hidden items-center gap-3 lg:flex">
+          <div className="hidden items-center gap-3 xl:flex">
             <Button
               type="button"
               variant="ghost"

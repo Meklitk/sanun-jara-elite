@@ -2,6 +2,8 @@ import { motion } from "framer-motion";
 import { Landmark, Play } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import ImageLightbox from "@/components/ImageLightbox";
+import SectionHeroImage from "@/components/SectionHeroImage";
+import { CARD_IMAGES } from "@/lib/card-images";
 import {
   PageErrorState,
   PageLoadingState,
@@ -36,14 +38,9 @@ export default function NianiInstitutionsPage() {
         </p>
       </section>
 
-      {institutions.length === 0 ? (
-        <div className="rounded-[1.8rem] border border-dashed border-gold/20 bg-gradient-to-b from-gold/5 to-transparent px-6 py-16 text-center">
-          <Landmark className="h-12 w-12 text-gold/40 mx-auto mb-4" />
-          <p className="text-sm text-muted-foreground">
-            {t.noInstitutionsYet}
-          </p>
-        </div>
-      ) : (
+      <SectionHeroImage src={CARD_IMAGES.nianiInstitutions} alt={t.institutions} />
+
+      {institutions.length === 0 ? null : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {institutions.map((institution, index) => (
             <motion.div
@@ -61,7 +58,7 @@ export default function NianiInstitutionsPage() {
                 {localize(institution.description)}
               </p>
               
-              {institution.images && institution.images.length > 0 && (
+              {institution.images && institution.images.length > 0 ? (
                 <div className="mb-4">
                   <div className="grid gap-2 grid-cols-2">
                     {institution.images.map((img, idx) => (
@@ -74,7 +71,15 @@ export default function NianiInstitutionsPage() {
                     ))}
                   </div>
                 </div>
-              )}
+              ) : institution.id === "women" ? (
+                <div className="mb-4">
+                  <ImageLightbox
+                    src={CARD_IMAGES.nianiWomen}
+                    alt={localize(institution.name)}
+                    className="h-40 w-full rounded-lg object-cover border border-gold/10"
+                  />
+                </div>
+              ) : null}
 
               {institution.videos && institution.videos.length > 0 && (
                 <div className="space-y-2">

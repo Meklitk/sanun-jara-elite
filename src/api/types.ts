@@ -25,7 +25,7 @@ export type MediaItem = {
   url: string;
   title: string;
   type: "video" | "audio" | "document";
-  category: "djelis" | "donsos" | "journalists" | "other";
+  category: "djelis" | "donsos" | "journalists" | "cartoon" | "other";
 };
 
 export type GovernanceBranch = {

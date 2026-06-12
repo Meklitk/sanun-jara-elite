@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronLeft, ChevronRight, Coins, Mail, Phone, ShieldCheck, User, Briefcase, Sparkles, Send } from "lucide-react";
+import SectionHeroImage from "@/components/SectionHeroImage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { http } from "@/api/http";
+import { CARD_IMAGES } from "@/lib/card-images";
 
 const QUESTIONS_FR = [
   "Parlez-nous de vous.",
@@ -116,6 +118,7 @@ export function MembershipForm() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
+      <SectionHeroImage src={CARD_IMAGES.referenceBureauJoin} alt="Rejoindre Sanun Jara" />
       {/* Progress Bar */}
       <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden border border-gold/10">
         <div
@@ -349,7 +352,8 @@ export function QuestionsForm() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto space-y-6">
+      <SectionHeroImage src={CARD_IMAGES.referenceBureauQuestions} alt="Poser une question" />
       <motion.form
         onSubmit={handleSubmit}
         className="rounded-[1.75rem] border border-primary/20 bg-black/28 p-6 sm:p-10 shadow-[0_24px_80px_rgba(0,0,0,0.22)] space-y-6"
@@ -449,6 +453,7 @@ export function CotiserSection() {
       animate={{ opacity: 1, y: 0 }}
       className="max-w-3xl mx-auto space-y-8"
     >
+      <SectionHeroImage src={CARD_IMAGES.referenceBureauCotiser} alt="Cotiser — contributions et dons" />
       <div className="rounded-[2rem] border border-gold/15 bg-black/28 p-6 sm:p-10 shadow-[0_24px_80px_rgba(0,0,0,0.22)] space-y-6">
         <div className="flex flex-wrap items-center gap-4 border-b border-gold/10 pb-6">
           <div className="flex h-14 w-14 items-center justify-center rounded-2xl gold-gradient-bg shadow-lg shadow-gold/20">

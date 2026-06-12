@@ -14,32 +14,66 @@ import {
   resolveGovernanceImages,
   resolveGovernanceSources,
 } from "@/features/governance/governance-content";
-import { isExternalUrl, isInternalAppPath } from "@/features/governance/governance-links";
+import {
+  extractBiographySlug,
+  isExternalUrl,
+  isInternalAppPath,
+  toGouvernementBiographyUrl,
+} from "@/features/governance/governance-links";
+import {
+  getBiographyDocumentUrl,
+  resolveBiographySlugFromGovernanceKey,
+  resolveBiographySlugFromName,
+} from "@/data/biographies";
 import SiteCoatOfArms from "@/components/SiteCoatOfArms";
+
+const biographyLinkClassName =
+  "no-underline transition hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40";
+
+function resolveBiographyUrl(value: string, governanceKey?: string, url?: string) {
+  const mappedSlug =
+    (governanceKey && resolveBiographySlugFromGovernanceKey(governanceKey)) ||
+    resolveBiographySlugFromName(value);
+
+  if (mappedSlug) return getBiographyDocumentUrl(mappedSlug);
+
+  const slugFromUrl = extractBiographySlug(url);
+  if (slugFromUrl) return toGouvernementBiographyUrl(slugFromUrl);
+
+  return undefined;
+}
 
 function LinkedValue({
   value,
   url,
+  governanceKey,
   className,
 }: {
   value: string;
   url?: string;
+  governanceKey?: string;
   className: string;
 }) {
-  if (!url?.trim()) {
+  const biographyUrl = resolveBiographyUrl(value, governanceKey, url);
+  const resolvedUrl = biographyUrl ?? url;
+
+  if (!resolvedUrl?.trim()) {
     return <span className={className}>{value}</span>;
   }
 
-  if (isInternalAppPath(url)) {
+  if (isInternalAppPath(resolvedUrl)) {
     return (
-      <Link to={url} className={className}>
+      <Link
+        to={resolvedUrl}
+        className={`${className} ${biographyUrl ? biographyLinkClassName : ""}`}
+      >
         {value}
       </Link>
     );
   }
 
   return (
-    <a href={url} target={isExternalUrl(url) ? "_blank" : undefined} rel={isExternalUrl(url) ? "noreferrer" : undefined} className={className}>
+    <a href={resolvedUrl} target={isExternalUrl(resolvedUrl) ? "_blank" : undefined} rel={isExternalUrl(resolvedUrl) ? "noreferrer" : undefined} className={className}>
       {value}
     </a>
   );
@@ -58,13 +92,13 @@ export default function GovernancePage() {
   const sources = resolveGovernanceSources(page);
   const [flagImage] = resolveGovernanceImages(page);
   const offices = [
-    { label: t.chiefdom, value: localize(governance.chiefdom), url: governance.chiefdomUrl },
-    { label: t.mandenMansa, value: localize(governance.mandenMansa), url: governance.mandenMansaUrl },
-    { label: t.mandenDjeliba, value: localize(governance.mandenDjeliba), url: governance.mandenDjelibaUrl },
-    { label: t.mandenMory, value: localize(governance.mandenMory), url: governance.mandenMoryUrl },
-    { label: t.govName, value: localize(governance.governmentName), url: governance.governmentNameUrl },
-    { label: t.constitution, value: localize(governance.constitution), url: governance.constitutionUrl },
-    { label: t.govType, value: localize(governance.governmentType) },
+    { key: "chiefdom", label: t.chiefdom, value: localize(governance.chiefdom), url: governance.chiefdomUrl },
+    { key: "mandenMansa", label: t.mandenMansa, value: localize(governance.mandenMansa), url: governance.mandenMansaUrl },
+    { key: "mandenDjeliba", label: t.mandenDjeliba, value: localize(governance.mandenDjeliba), url: governance.mandenDjelibaUrl },
+    { key: "mandenMory", label: t.mandenMory, value: localize(governance.mandenMory), url: governance.mandenMoryUrl },
+    { key: "governmentName", label: t.govName, value: localize(governance.governmentName), url: governance.governmentNameUrl },
+    { key: "constitution", label: t.constitution, value: localize(governance.constitution), url: governance.constitutionUrl },
+    { key: "governmentType", label: t.govType, value: localize(governance.governmentType) },
   ].filter((item) => item.value);
   const governmentName = localize(governance.governmentName) || "Manden Empire";
 
@@ -97,6 +131,7 @@ export default function GovernancePage() {
                     <LinkedValue
                       value={item.value}
                       url={item.url}
+                      governanceKey={item.key}
                       className="mt-1 sm:mt-2 inline-flex text-xs sm:text-sm font-semibold uppercase tracking-[0.06em] sm:tracking-[0.08em] text-foreground transition hover:text-gold"
                     />
                   </div>
