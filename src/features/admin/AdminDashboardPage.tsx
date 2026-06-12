@@ -32,7 +32,6 @@ import { NianiCartoonsEditor } from "./NianiCartoonsEditor";
 import type { BiographyItem, DirectoryItem, GovernanceBranch, PageLink, TimelineItem, UtilityCard } from "@/api/types";
 import { resolveGovernanceData } from "@/features/governance/governance-content";
 import AdminFederationMapPanel from "@/features/pages/AdminFederationMapPanel";
-import AdminFederationRegionsPanel from "@/features/pages/AdminFederationRegionsPanel";
 import AdminDirectoryEditor from "@/features/pages/AdminDirectoryEditor";
 import AdminCardImagesPanel from "@/features/pages/AdminCardImagesPanel";
 import IntroductionSectionsEditor from "./IntroductionSectionsEditor";
@@ -1311,8 +1310,6 @@ export default function AdminDashboardPage() {
                     token={token}
                     previewPath="/global-perspectives"
                   />
-                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
-                  <AdminFederationRegionsPanel token={token} />
                   <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
                   <AdminDirectoryEditor
                     directory={

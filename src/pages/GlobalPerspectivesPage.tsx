@@ -1,7 +1,6 @@
 import { Building, Globe, Handshake, type LucideIcon } from "lucide-react";
 
 import FederationDirectoryList from "@/components/FederationDirectoryList";
-import FederationRegionsGallery from "@/components/FederationRegionsGallery";
 import MandenFederationMap from "@/components/MandenFederationMap";
 import SectionHeroImage from "@/components/SectionHeroImage";
 import {
@@ -79,7 +78,6 @@ export default function GlobalPerspectivesPage({ section }: GlobalPerspectivesPa
       {(!section || section === "country") && (
         <VisualSection id="federation" icon={Globe} title={t.byCountry} description={t.byCountryDesc}>
           <MandenFederationMap mapSrc={federationMapSrc} />
-          <FederationRegionsGallery />
           <FederationDirectoryList items={federationEntries} />
         </VisualSection>
       )}
