@@ -183,10 +183,11 @@ const biographyUpload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 25 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    const isPdf =
-      file.mimetype === "application/pdf" || file.originalname.toLowerCase().endsWith(".pdf");
-    if (isPdf) cb(null, true);
-    else cb(new Error("Only PDF files are allowed. Export your Word document as PDF first."));
+    const name = file.originalname.toLowerCase();
+    const isPdf = file.mimetype === "application/pdf" || name.endsWith(".pdf");
+    const isPng = file.mimetype === "image/png" || name.endsWith(".png");
+    if (isPdf || isPng) cb(null, true);
+    else cb(new Error("Only PDF or PNG files are allowed."));
   },
 });
 
@@ -221,11 +222,22 @@ function isValidBiographySlug(slug) {
 
 app.use("/biographies", express.static(BIOGRAPHIES_DIR));
 
+function isBiographyDocumentFilename(name) {
+  return /-(fr|en)\.(pdf|png)$/i.test(name);
+}
+
+function biographyDocumentExtension(file) {
+  const name = file.originalname.toLowerCase();
+  if (file.mimetype === "application/pdf" || name.endsWith(".pdf")) return ".pdf";
+  if (file.mimetype === "image/png" || name.endsWith(".png")) return ".png";
+  return null;
+}
+
 app.get("/api/admin/biography-files", requireAdmin(JWT_SECRET), (_req, res) => {
   try {
     const files = fs
       .readdirSync(BIOGRAPHIES_DIR)
-      .filter((name) => name.toLowerCase().endsWith(".pdf"));
+      .filter((name) => isBiographyDocumentFilename(name));
     res.json({ files });
   } catch (err) {
     console.error(err);
@@ -252,7 +264,18 @@ app.post(
         return res.status(400).json({ error: "missing_file" });
       }
 
-      const filename = `${slug}-${lang}.pdf`;
+      const ext = biographyDocumentExtension(req.file);
+      if (!ext) {
+        return res.status(400).json({ error: "invalid_file_type" });
+      }
+
+      const filename = `${slug}-${lang}${ext}`;
+      for (const altExt of [".pdf", ".png"]) {
+        if (altExt === ext) continue;
+        const altPath = path.join(BIOGRAPHIES_DIR, `${slug}-${lang}${altExt}`);
+        if (fs.existsSync(altPath)) fs.unlinkSync(altPath);
+      }
+
       fs.writeFileSync(path.join(BIOGRAPHIES_DIR, filename), req.file.buffer);
 
       res.json({

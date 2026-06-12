@@ -33,6 +33,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 import { formatAdmin, useAdminT } from "@/features/admin/admin-i18n";
+import { biographyDocumentFilenames } from "@/lib/biography-document";
 
 
 
@@ -52,10 +53,8 @@ type SummaryDraft = Record<string, { fr: string; en: string }>;
 
 
 
-function expectedFilename(slug: string, lang: Lang) {
-
-  return `${slug}-${lang}.pdf`;
-
+function findUploadedDocument(uploadedSet: Set<string>, slug: string, lang: Lang) {
+  return biographyDocumentFilenames(slug, lang).find((filename) => uploadedSet.has(filename)) ?? null;
 }
 
 
@@ -377,7 +376,7 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
                     type="file"
 
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
 
                     disabled={portraitBusy}
 
@@ -505,9 +504,9 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
                       {(["fr", "en"] as Lang[]).map((lang) => {
 
-                        const filename = expectedFilename(slug, lang);
+                        const filename = findUploadedDocument(uploadedSet, slug, lang);
 
-                        const exists = uploadedSet.has(filename);
+                        const exists = Boolean(filename);
 
                         const busy = uploadingKey === `${slug}-${lang}`;
 
@@ -559,9 +558,11 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
                             </div>
 
-                            <p className="mt-2 font-mono text-[11px] text-foreground/70">{filename}</p>
+                            <p className="mt-2 font-mono text-[11px] text-foreground/70">
+                              {filename ?? `${slug}-${lang}.pdf`}
+                            </p>
 
-                            {exists ? (
+                            {exists && filename ? (
 
                               <a
 
@@ -587,7 +588,7 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
                                 type="file"
 
-                                accept="application/pdf,.pdf"
+                                accept="application/pdf,.pdf,image/png,.png"
 
                                 disabled={busy}
 

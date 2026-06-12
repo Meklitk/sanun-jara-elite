@@ -27,6 +27,10 @@ export default defineConfig({
         target: "http://localhost:5050",
         changeOrigin: true,
       },
+      "/biographies": {
+        target: "http://localhost:5050",
+        changeOrigin: true,
+      },
     }, 
   }, 
   plugins: [react()], 

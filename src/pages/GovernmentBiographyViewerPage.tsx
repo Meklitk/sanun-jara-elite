@@ -14,31 +14,24 @@ import {
 import { resolveGovernanceLeaderBySlug } from "@/features/governance/resolve-governance-leader";
 import { useI18n } from "@/lib/i18n";
 
+import {
+  biographyDocumentBasePath,
+  isBiographyImageUrl,
+  isBiographyPdfUrl,
+  resolveBiographyDocumentUrl,
+} from "@/lib/biography-document";
+
 type DocumentLanguage = "fr" | "en";
-
-function isPdfUrl(url: string) {
-  return /\.pdf($|\?)/i.test(url);
-}
-
-async function verifyDocumentUrl(url: string) {
-  try {
-    const response = await fetch(url, { method: "HEAD" });
-    if (!response.ok) return false;
-
-    const contentType = response.headers.get("content-type") ?? "";
-    if (contentType.includes("text/html")) return false;
-
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 export default function GovernmentBiographyViewerPage() {
   const { slug = "" } = useParams();
   const { lang, t } = useI18n();
   const { page, isLoading, error } = useCmsPage("governance");
   const [documentLanguage, setDocumentLanguage] = useState<DocumentLanguage>("fr");
+  const [resolvedDocuments, setResolvedDocuments] = useState<Record<DocumentLanguage, string | null>>({
+    fr: null,
+    en: null,
+  });
   const [documentAvailability, setDocumentAvailability] = useState<Record<DocumentLanguage, boolean | null>>({
     fr: null,
     en: null,
@@ -47,7 +40,7 @@ export default function GovernmentBiographyViewerPage() {
 
   const canonicalSlug = resolveBiographySlug(slug) ?? slug;
   const documentEntry = getBiographyEntry(slug);
-  const documentUrl = documentEntry?.[documentLanguage];
+  const documentUrl = resolvedDocuments[documentLanguage];
 
   useEffect(() => {
     if (!documentEntry) return;
@@ -55,23 +48,24 @@ export default function GovernmentBiographyViewerPage() {
     let cancelled = false;
 
     (async () => {
-      const results = await Promise.all([
-        documentEntry.fr ? verifyDocumentUrl(documentEntry.fr) : Promise.resolve(false),
-        documentEntry.en ? verifyDocumentUrl(documentEntry.en) : Promise.resolve(false),
+      const [frUrl, enUrl] = await Promise.all([
+        resolveBiographyDocumentUrl(biographyDocumentBasePath(canonicalSlug, "fr")),
+        resolveBiographyDocumentUrl(biographyDocumentBasePath(canonicalSlug, "en")),
       ]);
 
       if (cancelled) return;
 
+      setResolvedDocuments({ fr: frUrl, en: enUrl });
       setDocumentAvailability({
-        fr: documentEntry.fr ? results[0] : false,
-        en: documentEntry.en ? results[1] : false,
+        fr: Boolean(frUrl),
+        en: Boolean(enUrl),
       });
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [documentEntry]);
+  }, [canonicalSlug, documentEntry]);
 
   useEffect(() => {
     if (documentAvailability[documentLanguage] !== false) return;
@@ -244,12 +238,19 @@ export default function GovernmentBiographyViewerPage() {
               </div>
 
               <div className="overflow-hidden rounded-[1.25rem] border border-gold/15 bg-black/30 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:rounded-[1.5rem]">
-                {documentUrl && isPdfUrl(documentUrl) ? (
+                {documentUrl && isBiographyPdfUrl(documentUrl) ? (
                   <iframe
                     key={`${slug}-${documentLanguage}`}
                     src={documentUrl}
                     title={displayName}
                     className="h-[70vh] min-h-[420px] w-full border-0"
+                  />
+                ) : documentUrl && isBiographyImageUrl(documentUrl) ? (
+                  <img
+                    key={`${slug}-${documentLanguage}`}
+                    src={documentUrl}
+                    alt={displayName}
+                    className="mx-auto max-h-[70vh] w-full object-contain"
                   />
                 ) : documentUrl ? (
                   <object

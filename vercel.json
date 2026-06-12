@@ -9,6 +9,7 @@
     { "source": "/images/cards/(.*)", "destination": "https://sanunjara-api-production.up.railway.app/images/cards/$1" },
     { "source": "/images/maps/regions/(.*)", "destination": "https://sanunjara-api-production.up.railway.app/images/maps/regions/$1" },
     { "source": "/images/maps/(.*)", "destination": "https://sanunjara-api-production.up.railway.app/images/maps/$1" },
+    { "source": "/biographies/(.*)", "destination": "https://sanunjara-api-production.up.railway.app/biographies/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [
