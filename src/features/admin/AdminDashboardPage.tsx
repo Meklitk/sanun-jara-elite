@@ -33,6 +33,7 @@ import type { BiographyItem, DirectoryItem, GovernanceBranch, PageLink, Timeline
 import { resolveGovernanceData } from "@/features/governance/governance-content";
 import AdminFederationMapPanel from "@/features/pages/AdminFederationMapPanel";
 import AdminFederationRegionsPanel from "@/features/pages/AdminFederationRegionsPanel";
+import AdminDirectoryEditor from "@/features/pages/AdminDirectoryEditor";
 import AdminCardImagesPanel from "@/features/pages/AdminCardImagesPanel";
 import IntroductionSectionsEditor from "./IntroductionSectionsEditor";
 import { cardImageKeysForSection } from "@/lib/card-images";
@@ -347,6 +348,7 @@ export default function AdminDashboardPage() {
         ? {
             countries: (current.directory.countries ?? []).filter(isDirectoryItemMeaningful),
             organizations: (current.directory.organizations ?? []).filter(isDirectoryItemMeaningful),
+            affiliations: (current.directory.affiliations ?? []).filter(isDirectoryItemMeaningful),
           }
         : current.directory;
       const utilityCards = (current.utilityCards ?? []).filter(isUtilityCardMeaningful);
@@ -1311,6 +1313,13 @@ export default function AdminDashboardPage() {
                   />
                   <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
                   <AdminFederationRegionsPanel token={token} />
+                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  <AdminDirectoryEditor
+                    directory={
+                      current.directory ?? { countries: [], organizations: [], affiliations: [] }
+                    }
+                    onChange={(directory) => setDraft({ ...current, directory })}
+                  />
                 </>
               ) : null}
 

@@ -1,5 +1,6 @@
 import { Building, Globe, Handshake, type LucideIcon } from "lucide-react";
 
+import FederationDirectoryList from "@/components/FederationDirectoryList";
 import FederationRegionsGallery from "@/components/FederationRegionsGallery";
 import MandenFederationMap from "@/components/MandenFederationMap";
 import SectionHeroImage from "@/components/SectionHeroImage";
@@ -11,6 +12,7 @@ import {
   useCmsPage,
 } from "@/features/pages/page-content";
 import { CARD_IMAGES } from "@/lib/card-images";
+import { resolveFederationMapSrc } from "@/lib/federation-map";
 import { useI18n } from "@/lib/i18n";
 
 type VisualSectionProps = {
@@ -51,8 +53,8 @@ export default function GlobalPerspectivesPage({ section }: GlobalPerspectivesPa
   if (!page) return <PageNotFoundState />;
 
   const paragraphs = splitParagraphs(content);
-  const federationMapSrc =
-    page.featuredImage || page.images?.[0] || "/images/maps/manden-federation-map.jpg";
+  const federationMapSrc = resolveFederationMapSrc(page.featuredImage, page.images);
+  const federationEntries = page.directory?.countries ?? [];
 
   return (
     <div className="w-full space-y-8 sm:space-y-10">
@@ -75,9 +77,10 @@ export default function GlobalPerspectivesPage({ section }: GlobalPerspectivesPa
       )}
 
       {(!section || section === "country") && (
-        <VisualSection id="country" icon={Globe} title={t.byCountry} description={t.byCountryDesc}>
+        <VisualSection id="federation" icon={Globe} title={t.byCountry} description={t.byCountryDesc}>
           <MandenFederationMap mapSrc={federationMapSrc} />
           <FederationRegionsGallery />
+          <FederationDirectoryList items={federationEntries} />
         </VisualSection>
       )}
 
