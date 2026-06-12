@@ -210,6 +210,7 @@ const translations = {
     introTimelineTitle: "Chronologie du patrimoine",
     introGalleryTitle: "Archives visuelles",
     introViewFullHistory: "Explorer toute l'histoire",
+    history: "Histoire",
     historyTimeline: "Chronologie historique",
     returnToHistory: "Retour a l'histoire",
     timelineEvent: "Evenement chronologique",
