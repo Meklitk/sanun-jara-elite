@@ -6,7 +6,6 @@ import SidebarNav from "@/components/SidebarNav";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -28,7 +27,13 @@ export default function TopBar() {
   const location = useLocation();
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileNavKey, setMobileNavKey] = useState(0);
   const [flagOpen, setFlagOpen] = useState(false);
+
+  function handleMobileOpenChange(open: boolean) {
+    setMobileOpen(open);
+    if (!open) setMobileNavKey((key) => key + 1);
+  }
 
   const toggleLang = () => setLang(lang === "en" ? "fr" : "en");
 
@@ -36,7 +41,7 @@ export default function TopBar() {
     <header className="sticky top-0 z-50 overflow-visible border-b border-gold/10 bg-background/95 backdrop-blur-2xl">
       <div className="mx-auto flex max-w-[1700px] items-center justify-between gap-4 overflow-visible px-3 py-3 sm:px-4 lg:px-6">
         <div className="flex items-center gap-3">
-          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+          <Sheet open={mobileOpen} onOpenChange={handleMobileOpenChange}>
             <SheetTrigger asChild>
               <Button
                 type="button"
@@ -55,13 +60,12 @@ export default function TopBar() {
               <div className="flex items-center justify-between border-b border-gold/10 px-5 py-4">
                 <SheetHeader className="space-y-1 text-left">
                   <SheetTitle className="font-display text-xl gold-gradient-text">Sanun Jara</SheetTitle>
-                  <SheetDescription className="text-xs">{t.mobileMenu}</SheetDescription>
                 </SheetHeader>
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  onClick={() => setMobileOpen(false)}
+                  onClick={() => handleMobileOpenChange(false)}
                   className="shrink-0 rounded-xl border border-gold/15 text-gold hover:bg-gold/10"
                 >
                   <X className="h-5 w-5" />
@@ -71,9 +75,10 @@ export default function TopBar() {
 
               <div className="flex-1 overflow-y-auto px-5 py-5">
                 <SidebarNav
+                  key={mobileNavKey}
                   mode="mobile"
                   includeUtilityNav
-                  onNavigate={() => setMobileOpen(false)}
+                  onNavigate={() => handleMobileOpenChange(false)}
                 />
               </div>
 
@@ -83,7 +88,7 @@ export default function TopBar() {
                   size="sm"
                   onClick={() => {
                     navigate("/bureau/cotiser");
-                    setMobileOpen(false);
+                    handleMobileOpenChange(false);
                   }}
                   className="w-full rounded-xl border border-gold/30 bg-gold/15 text-gold hover:bg-gold/25"
                 >
@@ -96,7 +101,7 @@ export default function TopBar() {
                     size="sm"
                     onClick={() => {
                       toggleLang();
-                      setMobileOpen(false);
+                      handleMobileOpenChange(false);
                     }}
                     className="rounded-xl border-gold/20 bg-black/20 text-gold hover:bg-gold/10"
                   >
@@ -114,7 +119,7 @@ export default function TopBar() {
                       href="https://www.facebook.com/profile.php?id=61555027864138"
                       target="_blank"
                       rel="noopener noreferrer"
-                      onClick={() => setMobileOpen(false)}
+                      onClick={() => handleMobileOpenChange(false)}
                     >
                       <Facebook className="mr-2 h-4 w-4" />
                       {t.facebook}

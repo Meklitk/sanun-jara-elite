@@ -1,5 +1,5 @@
 import { useDeferredValue, useState, useMemo } from "react";
-import { Search, FileText, FolderOpen, Layers, ChevronDown } from "lucide-react";
+import { Search, FolderOpen, ChevronDown } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,7 @@ export default function SidebarNav({
   const [query, setQuery] = useState("");
   const [searchActive, setSearchActive] = useState(false);
   const [openDropdowns, setOpenDropdowns] = useState<Record<string, boolean>>({});
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const deferredQuery = useDeferredValue(query);
   const { data: contentData } = useContent();
 
@@ -135,33 +136,42 @@ export default function SidebarNav({
         </div>
       </div>
 
-      {includeUtilityNav ? (
-        <div className="space-y-3">
-          {mode === "mobile" ? (
-            <p className="text-[11px] font-semibold uppercase tracking-[0.32em] text-gold/65">
-              {t.mobileMenu}
-            </p>
-          ) : null}
-          <div className="space-y-2">
+      {includeUtilityNav && mode === "mobile" ? (
+        <div className="space-y-2">
+          <button
+            type="button"
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className={cn(
+              "flex w-full items-center justify-between rounded-2xl border px-4 py-3.5 text-left transition",
+              mobileMenuOpen
+                ? "border-gold/25 bg-gold/10 text-gold"
+                : "border-gold/12 bg-black/40 text-foreground/85 hover:bg-white/5 hover:text-foreground",
+            )}
+          >
+            <span className="text-sm font-semibold">{t.mobileMenu}</span>
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 shrink-0 transition-transform duration-300",
+                mobileMenuOpen ? "rotate-180 text-gold" : "text-muted-foreground",
+              )}
+            />
+          </button>
+
+          {mobileMenuOpen ? (
+            <div className="space-y-2">
             {utilityNavItems.map((item) => {
-              const isOpen = mode === "desktop" ? true : openDropdowns[item.path] || false;
+              const isOpen = openDropdowns[item.path] || false;
+
               return (
                 <div
                   key={item.path}
-                  className={cn(
-                    "overflow-hidden rounded-2xl border border-gold/12 bg-black/20",
-                    mode === "mobile" && "bg-black/40",
-                  )}
+                  className="overflow-hidden rounded-2xl border border-gold/12 bg-black/40"
                 >
                   <button
                     type="button"
-                    onClick={() => {
-                      if (mode === "desktop") {
-                        goTo(item.path);
-                      } else {
-                        toggleDropdown(item.path);
-                      }
-                    }}
+                    aria-expanded={isOpen}
+                    onClick={() => toggleDropdown(item.path)}
                     className={cn(
                       "flex w-full items-center justify-between px-4 py-3.5 text-left text-sm font-semibold transition",
                       isActive(item.path) || isOpen
@@ -170,19 +180,17 @@ export default function SidebarNav({
                     )}
                   >
                     {t[item.key]}
-                    {mode === "mobile" ? (
-                      <ChevronDown
-                        className={cn(
-                          "h-4 w-4 shrink-0 transition-transform duration-300",
-                          isOpen ? "rotate-180 text-gold" : "text-muted-foreground",
-                        )}
-                      />
-                    ) : null}
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-transform duration-300",
+                        isOpen ? "rotate-180 text-gold" : "text-muted-foreground",
+                      )}
+                    />
                   </button>
                   <div
                     className={cn(
                       "space-y-0.5 overflow-hidden border-t border-gold/10 transition-all duration-300",
-                      mode === "desktop" ? "px-3 pb-3 pt-2" : isOpen ? "max-h-96 opacity-100 px-2 pb-3 pt-1" : "max-h-0 opacity-0",
+                      isOpen ? "max-h-96 opacity-100 px-2 pb-3 pt-1" : "max-h-0 opacity-0",
                     )}
                   >
                     {item.children.map((child) => (
@@ -205,7 +213,8 @@ export default function SidebarNav({
                 </div>
               );
             })}
-          </div>
+            </div>
+          ) : null}
         </div>
       ) : null}
 
