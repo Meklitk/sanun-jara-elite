@@ -241,9 +241,9 @@ export default function GovernmentBiographyViewerPage() {
                 {documentUrl && isBiographyPdfUrl(documentUrl) ? (
                   <iframe
                     key={`${slug}-${documentLanguage}`}
-                    src={documentUrl}
+                    src={`${documentUrl}#view=FitH&toolbar=1`}
                     title={displayName}
-                    className="h-[70vh] min-h-[420px] w-full border-0"
+                    className="h-[min(1200px,92vh)] min-h-[640px] w-full border-0"
                   />
                 ) : documentUrl && isBiographyImageUrl(documentUrl) ? (
                   <img

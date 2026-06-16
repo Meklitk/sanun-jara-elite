@@ -1,5 +1,5 @@
 import { useDeferredValue, useState, useMemo } from "react";
-import { Search, FolderOpen, ChevronDown } from "lucide-react";
+import { Search, ChevronDown } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Input } from "@/components/ui/input";
@@ -286,10 +286,7 @@ export default function SidebarNav({
                       : "border-white/5 bg-white/[0.03] text-foreground/78 hover:border-gold/15 hover:bg-white/[0.06] hover:text-foreground",
                   )}
                 >
-                  <span className="font-display text-sm tracking-[0.08em] flex items-center gap-2">
-                    <FolderOpen className="w-3.5 h-3.5" />
-                    {title}
-                  </span>
+                  <span className="font-display text-sm tracking-[0.08em]">{title}</span>
                   {isActive(path) ? <div className="h-2.5 w-2.5 rounded-full bg-gold/70" /> : null}
                 </button>
               );

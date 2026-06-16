@@ -1,6 +1,9 @@
-import { Building2, Tv, Landmark, Play, Film, ExternalLink, Clapperboard } from "lucide-react";
+import { Play, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import SectionEmojiHeader from "@/components/SectionEmojiHeader";
+import { SECTION_EMOJIS, sectionEmoji } from "@/lib/section-emojis";
+import { useCardImages } from "@/lib/card-images-context";
 
 function getYouTubeId(url: string): string | null {
   const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/);
@@ -29,7 +32,6 @@ import {
   PageNotFoundState,
   useCmsPage,
 } from "@/features/pages/page-content";
-import { CARD_IMAGES } from "@/lib/card-images";
 import { useI18n } from "@/lib/i18n";
 import type { MediaItem } from "@/api/types";
 import {
@@ -38,7 +40,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import SectionHeroImage from "@/components/SectionHeroImage";
 
 type NianiPageProps = {
   section?: "institutions" | "architectural-projects" | "niani-tv";
@@ -47,7 +48,6 @@ type NianiPageProps = {
 const nianiCardDefinitions = [
   {
     id: "institutions",
-    icon: Landmark,
     titleKey: "institutions" as const,
     descriptionKey: "institutionsDesc" as const,
     accent: "gold" as const,
@@ -55,7 +55,6 @@ const nianiCardDefinitions = [
   },
   {
     id: "architectural-projects",
-    icon: Building2,
     titleKey: "architecturalProjects" as const,
     descriptionKey: "architecturalProjectsDesc" as const,
     accent: "gold" as const,
@@ -63,7 +62,6 @@ const nianiCardDefinitions = [
   },
   {
     id: "niani-tv",
-    icon: Tv,
     titleKey: "nianiTv" as const,
     descriptionKey: "nianiTvDesc" as const,
     accent: "crimson" as const,
@@ -102,8 +100,8 @@ function VideoCard({ item, index, t }: { item: MediaItem; index: number; t: any 
             {thumb ? (
               <img src={thumb} alt={item.title} className="h-full w-full object-cover opacity-70 transition-opacity group-hover:opacity-90" />
             ) : (
-              <div className="h-full w-full flex items-center justify-center bg-black/60">
-                <Tv className="h-10 w-10 text-gold/30" />
+              <div className="h-full w-full flex items-center justify-center bg-black/60 text-4xl" aria-hidden>
+                {SECTION_EMOJIS["niani-tv"]}
               </div>
             )}
             <div className="absolute inset-0 flex items-center justify-center">
@@ -129,6 +127,7 @@ function VideoCard({ item, index, t }: { item: MediaItem; index: number; t: any 
 const YOUTUBE_CHANNEL_URL = "https://youtu.be/WFnZLcRzfYA";
 
 function NianiTvSection({ page, t }: { page: any; t: any }) {
+  const { resolveSection } = useCardImages();
   const [selectedVideo, setSelectedVideo] = useState<MediaItem | null>(null);
   const videos = (page?.media || []).filter(
     (item: MediaItem) => item.type === "video" && item.category !== "cartoon",
@@ -140,40 +139,33 @@ function NianiTvSection({ page, t }: { page: any; t: any }) {
   return (
     <div className="min-h-[calc(100vh-3.5rem)] space-y-8 sm:space-y-12 pb-12 sm:pb-16">
       <section className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6 pt-4 sm:pt-10">
-        <div className="rounded-[2rem] border border-gold/15 bg-[linear-gradient(145deg,rgba(0,0,0,0.94),rgba(39,25,8,0.9))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.35)] sm:p-8 lg:p-10">
-          <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:items-start sm:text-left">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-gold/20 bg-gold/10 text-gold">
-              <Tv className="h-5 w-5" />
-            </div>
-            <div className="flex-1">
-              <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.niani}</p>
-              <h1 className="mt-1 text-4xl font-bold gold-gradient-text sm:text-5xl">{t.nianiTv}</h1>
-              <p className="mt-4 max-w-3xl text-base leading-8 text-foreground/76">{t.nianiTvDesc}</p>
-              <a
-                href={YOUTUBE_CHANNEL_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-5 inline-flex items-center gap-2 rounded-full border border-gold/25 bg-gold/10 px-5 py-2.5 text-sm font-semibold text-gold transition hover:border-gold/45 hover:bg-gold/15"
-              >
-                {t.watchYoutubeChannel}
-                <ExternalLink className="h-4 w-4" />
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-3 sm:px-4 lg:px-6">
-        <SectionHeroImage src={CARD_IMAGES.nianiTv} alt={t.nianiTv} />
+        <SectionEmojiHeader
+          imageUrl={resolveSection("niani-tv")}
+          emoji={SECTION_EMOJIS["niani-tv"]}
+          imageAlt={t.nianiTv}
+          eyebrow={t.niani}
+          title={t.nianiTv}
+          description={t.nianiTvDesc}
+        >
+          <a
+            href={YOUTUBE_CHANNEL_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-5 inline-flex items-center gap-2 rounded-full border border-gold/25 bg-gold/10 px-5 py-2.5 text-sm font-semibold text-gold transition hover:border-gold/45 hover:bg-gold/15"
+          >
+            {t.watchYoutubeChannel}
+            <ExternalLink className="h-4 w-4" />
+          </a>
+        </SectionEmojiHeader>
       </section>
 
       {/* Cartoons */}
       <section className="mx-auto max-w-6xl px-3 sm:px-6">
         <div className="mb-6 flex flex-col items-center gap-3 text-center sm:mb-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">
-            <Clapperboard className="h-3.5 w-3.5" />
-            {t.nianiCartoons}
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-gold/20 bg-black/30 text-4xl">
+            {SECTION_EMOJIS.nianiCartoons}
           </div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">{t.nianiCartoons}</p>
           <p className="max-w-2xl text-sm leading-7 text-foreground/70">{t.nianiCartoonsDesc}</p>
         </div>
 
@@ -190,7 +182,7 @@ function NianiTvSection({ page, t }: { page: any; t: any }) {
             viewport={{ once: true }}
             className="flex flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-gold/20 bg-black/15 px-6 py-12 text-center"
           >
-            <Clapperboard className="mb-4 h-12 w-12 text-gold/30" />
+            <span className="mb-4 text-5xl" aria-hidden>{SECTION_EMOJIS.emptyCartoons}</span>
             <p className="text-sm text-muted-foreground">{t.nianiCartoonsEmpty}</p>
           </motion.div>
         )}
@@ -210,7 +202,7 @@ function NianiTvSection({ page, t }: { page: any; t: any }) {
             animate={{ opacity: 1, y: 0 }}
             className="flex flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-gold/20 bg-black/15 px-6 py-16 text-center"
           >
-            <Film className="h-12 w-12 text-gold/30 mb-4" />
+            <span className="mb-4 text-5xl" aria-hidden>{SECTION_EMOJIS.emptyVideos}</span>
             <p className="text-sm text-muted-foreground">
               No videos yet. Videos will appear here once added from the admin dashboard.
             </p>
@@ -245,6 +237,7 @@ function NianiTvSection({ page, t }: { page: any; t: any }) {
 
 export default function NianiPage({ section }: NianiPageProps) {
   const { t } = useI18n();
+  const { resolveSection } = useCardImages();
   const { page, title, content, isLoading, error } = useCmsPage("niani");
 
   if (isLoading) return <PageLoadingState />;
@@ -256,23 +249,18 @@ export default function NianiPage({ section }: NianiPageProps) {
     return <NianiTvSection page={page} t={t} />;
   }
 
-  const cardImages: Record<string, string> = {
-    institutions: CARD_IMAGES.nianiInstitutions,
-    "architectural-projects": CARD_IMAGES.nianiArchitecture,
-    "niani-tv": CARD_IMAGES.nianiTv,
-  };
-
   const cards = nianiCardDefinitions
     .map((definition) => {
       return {
         id: definition.id,
-        icon: definition.icon,
         title: t[definition.titleKey],
         description: t[definition.descriptionKey],
         ctaLabel: t.learnMore,
         accent: definition.accent,
         href: definition.path,
-        imageUrl: cardImages[definition.id],
+        imageUrl: resolveSection(definition.id),
+        imageAlt: t[definition.titleKey],
+        emoji: sectionEmoji(definition.id),
       };
     })
     .filter((card): card is NonNullable<typeof card> => Boolean(card));

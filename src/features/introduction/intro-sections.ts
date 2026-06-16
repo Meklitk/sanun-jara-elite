@@ -1,13 +1,3 @@
-import type { LucideIcon } from "lucide-react";
-import {
-  BookOpen,
-  Crown,
-  Globe2,
-  Palette,
-  Sparkles,
-  Target,
-} from "lucide-react";
-
 export type IntroSection = {
   heading?: string;
   body: string;
@@ -33,7 +23,7 @@ export const introductionFallbackSections = {
 } as const;
 
 export type SectionVisual = {
-  icon: LucideIcon;
+  emoji: string;
   taglineEn: string;
   taglineFr: string;
   accent: "gold" | "crimson" | "amber";
@@ -41,43 +31,43 @@ export type SectionVisual = {
 
 const SECTION_VISUALS: Record<string, SectionVisual> = {
   "sanun jara": {
-    icon: Crown,
+    emoji: "🦁",
     taglineEn: "The golden lion administration",
     taglineFr: "L'administration du lion d'or",
     accent: "gold",
   },
   menden: {
-    icon: Globe2,
+    emoji: "🌍",
     taglineEn: "Union of all peoples",
     taglineFr: "L'union de tous les peuples",
     accent: "amber",
   },
   vision: {
-    icon: Sparkles,
+    emoji: "✨",
     taglineEn: "Where we are headed",
     taglineFr: "L'horizon que nous visons",
     accent: "gold",
   },
   mission: {
-    icon: Target,
+    emoji: "🎯",
     taglineEn: "What we do every day",
     taglineFr: "Ce que nous accomplissons",
     accent: "crimson",
   },
   "fundamental values": {
-    icon: BookOpen,
+    emoji: "📖",
     taglineEn: "Principles we never bend",
     taglineFr: "Les principes que nous honorons",
     accent: "gold",
   },
   "valeurs fondamentales": {
-    icon: BookOpen,
+    emoji: "📖",
     taglineEn: "Principles we never bend",
     taglineFr: "Les principes que nous honorons",
     accent: "gold",
   },
   culture: {
-    icon: Palette,
+    emoji: "🎭",
     taglineEn: "Living heritage in motion",
     taglineFr: "Un patrimoine vivant",
     accent: "amber",
@@ -85,12 +75,12 @@ const SECTION_VISUALS: Record<string, SectionVisual> = {
 };
 
 const DEFAULT_VISUALS: SectionVisual[] = [
-  { icon: Crown, taglineEn: "Foundation", taglineFr: "Fondation", accent: "gold" },
-  { icon: Globe2, taglineEn: "Our world", taglineFr: "Notre monde", accent: "amber" },
-  { icon: Sparkles, taglineEn: "Forward look", taglineFr: "Regard vers l'avenir", accent: "gold" },
-  { icon: Target, taglineEn: "In action", taglineFr: "En action", accent: "crimson" },
-  { icon: BookOpen, taglineEn: "Our compass", taglineFr: "Notre boussole", accent: "gold" },
-  { icon: Palette, taglineEn: "Soul of Manden", taglineFr: "L'âme du Manden", accent: "amber" },
+  { emoji: "🦁", taglineEn: "Foundation", taglineFr: "Fondation", accent: "gold" },
+  { emoji: "🌍", taglineEn: "Our world", taglineFr: "Notre monde", accent: "amber" },
+  { emoji: "✨", taglineEn: "Forward look", taglineFr: "Regard vers l'avenir", accent: "gold" },
+  { emoji: "🎯", taglineEn: "In action", taglineFr: "En action", accent: "crimson" },
+  { emoji: "📖", taglineEn: "Our compass", taglineFr: "Notre boussole", accent: "gold" },
+  { emoji: "🎭", taglineEn: "Soul of Manden", taglineFr: "L'âme du Manden", accent: "amber" },
 ];
 
 function normalizeHeading(value: string) {

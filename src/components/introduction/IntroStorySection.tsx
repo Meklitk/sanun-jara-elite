@@ -1,5 +1,3 @@
-import type { LucideIcon } from "lucide-react";
-
 import ImageLightbox from "@/components/ImageLightbox";
 import GoldDivider from "@/components/introduction/GoldDivider";
 import StoryCard from "@/components/introduction/StoryCard";
@@ -14,11 +12,11 @@ type IntroStorySectionProps = {
   imageAlt: string;
 };
 
-function VisualFallback({ Icon }: { Icon: LucideIcon }) {
+function VisualFallback({ emoji }: { emoji: string }) {
   return (
     <div className="flex h-full min-h-[240px] items-center justify-center bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.14),rgba(5,5,5,0.95))] sm:min-h-[320px]">
-      <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-gold/25 bg-gold/10 text-gold shadow-[0_0_40px_rgba(212,175,55,0.15)]">
-        <Icon className="h-9 w-9" />
+      <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-gold/25 bg-black/40 text-4xl shadow-[0_0_40px_rgba(212,175,55,0.15)]">
+        {emoji}
       </div>
     </div>
   );
@@ -32,7 +30,6 @@ export default function IntroStorySection({
   imageAlt,
 }: IntroStorySectionProps) {
   const visual = resolveSectionVisual(section.heading, index);
-  const Icon = visual.icon;
   const tagline = lang === "fr" ? visual.taglineFr : visual.taglineEn;
   const reversed = index % 2 === 1;
   const number = String(index + 1).padStart(2, "0");
@@ -49,7 +46,7 @@ export default function IntroStorySection({
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050505]/50 via-transparent to-transparent" />
         </div>
       ) : (
-        <VisualFallback Icon={Icon} />
+        <VisualFallback emoji={visual.emoji} />
       )}
     </StoryCard>
   );

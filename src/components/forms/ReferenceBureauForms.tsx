@@ -1,13 +1,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronLeft, ChevronRight, Coins, Mail, Phone, ShieldCheck, User, Briefcase, Sparkles, Send } from "lucide-react";
-import SectionHeroImage from "@/components/SectionHeroImage";
+import { Check, ChevronLeft, ChevronRight, Mail, Phone, ShieldCheck, User, Briefcase, Sparkles, Send } from "lucide-react";
+import SectionEmojiHeader from "@/components/SectionEmojiHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { http } from "@/api/http";
-import { CARD_IMAGES } from "@/lib/card-images";
+import { SECTION_EMOJIS } from "@/lib/section-emojis";
+import { useI18n } from "@/lib/i18n";
 
 const QUESTIONS_FR = [
   "Parlez-nous de vous.",
@@ -29,14 +30,18 @@ const QUESTIONS_FR = [
   "Êtes-vous d’accord pour que le temps révèle votre véritable engagement et personnalité au sein de Sanun Jara ?"
 ];
 
+import { membershipQuestions } from "@/features/reference-bureau/membership-questions";
+
 export function MembershipForm() {
+  const { t, lang } = useI18n();
+  const questions = membershipQuestions(lang);
   const [step, setStep] = useState(0); // 0 = info, 1..17 = questions, 18 = success
   const [info, setInfo] = useState({ name: "", email: "", phone: "", profession: "" });
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const totalQuestions = QUESTIONS_FR.length;
+  const totalQuestions = questions.length;
 
   async function handleSubmit() {
     setIsSubmitting(true);
@@ -56,7 +61,7 @@ export function MembershipForm() {
       setStep(totalQuestions + 1); // Success step
     } catch (err: any) {
       console.error(err);
-      setError("Une erreur est survenue lors de l'envoi de votre candidature. Veuillez réessayer.");
+      setError(t.formSubmitErrorMembership);
     } finally {
       setIsSubmitting(false);
     }
@@ -65,14 +70,14 @@ export function MembershipForm() {
   function nextStep() {
     if (step === 0) {
       if (!info.name || !info.email) {
-        setError("Le nom et l'adresse email sont obligatoires.");
+        setError(t.formNameEmailRequired);
         return;
       }
       setError(null);
     } else {
       const currentAns = answers[step];
       if (!currentAns || !currentAns.trim()) {
-        setError("Veuillez répondre à la question avant de continuer.");
+        setError(t.formAnswerRequired);
         return;
       }
       setError(null);
@@ -95,11 +100,8 @@ export function MembershipForm() {
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-gold/10 border border-gold/30 text-gold shadow-lg shadow-gold/10">
           <ShieldCheck className="h-10 w-10 animate-pulse" />
         </div>
-        <h3 className="text-3xl font-display font-bold gold-gradient-text">Candidature Envoyée !</h3>
-        <p className="text-foreground/80 leading-8">
-          Mande Diata et le conseil du Bureau de Références de <strong>Sanun Jara</strong> vous remercient pour votre intérêt et engagement.
-          Vos réponses ont été enregistrées avec succès et transmises à l'administration. Un membre du Wana vous contactera sous peu.
-        </p>
+        <h3 className="text-3xl font-display font-bold gold-gradient-text">{t.formApplicationSent}</h3>
+        <p className="text-foreground/80 leading-8">{t.formApplicationSentDesc}</p>
         <div className="pt-4">
           <Button
             onClick={() => {
@@ -109,7 +111,7 @@ export function MembershipForm() {
             }}
             className="gold-gradient-bg text-black font-semibold rounded-xl px-8 py-3 hover:shadow-lg hover:shadow-gold/20"
           >
-            Déposer une autre candidature
+            {t.formSubmitAnother}
           </Button>
         </div>
       </motion.div>
@@ -118,7 +120,12 @@ export function MembershipForm() {
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
-      <SectionHeroImage src={CARD_IMAGES.referenceBureauJoin} alt="Rejoindre Sanun Jara" />
+      <SectionEmojiHeader
+        emoji={SECTION_EMOJIS.join}
+        eyebrow={t.referenceBureau}
+        title={t.wantToJoin}
+        description={t.wantToJoinFormDesc}
+      />
       {/* Progress Bar */}
       <div className="w-full bg-white/5 h-2 rounded-full overflow-hidden border border-gold/10">
         <div
@@ -128,8 +135,12 @@ export function MembershipForm() {
       </div>
 
       <div className="flex justify-between items-center text-xs text-gold/60 font-semibold uppercase tracking-wider">
-        <span>Candidature d'Adhésion</span>
-        <span>{step === 0 ? "Informations" : `Question ${step} sur ${totalQuestions}`}</span>
+        <span>{t.formMembershipApplication}</span>
+        <span>
+          {step === 0
+            ? t.formStepInfo
+            : `${t.formQuestionLabel} ${step} ${t.formQuestionOf} ${totalQuestions}`}
+        </span>
       </div>
 
       <motion.div
@@ -152,29 +163,27 @@ export function MembershipForm() {
               className="space-y-6"
             >
               <div className="space-y-2">
-                <h3 className="text-2xl font-semibold text-foreground">Rejoindre Sanun Jara</h3>
-                <p className="text-sm text-foreground/60 leading-6">
-                  Veuillez d'abord remplir vos coordonnées de base. Vous accéderez ensuite au questionnaire d'évaluation de 17 questions.
-                </p>
+                <h3 className="text-2xl font-semibold text-foreground">{t.wantToJoin}</h3>
+                <p className="text-sm text-foreground/60 leading-6">{t.formJoinIntro}</p>
               </div>
 
               <div className="grid gap-5 sm:grid-cols-2">
                 <div className="space-y-2">
-                  <Label htmlFor="name" className="text-foreground/80 font-medium">Nom complet *</Label>
+                  <Label htmlFor="name" className="text-foreground/80 font-medium">{t.formFullName} *</Label>
                   <div className="relative">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-gold/60" />
                     <Input
                       id="name"
                       value={info.name}
                       onChange={(e) => setInfo({ ...info, name: e.target.value })}
-                      placeholder="Keita Diata"
-                      className="pl-11 border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20 rounded-xl"
+                      placeholder="Solo Kaba"
+                      className="pl-11 border-gold/20 bg-black/20 placeholder:text-muted-foreground/45 focus:border-gold/50 focus:ring-gold/20 rounded-xl"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-foreground/80 font-medium">Adresse Email *</Label>
+                  <Label htmlFor="email" className="text-foreground/80 font-medium">{t.formEmail} *</Label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-gold/60" />
                     <Input
@@ -182,14 +191,14 @@ export function MembershipForm() {
                       type="email"
                       value={info.email}
                       onChange={(e) => setInfo({ ...info, email: e.target.value })}
-                      placeholder="nom@exemple.com"
-                      className="pl-11 border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20 rounded-xl"
+                      placeholder={t.formPlaceholderEmail}
+                      className="pl-11 border-gold/20 bg-black/20 placeholder:text-muted-foreground/45 focus:border-gold/50 focus:ring-gold/20 rounded-xl"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-foreground/80 font-medium">Téléphone</Label>
+                  <Label htmlFor="phone" className="text-foreground/80 font-medium">{t.formPhone}</Label>
                   <div className="relative">
                     <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-gold/60" />
                     <Input
@@ -197,21 +206,21 @@ export function MembershipForm() {
                       value={info.phone}
                       onChange={(e) => setInfo({ ...info, phone: e.target.value })}
                       placeholder="+223 00 00 00 00"
-                      className="pl-11 border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20 rounded-xl"
+                      className="pl-11 border-gold/20 bg-black/20 placeholder:text-muted-foreground/45 focus:border-gold/50 focus:ring-gold/20 rounded-xl"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="profession" className="text-foreground/80 font-medium">Profession / Occupation</Label>
+                  <Label htmlFor="profession" className="text-foreground/80 font-medium">{t.formProfession}</Label>
                   <div className="relative">
                     <Briefcase className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-gold/60" />
                     <Input
                       id="profession"
                       value={info.profession}
                       onChange={(e) => setInfo({ ...info, profession: e.target.value })}
-                      placeholder="Administrateur / Entrepreneur"
-                      className="pl-11 border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20 rounded-xl"
+                      placeholder={t.formPlaceholderProfession}
+                      className="pl-11 border-gold/20 bg-black/20 placeholder:text-muted-foreground/45 focus:border-gold/50 focus:ring-gold/20 rounded-xl"
                     />
                   </div>
                 </div>
@@ -226,21 +235,23 @@ export function MembershipForm() {
               className="space-y-6"
             >
               <div className="space-y-3">
-                <span className="text-[11px] uppercase tracking-[0.2em] text-gold/80 font-bold">Question {step}</span>
+                <span className="text-[11px] uppercase tracking-[0.2em] text-gold/80 font-bold">
+                  {t.formQuestionLabel} {step}
+                </span>
                 <h4 className="text-xl sm:text-2xl font-semibold text-foreground leading-8">
-                  {QUESTIONS_FR[step - 1]}
+                  {questions[step - 1]}
                 </h4>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor={`ans-${step}`} className="sr-only">Votre réponse</Label>
+                <Label htmlFor={`ans-${step}`} className="sr-only">{t.formYourAnswer}</Label>
                 <Textarea
                   id={`ans-${step}`}
                   rows={4}
                   value={answers[step] || ""}
                   onChange={(e) => setAnswers({ ...answers, [step]: e.target.value })}
-                  placeholder="Écrivez votre réponse ici en toute sincérité..."
-                  className="border-gold/20 bg-black/25 focus:border-gold/50 focus:ring-gold/20 rounded-xl text-base p-4 min-h-[120px] resize-y"
+                  placeholder={t.formPlaceholderAnswer}
+                  className="border-gold/20 bg-black/25 placeholder:text-muted-foreground/45 focus:border-gold/50 focus:ring-gold/20 rounded-xl text-base p-4 min-h-[120px] resize-y"
                 />
               </div>
             </motion.div>
@@ -256,7 +267,7 @@ export function MembershipForm() {
               className="border-gold/20 hover:bg-gold/10 hover:text-gold rounded-xl px-4 sm:px-6"
             >
               <ChevronLeft className="mr-1.5 h-4 w-4" />
-              Précédent
+              {t.formPrevious}
             </Button>
           ) : (
             <div />
@@ -268,7 +279,7 @@ export function MembershipForm() {
               onClick={nextStep}
               className="gold-gradient-bg text-black font-semibold rounded-xl px-4 sm:px-6 hover:shadow-lg hover:shadow-gold/10"
             >
-              Suivant
+              {t.formNext}
               <ChevronRight className="ml-1.5 h-4 w-4" />
             </Button>
           ) : (
@@ -278,7 +289,7 @@ export function MembershipForm() {
               disabled={isSubmitting}
               className="gold-gradient-bg text-black font-semibold rounded-xl px-6 sm:px-8 hover:shadow-lg hover:shadow-gold/20 flex items-center gap-2"
             >
-              {isSubmitting ? "Envoi en cours..." : "Soumettre ma candidature"}
+              {isSubmitting ? t.formSending : t.formSubmitApplication}
               <Send className="h-4 w-4" />
             </Button>
           )}
@@ -289,6 +300,7 @@ export function MembershipForm() {
 }
 
 export function QuestionsForm() {
+  const { t } = useI18n();
   const [form, setForm] = useState({ name: "", email: "", phone: "", message: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -297,7 +309,7 @@ export function QuestionsForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name || !form.email || !form.message) {
-      setError("Veuillez remplir tous les champs obligatoires.");
+      setError(t.formFillRequired);
       return;
     }
 
@@ -318,7 +330,7 @@ export function QuestionsForm() {
       setForm({ name: "", email: "", phone: "", message: "" });
     } catch (err: any) {
       console.error(err);
-      setError("Une erreur est survenue lors de l'envoi du message. Veuillez réessayer.");
+      setError(t.formSubmitError);
     } finally {
       setIsSubmitting(false);
     }
@@ -334,17 +346,14 @@ export function QuestionsForm() {
         <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10 border border-primary/30 text-primary shadow-lg shadow-primary/10">
           <Check className="h-10 w-10 animate-bounce" />
         </div>
-        <h3 className="text-3xl font-display font-bold text-primary">Message Envoyé !</h3>
-        <p className="text-foreground/80 leading-7">
-          Merci pour vos questions et commentaires. Vos remarques ont bien été transmises à l'adresse <strong>info@sanunjara.com</strong>.
-          L'équipe de Sanun Jara vous répondra dès que possible.
-        </p>
+        <h3 className="text-3xl font-display font-bold text-primary">{t.formMessageSent}</h3>
+        <p className="text-foreground/80 leading-7">{t.formMessageSentDesc}</p>
         <div className="pt-4">
           <Button
             onClick={() => setSuccess(false)}
             className="bg-primary hover:bg-primary/95 text-primary-foreground font-semibold rounded-xl px-8 py-3"
           >
-            Poser une autre question
+            {t.formAskAnotherQuestion}
           </Button>
         </div>
       </motion.div>
@@ -353,16 +362,18 @@ export function QuestionsForm() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <SectionHeroImage src={CARD_IMAGES.referenceBureauQuestions} alt="Poser une question" />
+      <SectionEmojiHeader
+        emoji={SECTION_EMOJIS.questions}
+        eyebrow={t.referenceBureau}
+        title={t.haveQuestions}
+        description={t.haveQuestionsFormDesc}
+      />
       <motion.form
         onSubmit={handleSubmit}
         className="rounded-[1.75rem] border border-primary/20 bg-black/28 p-6 sm:p-10 shadow-[0_24px_80px_rgba(0,0,0,0.22)] space-y-6"
       >
         <div className="space-y-2">
-          <h3 className="text-2xl font-semibold text-foreground">Poser une question</h3>
-          <p className="text-sm text-foreground/60 leading-6">
-            Vous avez des questions sur Sanun Jara, notre vision ou nos projets ? Remplissez ce formulaire et nous vous répondrons directement par email.
-          </p>
+          <h3 className="text-2xl font-semibold text-foreground">{t.formYourMessage}</h3>
         </div>
 
         {error && (
@@ -373,7 +384,7 @@ export function QuestionsForm() {
 
         <div className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="q-name" className="text-foreground/80 font-medium">Nom complet *</Label>
+            <Label htmlFor="q-name" className="text-foreground/80 font-medium">{t.formFullName} *</Label>
             <div className="relative">
               <User className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-primary/60" />
               <Input
@@ -381,15 +392,15 @@ export function QuestionsForm() {
                 required
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Votre nom"
-                className="pl-11 border-primary/20 bg-black/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl"
+                placeholder={t.formPlaceholderName}
+                className="pl-11 border-primary/20 bg-black/20 placeholder:text-muted-foreground/45 focus:border-primary/50 focus:ring-primary/20 rounded-xl"
               />
             </div>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="q-email" className="text-foreground/80 font-medium">Adresse Email *</Label>
+              <Label htmlFor="q-email" className="text-foreground/80 font-medium">{t.formEmail} *</Label>
               <div className="relative">
                 <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-primary/60" />
                 <Input
@@ -398,37 +409,37 @@ export function QuestionsForm() {
                   required
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  placeholder="nom@exemple.com"
-                  className="pl-11 border-primary/20 bg-black/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl"
+                  placeholder={t.formPlaceholderEmail}
+                  className="pl-11 border-primary/20 bg-black/20 placeholder:text-muted-foreground/45 focus:border-primary/50 focus:ring-primary/20 rounded-xl"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="q-phone" className="text-foreground/80 font-medium">Téléphone (Optionnel)</Label>
+              <Label htmlFor="q-phone" className="text-foreground/80 font-medium">{t.formPhoneOptional}</Label>
               <div className="relative">
                 <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4.5 w-4.5 text-primary/60" />
                 <Input
                   id="q-phone"
                   value={form.phone}
                   onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                  placeholder="Numéro"
-                  className="pl-11 border-primary/20 bg-black/20 focus:border-primary/50 focus:ring-primary/20 rounded-xl"
+                  placeholder={t.formPlaceholderPhone}
+                  className="pl-11 border-primary/20 bg-black/20 placeholder:text-muted-foreground/45 focus:border-primary/50 focus:ring-primary/20 rounded-xl"
                 />
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="q-message" className="text-foreground/80 font-medium">Message ou Question *</Label>
+            <Label htmlFor="q-message" className="text-foreground/80 font-medium">{t.formMessageOrQuestion} *</Label>
             <Textarea
               id="q-message"
               required
               rows={5}
               value={form.message}
               onChange={(e) => setForm({ ...form, message: e.target.value })}
-              placeholder="Écrivez vos questions en détail ici..."
-              className="border-primary/20 bg-black/25 focus:border-primary/50 focus:ring-primary/20 rounded-xl text-base p-4 min-h-[140px] resize-y"
+              placeholder={t.formPlaceholderQuestionDetail}
+              className="border-primary/20 bg-black/25 placeholder:text-muted-foreground/45 focus:border-primary/50 focus:ring-primary/20 rounded-xl text-base p-4 min-h-[140px] resize-y"
             />
           </div>
         </div>
@@ -438,7 +449,7 @@ export function QuestionsForm() {
           disabled={isSubmitting}
           className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl py-3 shadow-lg shadow-primary/10 flex items-center justify-center gap-2 text-base transition-all"
         >
-          {isSubmitting ? "Envoi en cours..." : "Envoyer mes questions"}
+          {isSubmitting ? t.formSending : t.formSendQuestions}
           <Send className="h-4.5 w-4.5" />
         </Button>
       </motion.form>
@@ -446,51 +457,70 @@ export function QuestionsForm() {
   );
 }
 
-export function CotiserSection() {
+export function EntrepreneurSection() {
+  const { t } = useI18n();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       className="max-w-3xl mx-auto space-y-8"
     >
-      <SectionHeroImage src={CARD_IMAGES.referenceBureauCotiser} alt="Cotiser — contributions et dons" />
-      <div className="rounded-[2rem] border border-gold/15 bg-black/28 p-6 sm:p-10 shadow-[0_24px_80px_rgba(0,0,0,0.22)] space-y-6">
-        <div className="flex flex-wrap items-center gap-4 border-b border-gold/10 pb-6">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl gold-gradient-bg shadow-lg shadow-gold/20">
-            <Coins className="h-7 w-7 text-black animate-spin-slow" />
-          </div>
-          <div>
-            <h3 className="text-2xl font-display font-bold gold-gradient-text">Cotiser (Contributions & Dons)</h3>
-            <p className="text-sm text-foreground/60">Soutenez activement la reconstruction de l'Empire du Manden.</p>
-          </div>
-        </div>
+      <SectionEmojiHeader
+        emoji={SECTION_EMOJIS.entrepreneur}
+        eyebrow={t.referenceBureau}
+        title={t.iAmEntrepreneur}
+        description={t.iAmEntrepreneurDesc}
+      />
+      <div className="rounded-[2rem] border border-gold/15 bg-black/28 p-6 sm:p-10 shadow-[0_24px_80px_rgba(0,0,0,0.22)] space-y-5">
+        <p className="text-sm leading-7 text-foreground/65">
+          {t.entrepreneurContactPrompt}{" "}
+          <a href="mailto:info@sanunjara.com" className="font-semibold text-gold hover:underline">
+            info@sanunjara.com
+          </a>
+          .
+        </p>
+      </div>
+    </motion.div>
+  );
+}
 
+export function CotiserSection() {
+  const { t } = useI18n();
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="max-w-3xl mx-auto space-y-8"
+    >
+      <SectionEmojiHeader
+        emoji={SECTION_EMOJIS.cotiser}
+        eyebrow={t.referenceBureau}
+        title={t.cotiserPageTitle}
+        description={t.cotiserPageDesc}
+      />
+      <div className="rounded-[2rem] border border-gold/15 bg-black/28 p-6 sm:p-10 shadow-[0_24px_80px_rgba(0,0,0,0.22)] space-y-6">
         <div className="space-y-4 text-foreground/80 leading-8">
-          <p>
-            Chaque membre et patriote Mandenka est invité à contribuer financièrement aux projets de développement de l'empire, aux initiatives de préservation culturelle et à la mise en œuvre de nos institutions.
-          </p>
-          
+          <p>{t.cotiserBody1}</p>
+
           <div className="rounded-xl border border-gold/10 bg-gold/5 p-4 sm:p-6 space-y-4">
             <h4 className="font-display font-bold text-gold flex items-center gap-2 text-lg">
-              <Sparkles className="h-5 w-5" />
-              Pourquoi Cotiser ?
+              <span aria-hidden>{SECTION_EMOJIS.cotiser}</span>
+              {t.cotiserWhyTitle}
             </h4>
             <ul className="list-disc list-inside space-y-2 text-sm text-foreground/75 leading-7 pl-1">
-              <li>Financement de la <strong>Niani Academy</strong> et des cours d'alphabet <strong>N'Ko</strong>.</li>
-              <li>Soutien aux veuves, orphelins et aux institutions des femmes.</li>
-              <li>Réalisation des maquettes architecturales et des projets d'infrastructure de Niani.</li>
-              <li>Gestion et hébergement de nos plateformes numériques d'UNESCO et du Manden.</li>
+              <li>{t.cotiserWhy1}</li>
+              <li>{t.cotiserWhy2}</li>
+              <li>{t.cotiserWhy3}</li>
+              <li>{t.cotiserWhy4}</li>
             </ul>
           </div>
 
           <div className="border border-gold/12 bg-black/20 p-5 rounded-xl space-y-4">
-            <h4 className="font-semibold text-foreground text-lg">Comment faire vos cotisations ?</h4>
-            <p className="text-sm leading-6 text-foreground/70">
-              Pour des raisons de sécurité et d'authenticité institutionnelle, les coordonnées de paiement (comptes bancaires, Wave, Mobile Money, PayPal) sont coordonnées directement par le <strong>Bureau de Références</strong> sous la supervision de l'administration du <strong>Mansa Diata</strong>.
-            </p>
-            <p className="text-sm font-semibold text-gold">
-              Pour initier un dépôt de cotisation ou un don, veuillez écrire directement à :
-            </p>
+            <h4 className="font-semibold text-foreground text-lg">{t.cotiserHowTitle}</h4>
+            <p className="text-sm leading-6 text-foreground/70">{t.cotiserHowDesc}</p>
+            <p className="text-sm font-semibold text-gold">{t.cotiserHowPrompt}</p>
             <div className="flex items-center gap-3 bg-black/40 px-4 py-3 rounded-xl border border-gold/15 w-fit">
               <Mail className="h-5 w-5 text-gold" />
               <a href="mailto:info@sanunjara.com" className="text-foreground hover:underline font-mono text-sm sm:text-base">

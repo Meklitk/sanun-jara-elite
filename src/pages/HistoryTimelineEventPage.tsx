@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Clock3, ScrollText, ImageIcon } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
+
+import { SECTION_EMOJIS } from "@/lib/section-emojis";
 
 import { useI18n } from "@/lib/i18n";
 import {
@@ -106,8 +108,8 @@ export default function HistoryTimelineEventPage() {
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <article className="rounded-[1.8rem] border border-gold/15 bg-black/25 p-6 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-8">
           <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/20 bg-gold/10 text-gold">
-              <Clock3 className="h-5 w-5" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/20 bg-black/40 text-2xl">
+              {SECTION_EMOJIS.historyTimeline}
             </div>
             <div>
               <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.overview}</p>
@@ -152,8 +154,8 @@ export default function HistoryTimelineEventPage() {
                 className="rounded-[1.8rem] border border-gold/15 bg-black/20 p-5"
               >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/20 bg-gold/10 text-gold">
-                    <ImageIcon className="h-4 w-4" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/20 bg-black/40 text-xl" aria-hidden>
+                    🖼️
                   </div>
                   <div>
                     <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">
@@ -202,8 +204,8 @@ export default function HistoryTimelineEventPage() {
         <aside className="space-y-4">
           <div className="rounded-[1.6rem] border border-gold/15 bg-black/25 p-5 shadow-[0_18px_55px_rgba(0,0,0,0.18)]">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-gold/20 bg-gold/10 text-gold">
-                <ScrollText className="h-4 w-4" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-gold/20 bg-black/40 text-xl" aria-hidden>
+                {SECTION_EMOJIS.historyScroll}
               </div>
               <div>
                 <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.historyTimeline}</p>

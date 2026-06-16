@@ -25,6 +25,7 @@ export type BiographySlug = keyof typeof biographies;
 export const biographySlugAliases: Record<string, BiographySlug> = {
   "mari-djata-keita-v": "mansa-mari-diata-v-keita",
   "mabougnata-dibla-ibrahim-diabate": "sitan-foune-diakite",
+  "legislative-committee": "sitan-foune-diakite",
 };
 
 export const biographySlugByGovernanceKey = {

@@ -19,10 +19,6 @@ export default defineConfig({
         target: "http://localhost:5050", 
         changeOrigin: true, 
       },
-      "/images/cards": {
-        target: "http://localhost:5050",
-        changeOrigin: true,
-      },
       "/images/maps": {
         target: "http://localhost:5050",
         changeOrigin: true,

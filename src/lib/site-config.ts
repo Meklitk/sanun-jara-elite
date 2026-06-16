@@ -25,8 +25,6 @@ export const coreNavItems: CoreNavItem[] = [
   { key: "commerce", path: "/commerce" },
   { key: "culture", path: "/culture" },
   { key: "resources", path: "/resources" },
-  { key: "tombouctou", path: "/tombouctou" },
-  { key: "iAmEntrepreneur", path: "/bureau/cotiser" },
 ];
 
 export const utilityNavItems: UtilityNavItem[] = [
@@ -46,7 +44,7 @@ export const utilityNavItems: UtilityNavItem[] = [
     children: [
       { id: "join", key: "wantToJoin", path: "/bureau/rejoindre" },
       { id: "questions", key: "haveQuestions", path: "/bureau/contact" },
-      { id: "cotiser", key: "iAmEntrepreneur", path: "/bureau/cotiser" },
+      { id: "entrepreneur", key: "iAmEntrepreneur", path: "/bureau/entrepreneur" },
     ],
   },
   {

@@ -13,7 +13,7 @@ import { Admin } from "./models/Admin.js";
 import { Page } from "./models/Page.js";
 import { Media } from "./models/Media.js";
 import { Content } from "./models/Content.js";
-import { Submission } from "./models/Submission.js";
+import { CardImage } from "./models/CardImage.js";
 import nodemailer from "nodemailer";
 import { requireAdmin, signAdminToken } from "./auth.js";
 import { seedAdminIfNeeded, seedPagesIfNeeded, ensureDefaultPages } from "./seed.js";
@@ -375,21 +375,23 @@ app.post(
 const CARDS_DIR = resolveContentDir("CARDS_DIR", ["../public/images/cards"], ["images", "cards"]);
 
 const CARD_IMAGE_FILENAMES = {
-  affiliationHero: "affiliation-bowing.jpg",
-  organizationHero: "organization-mansa-musa.jpg",
-  referenceBureauJoin: "join-dozo-hunter.jpg",
-  referenceBureauQuestions: "questions.jpg",
-  referenceBureauCotiser: "cotiser.jpg",
-  nianiInstitutions: "niani-institutions.jpg",
-  nianiArchitecture: "niani-architecture.jpg",
+  affiliationHero: "affiliation-bowing.svg",
+  organizationHero: "organization-mansa-musa.svg",
+  federationHero: "federation-hero.svg",
+  referenceBureauJoin: "join-dozo-hunter.svg",
+  referenceBureauQuestions: "questions.svg",
+  referenceBureauEntrepreneur: "entrepreneur.svg",
+  referenceBureauCotiser: "cotiser.svg",
+  nianiInstitutions: "niani-institutions.svg",
+  nianiArchitecture: "niani-architecture.svg",
   nianiTv: "niani-tv.jpg",
-  nianiCartoons: "niani-cartoons.jpg",
-  nianiWomen: "niani-women.jpg",
+  nianiCartoons: "niani-cartoons.svg",
+  nianiWomen: "niani-women.svg",
   academyNko: "academy-nko.jpg",
-  academyHistory: "academy-history.jpg",
-  academyOthers: "academy-others.jpg",
-  commerceMarket: "commerce-market.jpg",
-  economyHero: "economy-hero.jpg",
+  academyHistory: "academy-history.svg",
+  academyOthers: "academy-others.svg",
+  commerceMarket: "commerce-market.svg",
+  economyHero: "economy-hero.svg",
 };
 
 try {
@@ -408,18 +410,62 @@ const cardImageUpload = multer({
   },
 });
 
+function cloudinaryConfigured() {
+  return Boolean(CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDINARY_API_SECRET);
+}
+
+function uploadCardImageBuffer(buffer, slot) {
+  if (!cloudinaryConfigured()) {
+    return Promise.reject(new Error("cloudinary_not_configured"));
+  }
+
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: "image",
+        folder: "sanunjara/cards",
+        public_id: `card-${slot}`,
+        overwrite: true,
+      },
+      (error, result) => (error ? reject(error) : resolve(result))
+    );
+    stream.end(buffer);
+  });
+}
+
+async function buildCardImagesPayload() {
+  const records = await CardImage.find().lean();
+  const bySlot = Object.fromEntries(records.map((record) => [record.slot, record]));
+
+  const files = {};
+  const urls = {};
+
+  for (const [slot, filename] of Object.entries(CARD_IMAGE_FILENAMES)) {
+    const record = bySlot[slot];
+    if (record?.url) {
+      files[slot] = true;
+      urls[slot] = record.url;
+      continue;
+    }
+
+    const localPath = path.join(CARDS_DIR, filename);
+    if (fs.existsSync(localPath)) {
+      files[slot] = true;
+      urls[slot] = `/images/cards/${filename}`;
+    } else {
+      files[slot] = false;
+    }
+  }
+
+  return { files, urls };
+}
+
 app.use("/images/cards", express.static(CARDS_DIR));
 
-app.get("/api/card-images", (_req, res) => {
+app.get("/api/card-images", async (_req, res) => {
   try {
-    const existing = new Set(fs.readdirSync(CARDS_DIR));
-    const files = Object.fromEntries(
-      Object.entries(CARD_IMAGE_FILENAMES).map(([slot, filename]) => [
-        slot,
-        existing.has(filename),
-      ])
-    );
-    res.json({ files });
+    const payload = await buildCardImagesPayload();
+    res.json(payload);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "list_failed" });
@@ -430,7 +476,7 @@ app.post(
   "/api/admin/card-image",
   requireAdmin(JWT_SECRET),
   cardImageUpload.single("file"),
-  (req, res) => {
+  async (req, res) => {
     try {
       const slot = String(req.body.slot ?? "").trim();
       const filename = CARD_IMAGE_FILENAMES[slot];
@@ -441,22 +487,38 @@ app.post(
         return res.status(400).json({ error: "missing_file" });
       }
 
-      fs.writeFileSync(path.join(CARDS_DIR, filename), req.file.buffer);
+      let url;
+      let cloudinaryPublicId = null;
+
+      if (cloudinaryConfigured()) {
+        const result = await uploadCardImageBuffer(req.file.buffer, slot);
+        url = result.secure_url;
+        cloudinaryPublicId = result.public_id;
+      } else {
+        fs.writeFileSync(path.join(CARDS_DIR, filename), req.file.buffer);
+        url = `/images/cards/${filename}`;
+      }
+
+      await CardImage.findOneAndUpdate(
+        { slot },
+        { url, cloudinaryPublicId },
+        { upsert: true, new: true, setDefaultsOnInsert: true }
+      );
 
       res.json({
         ok: true,
         slot,
         filename,
-        url: `/images/cards/${filename}`,
+        url,
       });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: "upload_failed" });
+      res.status(500).json({ error: "upload_failed", message: err.message });
     }
   }
 );
 
-app.delete("/api/admin/card-image/:slot", requireAdmin(JWT_SECRET), (req, res) => {
+app.delete("/api/admin/card-image/:slot", requireAdmin(JWT_SECRET), async (req, res) => {
   try {
     const slot = String(req.params.slot ?? "").trim();
     const filename = CARD_IMAGE_FILENAMES[slot];
@@ -464,10 +526,21 @@ app.delete("/api/admin/card-image/:slot", requireAdmin(JWT_SECRET), (req, res) =
       return res.status(400).json({ error: "invalid_slot" });
     }
 
+    const record = await CardImage.findOne({ slot }).lean();
+    if (record?.cloudinaryPublicId && cloudinaryConfigured()) {
+      try {
+        await cloudinary.uploader.destroy(record.cloudinaryPublicId, { resource_type: "image" });
+      } catch (destroyErr) {
+        console.warn("Cloudinary delete failed for card image:", destroyErr.message);
+      }
+    }
+
     const filePath = path.join(CARDS_DIR, filename);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
     }
+
+    await CardImage.deleteOne({ slot });
 
     res.json({ ok: true, slot, filename });
   } catch (err) {
@@ -894,19 +967,22 @@ app.put("/api/pages/:id", requireAdmin(JWT_SECRET), async (req, res) => {
       countries: z.array(
         z.object({
           name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
-          description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional()
+          description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          url: z.string().optional()
         })
       ).optional(),
       organizations: z.array(
         z.object({
           name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
-          description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional()
+          description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          url: z.string().optional()
         })
       ).optional(),
       affiliations: z.array(
         z.object({
           name: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
-          description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional()
+          description: z.object({ en: z.string().optional(), fr: z.string().optional().nullable() }).partial().optional(),
+          url: z.string().optional()
         })
       ).optional()
     }).partial().optional(),

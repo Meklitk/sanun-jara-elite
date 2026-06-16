@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
 
 import ImageLightbox from "@/components/ImageLightbox";
 import {
@@ -50,7 +49,6 @@ function IntroductionSectionCard({
 }) {
   const visual = resolveSectionVisual(section.heading, index);
   const styles = accentStyles[visual.accent];
-  const Icon = visual.icon;
   const tagline = lang === "fr" ? visual.taglineFr : visual.taglineEn;
   const number = String(index + 1).padStart(2, "0");
   const layout =
@@ -77,11 +75,11 @@ function IntroductionSectionCard({
 
         <div className="relative flex flex-col sm:flex-row sm:items-start sm:gap-5">
           <div
-            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border ${styles.icon} transition-transform duration-500 group-hover:scale-105 sm:h-14 sm:w-14`}
+            className="mb-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-gold/20 bg-black/40 text-3xl shadow-[0_8px_24px_rgba(0,0,0,0.25)] sm:mb-0"
+            aria-hidden
           >
-            <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
+            {visual.emoji}
           </div>
-
           <div className="min-w-0 flex-1">
             {section.heading ? (
               <div className="mb-3 space-y-1">
@@ -201,7 +199,7 @@ export default function IntroductionPage() {
           className="flex flex-col items-center text-center"
         >
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">
-            <Sparkles className="h-3.5 w-3.5" />
+            <span aria-hidden>✨</span>
             {t.introSectionsLead}
           </div>
           <p className="max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">

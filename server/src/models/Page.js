@@ -126,7 +126,8 @@ const DirectoryItemSchema = new mongoose.Schema(
     description: {
       en: { type: String, default: "" },
       fr: { type: String, default: "" }
-    }
+    },
+    url: { type: String, default: "" }
   },
   { _id: false }
 );

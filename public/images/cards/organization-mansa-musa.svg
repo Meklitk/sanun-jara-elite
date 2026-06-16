@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0806"/>
+      <stop offset="55%" stop-color="#14100a"/>
+      <stop offset="100%" stop-color="#1f180f"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f5cd56"/>
+      <stop offset="100%" stop-color="#a67c00"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#d4a843" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#d4a843" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <ellipse cx="400" cy="220" rx="320" ry="180" fill="url(#glow)"/>
+  <rect x="24" y="24" width="752" height="452" rx="28" fill="none" stroke="#d4a843" stroke-opacity="0.22" stroke-width="2"/>
+  
+    <g transform="translate(400,250)">
+      <ellipse cx="0" cy="60" rx="120" ry="25" fill="#000" opacity="0.3"/>
+      <g transform="translate(0,-30)">
+        <circle cx="0" cy="-50" r="38" fill="#8d5524"/>
+        <path d="M-45 -15 L45 -15 L55 80 L-55 80 Z" fill="#1e3a5f"/>
+        <path d="M-55 10 L-90 50 L-70 55 L-45 20 Z" fill="#c9a227"/>
+        <path d="M55 10 L90 50 L70 55 L45 20 Z" fill="#c9a227"/>
+        <circle cx="-55" cy="35" r="14" fill="url(#gold)"/>
+        <circle cx="55" cy="35" r="14" fill="url(#gold)"/>
+        <rect x="-20" y="-75" width="40" height="18" rx="4" fill="url(#gold)"/>
+      </g>
+      <text x="0" y="130" text-anchor="middle" font-size="18" font-family="Georgia,serif" fill="#d4a843">Organisation · Mansa Musa</text>
+    </g>
+</svg>

@@ -92,7 +92,7 @@ export default function TopBar() {
                   }}
                   className="w-full rounded-xl border border-gold/30 bg-gold/15 text-gold hover:bg-gold/25"
                 >
-                  {t.iAmEntrepreneur}
+                  {t.cotiser}
                 </Button>
                 <div className="grid grid-cols-2 gap-2">
                   <Button
@@ -221,7 +221,7 @@ export default function TopBar() {
             onClick={() => navigate("/bureau/cotiser")}
             className="hidden rounded-xl border border-gold/30 bg-gold/15 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gold hover:bg-gold/25 hover:text-gold sm:inline-flex"
           >
-            {t.iAmEntrepreneur}
+            {t.cotiser}
           </Button>
           <button
             type="button"

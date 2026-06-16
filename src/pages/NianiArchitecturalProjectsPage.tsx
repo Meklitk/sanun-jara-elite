@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
-import { Building2, Image as ImageIcon, Hammer } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import ImageLightbox from "@/components/ImageLightbox";
-import SectionHeroImage from "@/components/SectionHeroImage";
-import { CARD_IMAGES } from "@/lib/card-images";
+import SectionEmojiHeader from "@/components/SectionEmojiHeader";
+import SectionEmptyState from "@/components/SectionEmptyState";
+import { SECTION_EMOJIS } from "@/lib/section-emojis";
 import {
   PageErrorState,
   PageLoadingState,
@@ -13,34 +13,32 @@ import {
 
 export default function NianiArchitecturalProjectsPage() {
   const { t, lang, localize } = useI18n();
-  const { page, title, content, isLoading, error } = useCmsPage("niani");
+  const { page, isLoading, error } = useCmsPage("niani");
 
   if (isLoading) return <PageLoadingState />;
   if (error) return <PageErrorState />;
-  if (!page) return <PageNotFoundState />
+  if (!page) return <PageNotFoundState />;
 
   const projects = page.architecturalProjects || [];
 
   return (
     <div className="space-y-8">
-      <section className="rounded-[2rem] border border-gold/15 bg-[linear-gradient(145deg,rgba(0,0,0,0.94),rgba(39,25,8,0.9))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.35)] sm:p-8 lg:p-10">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/20 bg-gold/10 text-gold">
-            <Building2 className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.niani}</p>
-            <h1 className="mt-1 text-4xl font-bold gold-gradient-text sm:text-5xl">{t.architecturalProjects}</h1>
-          </div>
-        </div>
-        <p className="mt-5 max-w-3xl text-base leading-8 text-foreground/76">
-          {content || (lang === "fr" ? "Explorez les projets architecturaux de l'Empire Manden." : "Explore the architectural projects of the Manden Empire.")}
-        </p>
-      </section>
+      <SectionEmojiHeader
+        emoji={SECTION_EMOJIS["architectural-projects"]}
+        eyebrow={t.niani}
+        title={t.architecturalProjects}
+        description={t.architecturalProjectsDesc}
+      />
 
-      <SectionHeroImage src={CARD_IMAGES.nianiArchitecture} alt={t.architecturalProjects} />
-
-      {projects.length === 0 ? null : (
+      {projects.length === 0 ? (
+        <SectionEmptyState
+          message={
+            lang === "fr"
+              ? "Les projets architecturaux et leurs images conceptuelles seront affichés ici une fois ajoutés depuis le tableau de bord administrateur."
+              : "Architectural projects and concept images will appear here once added from the admin dashboard."
+          }
+        />
+      ) : (
         <div className="space-y-8">
           {projects.map((project, index) => (
             <motion.div
@@ -60,12 +58,9 @@ export default function NianiArchitecturalProjectsPage() {
 
               {project.conceptImages && project.conceptImages.length > 0 && (
                 <div className="mb-6">
-                  <div className="flex items-center gap-2 mb-3">
-                    <ImageIcon className="h-4 w-4 text-gold" />
-                    <p className="text-xs uppercase tracking-[0.22em] text-gold/70">
-                      {t.nianiConceptImages}
-                    </p>
-                  </div>
+                  <p className="mb-3 text-xs uppercase tracking-[0.22em] text-gold/70">
+                    {t.nianiConceptImages}
+                  </p>
                   <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                     {project.conceptImages.map((img, idx) => (
                       <ImageLightbox
@@ -82,7 +77,7 @@ export default function NianiArchitecturalProjectsPage() {
               {project.workImages && project.workImages.length > 0 && (
                 <div>
                   <div className="flex items-center gap-2 mb-3">
-                    <Hammer className="h-4 w-4 text-gold" />
+                    <span aria-hidden>{SECTION_EMOJIS["architectural-projects"]}</span>
                     <p className="text-xs uppercase tracking-[0.22em] text-gold/70">
                       {t.nianiWorkProgress}
                     </p>

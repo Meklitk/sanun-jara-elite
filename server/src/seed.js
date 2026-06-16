@@ -57,32 +57,43 @@ const DEFAULT_PAGES = [
       constitution: { en: "Kouroukan Fouga, adopted in 1236" },
       constitutionUrl: "/governance/biographies/kouroukan-fouga",
       governmentType: { en: "Monarchy" },
-      corruptionIndex: "05",
+      corruptionIndex: "01",
       corruptionSummary: {
-        en: "Note that every country ranks on a scale from 1 to 195, where 1 is the least corrupt. Sanun Jara is one of the least corrupt governments in the world."
+        en: "Note that every country ranks on a scale from 1 to 195, where 1 is the least corrupt. Sanun Jara is one of the least corrupt governments in the world.",
+        fr: "Chaque pays est classé sur une échelle de 1 à 195, où 1 est le moins corrompu. Sanun Jara est l'un des gouvernements les moins corrompus au monde."
       },
       riskIndex: "A",
       riskSummary: {
-        en: "Manden Empire is a stable government, with the majority of risks attenuated. Ancestral institutions are ingrained since four millennia."
+        en: "Manden Empire is a stable government, with the majority of risks attenuated. Ancestral institutions are ingrained since four millennia.",
+        fr: "L'Empire Manden est un gouvernement stable, avec la majorité des risques atténués. Les institutions ancestrales sont enracinées depuis quatre millénaires."
       },
-      taxInformation: { en: "Decided per region" },
+      taxInformation: { en: "Decided per region", fr: "Décidé par région" },
       branches: [
         {
-          name: { en: "Reflection Committee" },
-          powers: { en: "Filters ideas based on alignment with Manden principles." },
-          selection: { en: "Meritocratic" },
+          name: { en: "Reflection Committee", fr: "Comité de réflexion" },
+          powers: {
+            en: "Filters ideas based on alignment with Manden principles.",
+            fr: "Filtre les idées selon leur alignement avec les principes du Manden."
+          },
+          selection: { en: "Meritocratic", fr: "Méritocratique" },
           url: "/governance/biographies/reflection-committee"
         },
         {
-          name: { en: "General Assembly" },
-          powers: { en: "Obtains consensus from within the Manden community." },
-          selection: { en: "Meritocratic" },
+          name: { en: "General Assembly", fr: "Assemblée générale" },
+          powers: {
+            en: "Obtains consensus from within the Manden community.",
+            fr: "Obtient le consensus au sein de la communauté du Manden."
+          },
+          selection: { en: "Meritocratic", fr: "Méritocratique" },
           url: "/governance/biographies/general-assembly"
         },
         {
-          name: { en: "Legislative Committee" },
-          powers: { en: "Handles the promulgation of governing protocols." },
-          selection: { en: "Meritocratic" },
+          name: { en: "Legislative Committee", fr: "Comité législatif" },
+          powers: {
+            en: "Handles the promulgation of governing protocols.",
+            fr: "Gère la promulgation des protocoles de gouvernance."
+          },
+          selection: { en: "Meritocratic", fr: "Méritocratique" },
           url: "/governance/biographies/legislative-committee"
         }
       ],
@@ -98,7 +109,32 @@ const DEFAULT_PAGES = [
     images: [],
     links: [],
     directory: {
-      countries: [],
+      countries: [
+        {
+          name: { en: "Niani", fr: "Niani" },
+          description: {
+            en: "The heart of the Manden Empire — institutions, architecture, and Niani TV.",
+            fr: "Le cœur de l'Empire Manden — institutions, architecture et Niani TV."
+          },
+          url: "/niani"
+        },
+        {
+          name: { en: "Hamana", fr: "Hamana" },
+          description: {
+            en: "Content for Hamana will be added in a future contract.",
+            fr: "Le contenu pour Hamana sera ajouté dans un contrat futur."
+          },
+          url: ""
+        },
+        {
+          name: { en: "Tombouctou", fr: "Tombouctou" },
+          description: {
+            en: "Discover Tombouctou, the city of 333 saints and a pillar of Manden heritage.",
+            fr: "Découvrez Tombouctou, la ville des 333 saints et un pilier du patrimoine du Manden."
+          },
+          url: "/tombouctou"
+        }
+      ],
       organizations: [],
       affiliations: []
     }
@@ -125,10 +161,13 @@ const DEFAULT_PAGES = [
         url: "/reference-bureau/questions"
       },
       {
-        id: "cotiser",
-        title: { en: "Cotiser", fr: "Cotiser" },
-        description: { en: "Support Sanun Jara through contributions and donations.", fr: "Soutenez Sanun Jara par vos contributions et dons." },
-        url: "/reference-bureau/cotiser"
+        id: "entrepreneur",
+        title: { en: "I Am an Entrepreneur", fr: "Je suis entrepreneur" },
+        description: {
+          en: "Discover opportunities for entrepreneurs within the Manden network.",
+          fr: "Découvrez les opportunités pour les entrepreneurs au sein du réseau Manden."
+        },
+        url: "/bureau/entrepreneur"
       }
     ]
   },
@@ -346,24 +385,31 @@ async function migrateReferenceBureauCards() {
 
   let changed = false;
   const cards = refPage.utilityCards.map((card) => {
-    if (card.id !== "entrepreneur") return card;
+    const raw = card.toObject?.() ?? card;
+    if (raw.id !== "cotiser" && raw.id !== "entrepreneur") return raw;
+    if (raw.id === "entrepreneur") return raw;
+
     changed = true;
     return {
-      ...card.toObject?.() ?? card,
-      id: "cotiser",
-      title: { en: "Cotiser", fr: "Cotiser", ...(card.title ?? {}) },
-      description: {
-        en: "Support Sanun Jara through contributions and donations.",
-        fr: "Soutenez Sanun Jara par vos contributions et dons.",
-        ...(card.description ?? {})
+      ...raw,
+      id: "entrepreneur",
+      title: {
+        en: "I Am an Entrepreneur",
+        fr: "Je suis entrepreneur",
+        ...(raw.title ?? {}),
       },
-      url: card.url?.trim() ? card.url : "/reference-bureau/cotiser"
+      description: {
+        en: "Discover opportunities for entrepreneurs within the Manden network.",
+        fr: "Découvrez les opportunités pour les entrepreneurs au sein du réseau Manden.",
+        ...(raw.description ?? {}),
+      },
+      url: raw.url?.trim() ? raw.url : "/bureau/entrepreneur",
     };
   });
 
   if (changed) {
     await Page.updateOne({ key: "reference-bureau" }, { $set: { utilityCards: cards } });
-    console.log("✅ Migrated reference-bureau entrepreneur card to cotiser");
+    console.log("✅ Migrated reference-bureau cotiser card to entrepreneur");
   }
 }
 

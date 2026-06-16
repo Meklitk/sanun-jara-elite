@@ -15,7 +15,7 @@ export type UtilityCardDefinition = {
 export const referenceBureauDefaultPaths: Record<string, string> = {
   join: "/bureau/rejoindre",
   questions: "/bureau/contact",
-  cotiser: "/bureau/cotiser",
+  entrepreneur: "/bureau/entrepreneur",
 };
 
 export const referenceBureauCardDefinitions: UtilityCardDefinition[] = [
@@ -33,7 +33,7 @@ export const referenceBureauCardDefinitions: UtilityCardDefinition[] = [
     accent: "crimson",
   },
   {
-    id: "cotiser",
+    id: "entrepreneur",
     icon: Coins,
     titleKey: "iAmEntrepreneur",
     descriptionKey: "iAmEntrepreneurDesc",

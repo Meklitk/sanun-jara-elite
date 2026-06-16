@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0806"/>
+      <stop offset="55%" stop-color="#14100a"/>
+      <stop offset="100%" stop-color="#1f180f"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f5cd56"/>
+      <stop offset="100%" stop-color="#a67c00"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#d4a843" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#d4a843" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <ellipse cx="400" cy="220" rx="320" ry="180" fill="url(#glow)"/>
+  <rect x="24" y="24" width="752" height="452" rx="28" fill="none" stroke="#d4a843" stroke-opacity="0.22" stroke-width="2"/>
+  
+    <g transform="translate(360,230)">
+      <ellipse cx="0" cy="75" rx="70" ry="14" fill="#000" opacity="0.35"/>
+      <circle cx="0" cy="-40" r="32" fill="#6b4423"/>
+      <path d="M-28 -8 L28 -8 L35 70 L-35 70 Z" fill="#4a3728"/>
+      <path d="M-10 -8 L10 -8 L8 25 L-8 25 Z" fill="#f5f5dc"/>
+      <path d="M-25 15 L-45 5" stroke="#6b4423" stroke-width="8" stroke-linecap="round"/>
+      <path d="M25 10 L55 -30 L65 -25 L40 20 Z" fill="#3d2914"/>
+      <rect x="58" y="-38" width="8" height="55" rx="2" fill="#2a1a0a" transform="rotate(-25 62 -10)"/>
+      <text x="0" y="115" text-anchor="middle" font-size="18" font-family="Georgia,serif" fill="#d4a843">Je veux rejoindre</text>
+    </g>
+</svg>

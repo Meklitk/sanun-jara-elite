@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0806"/>
+      <stop offset="55%" stop-color="#14100a"/>
+      <stop offset="100%" stop-color="#1f180f"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f5cd56"/>
+      <stop offset="100%" stop-color="#a67c00"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#d4a843" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#d4a843" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <ellipse cx="400" cy="220" rx="320" ry="180" fill="url(#glow)"/>
+  <rect x="24" y="24" width="752" height="452" rx="28" fill="none" stroke="#d4a843" stroke-opacity="0.22" stroke-width="2"/>
+  
+    <g transform="translate(400,240)">
+      <circle cx="0" cy="0" r="75" fill="url(#gold)"/>
+      <text x="0" y="20" text-anchor="middle" font-size="42" font-family="Georgia,serif" fill="#1a1008">₣</text>
+      <path d="M-100 50 L-60 10 L-20 40 L20 0 L60 30 L100 -10" fill="none" stroke="#22c55e" stroke-width="3"/>
+      <text x="0" y="120" text-anchor="middle" font-size="20" font-family="Georgia,serif" fill="#d4a843">Économie</text>
+    </g>
+</svg>

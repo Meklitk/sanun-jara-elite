@@ -91,10 +91,14 @@ export function resolveGovernanceLeaderBySlug(
   const biographySlug = resolveBiographySlug(canonicalSlug);
   if (biographySlug) {
     const entry = biographies[biographySlug];
+    const role =
+      canonicalSlug === "legislative-committee" || slug === "legislative-committee"
+        ? labels.legislativeCommittee
+        : labels.mandenMansa;
     return {
       slug: biographySlug,
       name: entry.nameEN,
-      role: labels.mandenMansa,
+      role,
       kind: "person",
     };
   }

@@ -1,8 +1,10 @@
 export type CardImageKey =
   | "affiliationHero"
   | "organizationHero"
+  | "federationHero"
   | "referenceBureauJoin"
   | "referenceBureauQuestions"
+  | "referenceBureauEntrepreneur"
   | "referenceBureauCotiser"
   | "nianiInstitutions"
   | "nianiArchitecture"
@@ -26,7 +28,7 @@ export type CardImageSlot = {
 
 export const CARD_IMAGE_SLOTS: Record<CardImageKey, CardImageSlot> = {
   affiliationHero: {
-    filename: "affiliation-bowing.jpg",
+    filename: "affiliation-bowing.svg",
     section: "global-perspectives",
     labelEn: "Affiliation — bowing figure",
     labelFr: "Affiliation — personne inclinée",
@@ -34,15 +36,23 @@ export const CARD_IMAGE_SLOTS: Record<CardImageKey, CardImageSlot> = {
     hintFr: "Personne s'inclinant : un genou au sol, un poing sur la poitrine.",
   },
   organizationHero: {
-    filename: "organization-mansa-musa.jpg",
+    filename: "organization-mansa-musa.svg",
     section: "global-perspectives",
     labelEn: "Organization — Mansa Musa",
     labelFr: "Organisation — Mansa Musa",
     hintEn: "Inspired by the famous Catalan Atlas image.",
     hintFr: "Inspiré de l'image célèbre de l'Atlas catalan.",
   },
+  federationHero: {
+    filename: "federation-hero.svg",
+    section: "global-perspectives",
+    labelEn: "Federation",
+    labelFr: "Fédération",
+    hintEn: "Cartoon illustration for the Federation section.",
+    hintFr: "Illustration cartoon pour la section Fédération.",
+  },
   referenceBureauJoin: {
-    filename: "join-dozo-hunter.jpg",
+    filename: "join-dozo-hunter.svg",
     section: "reference-bureau",
     labelEn: "I want to join",
     labelFr: "Je veux rejoindre",
@@ -50,15 +60,23 @@ export const CARD_IMAGE_SLOTS: Record<CardImageKey, CardImageSlot> = {
     hintFr: "Tenue de chasseur Donso : une main sur la poitrine, l'autre avec le fusil.",
   },
   referenceBureauQuestions: {
-    filename: "questions.jpg",
+    filename: "questions.svg",
     section: "reference-bureau",
     labelEn: "I have questions",
     labelFr: "J'ai des questions",
     hintEn: "Thinking person or question mark illustration.",
     hintFr: "Personne qui réfléchit ou point d'interrogation.",
   },
+  referenceBureauEntrepreneur: {
+    filename: "entrepreneur.svg",
+    section: "reference-bureau",
+    labelEn: "I am an entrepreneur",
+    labelFr: "Je suis entrepreneur",
+    hintEn: "Cartoon illustration for the entrepreneur section.",
+    hintFr: "Illustration cartoon pour la section entrepreneur.",
+  },
   referenceBureauCotiser: {
-    filename: "cotiser.jpg",
+    filename: "cotiser.svg",
     section: "reference-bureau",
     labelEn: "Cotiser",
     labelFr: "Cotiser",
@@ -66,7 +84,7 @@ export const CARD_IMAGE_SLOTS: Record<CardImageKey, CardImageSlot> = {
     hintFr: "Illustration pour la page Cotiser (contributions).",
   },
   nianiInstitutions: {
-    filename: "niani-institutions.jpg",
+    filename: "niani-institutions.svg",
     section: "niani",
     labelEn: "Institutions",
     labelFr: "Institutions",
@@ -74,7 +92,7 @@ export const CARD_IMAGE_SLOTS: Record<CardImageKey, CardImageSlot> = {
     hintFr: "Main déroulant le parchemin avec la carte du Manden.",
   },
   nianiArchitecture: {
-    filename: "niani-architecture.jpg",
+    filename: "niani-architecture.svg",
     section: "niani",
     labelEn: "Architectural projects",
     labelFr: "Projets architecturaux",
@@ -90,7 +108,7 @@ export const CARD_IMAGE_SLOTS: Record<CardImageKey, CardImageSlot> = {
     hintFr: "Village avec caméra / cinéaste.",
   },
   nianiCartoons: {
-    filename: "niani-cartoons.jpg",
+    filename: "niani-cartoons.svg",
     section: "niani",
     labelEn: "Niani TV — Cartoons",
     labelFr: "Niani TV — Dessins animés",
@@ -98,7 +116,7 @@ export const CARD_IMAGE_SLOTS: Record<CardImageKey, CardImageSlot> = {
     hintFr: "Image d'en-tête pour la section dessins animés.",
   },
   nianiWomen: {
-    filename: "niani-women.jpg",
+    filename: "niani-women.svg",
     section: "niani",
     labelEn: "Women's institution",
     labelFr: "Institution des femmes",
@@ -114,7 +132,7 @@ export const CARD_IMAGE_SLOTS: Record<CardImageKey, CardImageSlot> = {
     hintFr: "Apprentissage sous l'arbre (cours N'ko).",
   },
   academyHistory: {
-    filename: "academy-history.jpg",
+    filename: "academy-history.svg",
     section: "academy",
     labelEn: "History courses",
     labelFr: "Cours d'histoire",
@@ -122,7 +140,7 @@ export const CARD_IMAGE_SLOTS: Record<CardImageKey, CardImageSlot> = {
     hintFr: "Scène d'apprentissage de l'histoire du Manden.",
   },
   academyOthers: {
-    filename: "academy-others.jpg",
+    filename: "academy-others.svg",
     section: "academy",
     labelEn: "Other courses",
     labelFr: "Autres cours",
@@ -130,7 +148,7 @@ export const CARD_IMAGE_SLOTS: Record<CardImageKey, CardImageSlot> = {
     hintFr: "Illustration générale des cours.",
   },
   commerceMarket: {
-    filename: "commerce-market.jpg",
+    filename: "commerce-market.svg",
     section: "commerce",
     labelEn: "Commerce market",
     labelFr: "Marché du commerce",
@@ -138,7 +156,7 @@ export const CARD_IMAGE_SLOTS: Record<CardImageKey, CardImageSlot> = {
     hintFr: "Marché cartoon : femme achetant du grain avec un sac.",
   },
   economyHero: {
-    filename: "economy-hero.jpg",
+    filename: "economy-hero.svg",
     section: "economy",
     labelEn: "Economy illustration",
     labelFr: "Illustration économie",
@@ -160,4 +178,14 @@ export function cardImageKeysForSection(
   section: CardImageSlot["section"]
 ): CardImageKey[] {
   return CARD_IMAGE_KEYS.filter((key) => CARD_IMAGE_SLOTS[key].section === section);
+}
+
+export const SECTION_CARD_IMAGE_KEYS: Record<string, CardImageKey> = {
+  nko: "academyNko",
+  "niani-tv": "nianiTv",
+};
+
+export function sectionCardImage(key: string): string | undefined {
+  const imageKey = SECTION_CARD_IMAGE_KEYS[key];
+  return imageKey ? CARD_IMAGES[imageKey] : undefined;
 }

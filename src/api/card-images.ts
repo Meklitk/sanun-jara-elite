@@ -2,7 +2,7 @@ import { http } from "./http";
 import type { CardImageKey } from "@/lib/card-images";
 
 export async function listCardImages() {
-  return http<{ files: Record<string, boolean> }>("/api/card-images");
+  return http<{ files: Record<string, boolean>; urls: Record<string, string> }>("/api/card-images");
 }
 
 export async function uploadCardImage(file: File, slot: CardImageKey, token: string) {

@@ -4,6 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
+import { CardImagesProvider } from "@/lib/card-images-context";
 import MainLayout from "@/components/MainLayout";
 import IntroductionPage from "./pages/IntroductionPage";
 import HistoryPage from "./pages/HistoryPage";
@@ -34,6 +35,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <I18nProvider>
+        <CardImagesProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
@@ -62,9 +64,11 @@ const App = () => (
               <Route path="/reference-bureau/join" element={<ReferenceBureauPage section="join" />} />
               <Route path="/reference-bureau/questions" element={<ReferenceBureauPage section="questions" />} />
               <Route path="/reference-bureau/cotiser" element={<ReferenceBureauPage section="cotiser" />} />
+              <Route path="/reference-bureau/entrepreneur" element={<ReferenceBureauPage section="entrepreneur" />} />
               <Route path="/bureau/rejoindre" element={<ReferenceBureauPage section="join" />} />
               <Route path="/bureau/contact" element={<ReferenceBureauPage section="questions" />} />
               <Route path="/bureau/cotiser" element={<ReferenceBureauPage section="cotiser" />} />
+              <Route path="/bureau/entrepreneur" element={<ReferenceBureauPage section="entrepreneur" />} />
               <Route path="/niani" element={<NianiPage />} />
               <Route path="/niani/institutions" element={<NianiInstitutionsPage />} />
               <Route path="/niani/architectural-projects" element={<NianiArchitecturalProjectsPage />} />
@@ -80,6 +84,7 @@ const App = () => (
             </Route>
           </Routes>
         </BrowserRouter>
+        </CardImagesProvider>
       </I18nProvider>
     </TooltipProvider>
   </QueryClientProvider>

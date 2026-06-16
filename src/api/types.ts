@@ -61,6 +61,7 @@ export type GovernanceData = {
 export type DirectoryItem = {
   name: Partial<LocalizedString>;
   description: Partial<LocalizedString>;
+  url?: string;
 };
 
 export type DirectoryData = {

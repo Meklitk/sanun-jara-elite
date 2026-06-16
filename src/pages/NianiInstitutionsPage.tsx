@@ -1,9 +1,10 @@
 import { motion } from "framer-motion";
-import { Landmark, Play } from "lucide-react";
+import { Play } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import ImageLightbox from "@/components/ImageLightbox";
-import SectionHeroImage from "@/components/SectionHeroImage";
-import { CARD_IMAGES } from "@/lib/card-images";
+import SectionEmojiHeader from "@/components/SectionEmojiHeader";
+import SectionEmptyState from "@/components/SectionEmptyState";
+import { SECTION_EMOJIS } from "@/lib/section-emojis";
 import {
   PageErrorState,
   PageLoadingState,
@@ -13,34 +14,32 @@ import {
 
 export default function NianiInstitutionsPage() {
   const { t, lang, localize } = useI18n();
-  const { page, title, content, isLoading, error } = useCmsPage("niani");
+  const { page, isLoading, error } = useCmsPage("niani");
 
   if (isLoading) return <PageLoadingState />;
   if (error) return <PageErrorState />;
-  if (!page) return <PageNotFoundState />
+  if (!page) return <PageNotFoundState />;
 
   const institutions = page.institutions || [];
 
   return (
     <div className="space-y-8">
-      <section className="rounded-[2rem] border border-gold/15 bg-[linear-gradient(145deg,rgba(0,0,0,0.94),rgba(39,25,8,0.9))] p-6 shadow-[0_30px_100px_rgba(0,0,0,0.35)] sm:p-8 lg:p-10">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-gold/20 bg-gold/10 text-gold">
-            <Landmark className="h-5 w-5" />
-          </div>
-          <div>
-            <p className="text-[11px] uppercase tracking-[0.28em] text-gold/72">{t.niani}</p>
-            <h1 className="mt-1 text-4xl font-bold gold-gradient-text sm:text-5xl">{t.institutions}</h1>
-          </div>
-        </div>
-        <p className="mt-5 max-w-3xl text-base leading-8 text-foreground/76">
-          {content || (lang === "fr" ? "Explorez les institutions de l'Empire Manden." : "Explore the institutions of the Manden Empire.")}
-        </p>
-      </section>
+      <SectionEmojiHeader
+        emoji={SECTION_EMOJIS.institutions}
+        eyebrow={t.niani}
+        title={t.institutions}
+        description={t.institutionsDesc}
+      />
 
-      <SectionHeroImage src={CARD_IMAGES.nianiInstitutions} alt={t.institutions} />
-
-      {institutions.length === 0 ? null : (
+      {institutions.length === 0 ? (
+        <SectionEmptyState
+          message={
+            lang === "fr"
+              ? "Les institutions seront affichées ici une fois ajoutées depuis le tableau de bord administrateur."
+              : "Institutions will appear here once added from the admin dashboard."
+          }
+        />
+      ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {institutions.map((institution, index) => (
             <motion.div
@@ -57,7 +56,7 @@ export default function NianiInstitutionsPage() {
               <p className="text-sm text-foreground/70 mb-4 leading-relaxed">
                 {localize(institution.description)}
               </p>
-              
+
               {institution.images && institution.images.length > 0 ? (
                 <div className="mb-4">
                   <div className="grid gap-2 grid-cols-2">
@@ -70,14 +69,6 @@ export default function NianiInstitutionsPage() {
                       />
                     ))}
                   </div>
-                </div>
-              ) : institution.id === "women" ? (
-                <div className="mb-4">
-                  <ImageLightbox
-                    src={CARD_IMAGES.nianiWomen}
-                    alt={localize(institution.name)}
-                    className="h-40 w-full rounded-lg object-cover border border-gold/10"
-                  />
                 </div>
               ) : null}
 

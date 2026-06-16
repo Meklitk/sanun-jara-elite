@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { usePages } from "@/api/pages";
 import { Card } from "@/components/ui/card";
 import SectionHeroImage from "@/components/SectionHeroImage";
-import { CARD_IMAGES } from "@/lib/card-images";
+import { useCardImages } from "@/lib/card-images-context";
 import type { Page } from "@/api/types";
 
 function Paragraphs({ text }: { text: string }) {
@@ -32,6 +32,7 @@ function Paragraphs({ text }: { text: string }) {
 
 export default function EconomyPage() {
   const { localize, t } = useI18n();
+  const { resolve } = useCardImages();
   const { data, isLoading, error } = usePages();
 
   const page = useMemo<Page | undefined>(
@@ -83,7 +84,7 @@ export default function EconomyPage() {
           <div className="mb-6 flex items-center gap-3">
             <div className="h-[3px] w-16 rounded-full bg-gradient-to-r from-gold to-transparent" />
             <span className="text-xs uppercase tracking-[0.3em] text-gold/70">
-              Financial Services
+              {t.economicInformation}
             </span>
           </div>
 
@@ -99,7 +100,7 @@ export default function EconomyPage() {
 
           <div className="my-8">
             <SectionHeroImage
-              src={CARD_IMAGES.economyHero}
+              src={resolve("economyHero")}
               alt={title || t.economy}
               className="overflow-hidden rounded-[1.25rem] border border-gold/15"
             />

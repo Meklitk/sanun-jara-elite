@@ -121,11 +121,7 @@ export default function AdminLoginPage() {
               )}
             </Button>
           </form>
-
-          <p className="mt-6 text-center text-[11px] leading-5 text-muted-foreground">{at.loginDockerHint}</p>
         </Card>
-
-        <p className="mt-8 text-center text-xs text-gold/40">{at.loginFooter}</p>
       </div>
     </div>
   );

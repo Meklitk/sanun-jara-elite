@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0806"/>
+      <stop offset="55%" stop-color="#14100a"/>
+      <stop offset="100%" stop-color="#1f180f"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f5cd56"/>
+      <stop offset="100%" stop-color="#a67c00"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#d4a843" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#d4a843" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <ellipse cx="400" cy="220" rx="320" ry="180" fill="url(#glow)"/>
+  <rect x="24" y="24" width="752" height="452" rx="28" fill="none" stroke="#d4a843" stroke-opacity="0.22" stroke-width="2"/>
+  
+    <g transform="translate(400,235)">
+      <rect x="-90" y="10" width="180" height="70" rx="12" fill="#1a1408" stroke="url(#gold)" stroke-width="2"/>
+      <path d="M-70 45 L-40 25 L-10 50 L20 30 L50 45" fill="none" stroke="#22c55e" stroke-width="3"/>
+      <circle cx="50" cy="30" r="12" fill="url(#gold)"/>
+      <text x="50" y="35" text-anchor="middle" font-size="14" fill="#1a1008">$</text>
+      
+      <g transform="translate(-130,20) scale(1)">
+        <ellipse cx="0" cy="110" rx="40" ry="10" fill="#000" opacity="0.35"/>
+        <path d="M-18 42 L18 42 L22 108 L-22 108 Z" fill="#1e3a2f"/>
+        <circle cx="0" cy="18" r="20" fill="#6b4423"/>
+        <path d="M-22 48 L-38 85" stroke="#6b4423" stroke-width="7" stroke-linecap="round"/>
+        <path d="M22 48 L38 85" stroke="#6b4423" stroke-width="7" stroke-linecap="round"/>
+      </g>
+      <rect x="60" y="-55" width="55" height="40" rx="6" fill="#2a2218" stroke="#d4a843" stroke-width="1.5"/>
+      <text x="87" y="-28" text-anchor="middle" font-size="11" fill="#d4a843">TRADE</text>
+      <text x="0" y="115" text-anchor="middle" font-size="18" font-family="Georgia,serif" fill="#d4a843">I Am an Entrepreneur</text>
+    </g>
+</svg>

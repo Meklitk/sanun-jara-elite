@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ExternalLink, ImagePlus, CheckCircle2, AlertCircle, Trash2 } from "lucide-react";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { deleteCardImage, listCardImages, uploadCardImage } from "@/api/card-images";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +25,9 @@ type Props = {
 export default function AdminCardImagesPanel({ section: _section, slots, token, previewPath }: Props) {
   const at = useAdminT();
   const { lang } = useI18n();
+  const queryClient = useQueryClient();
   const [uploaded, setUploaded] = useState<Record<string, boolean>>({});
+  const [remoteUrls, setRemoteUrls] = useState<Record<string, string>>({});
   const [uploadingSlot, setUploadingSlot] = useState<string | null>(null);
   const [deletingSlot, setDeletingSlot] = useState<string | null>(null);
 
@@ -32,8 +35,10 @@ export default function AdminCardImagesPanel({ section: _section, slots, token, 
     try {
       const res = await listCardImages();
       setUploaded(res.files ?? {});
+      setRemoteUrls(res.urls ?? {});
     } catch {
       setUploaded({});
+      setRemoteUrls({});
     }
   }
 
@@ -49,6 +54,7 @@ export default function AdminCardImagesPanel({ section: _section, slots, token, 
       setUploaded((current) => ({ ...current, [slot]: true }));
       toast.success(formatAdmin(at.cardImageUploaded, { label: CARD_IMAGE_SLOTS[slot].labelEn }));
       await refresh();
+      await queryClient.invalidateQueries({ queryKey: ["card-images"] });
     } catch {
       toast.error(at.cardImageUploadFailed);
     } finally {
@@ -67,6 +73,7 @@ export default function AdminCardImagesPanel({ section: _section, slots, token, 
       setUploaded((current) => ({ ...current, [slot]: false }));
       toast.success(formatAdmin(at.cardImageDeleted, { label }));
       await refresh();
+      await queryClient.invalidateQueries({ queryKey: ["card-images"] });
     } catch {
       toast.error(at.cardImageDeleteFailed);
     } finally {
@@ -94,8 +101,8 @@ export default function AdminCardImagesPanel({ section: _section, slots, token, 
       <div className="grid gap-4 lg:grid-cols-2">
         {slots.map((slot) => {
           const meta = CARD_IMAGE_SLOTS[slot];
-          const url = CARD_IMAGES[slot];
-          const exists = uploaded[slot];
+          const url = remoteUrls[slot] || CARD_IMAGES[slot];
+          const exists = Boolean(remoteUrls[slot]);
           const busy = uploadingSlot === slot || deletingSlot === slot;
           const label = lang === "fr" ? meta.labelFr : meta.labelEn;
           const hint = lang === "fr" ? meta.hintFr : meta.hintEn;

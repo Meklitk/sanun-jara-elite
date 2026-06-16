@@ -3,21 +3,7 @@ import { useContentBySlug } from "@/api/content";
 import { useI18n } from "@/lib/i18n";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FileText, Globe, LayoutDashboard, Clock, Crown, DollarSign, Building2, Users, BookOpen, FolderOpen, Layers } from "lucide-react";
-
-const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-  FileText,
-  Globe,
-  LayoutDashboard,
-  Clock,
-  Crown,
-  DollarSign,
-  Building2,
-  Users,
-  BookOpen,
-  FolderOpen,
-  Layers,
-};
+import { sectionEmoji } from "@/lib/section-emojis";
 
 export default function ContentPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -38,18 +24,20 @@ export default function ContentPage() {
   }
 
   const content = data.content;
-  const Icon = iconMap[content.icon] || FileText;
+  const emoji = sectionEmoji(content.icon || "FileText");
   const title = localize(content.title) || content.slug;
   const bodyContent = localize(content.content);
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="relative overflow-hidden rounded-[1.5rem] border border-gold/20 bg-gradient-to-br from-black/60 to-black/40 p-6 sm:p-8">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,205,86,0.15),_transparent_50%)]" />
         <div className="relative flex items-center gap-4">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl gold-gradient-bg shadow-lg shadow-gold/20">
-            <Icon className="h-7 w-7 text-black" />
+          <div
+            className="flex h-14 w-14 items-center justify-center rounded-2xl border border-gold/20 bg-black/40 text-3xl shadow-lg"
+            aria-hidden
+          >
+            {emoji}
           </div>
           <div>
             <h1 className="font-display text-2xl font-bold gold-gradient-text sm:text-3xl">{title}</h1>
@@ -58,7 +46,6 @@ export default function ContentPage() {
         </div>
       </div>
 
-      {/* Content */}
       {bodyContent ? (
         <Card className="glass-panel p-6 sm:p-8 border-gold/20">
           <div className="prose prose-invert max-w-none">
@@ -71,7 +58,6 @@ export default function ContentPage() {
         </Card>
       ) : null}
 
-      {/* Images */}
       {content.images && content.images.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {content.images.map((url, index) => (
@@ -82,28 +68,25 @@ export default function ContentPage() {
         </div>
       )}
 
-      {/* Links */}
       {content.links && content.links.length > 0 && (
         <Card className="glass-panel p-6 border-gold/20">
-          <h3 className="font-display text-lg font-semibold mb-4 gold-gradient-text">{t.relatedLinks}</h3>
-          <div className="space-y-2">
-            {content.links.map((link, index) => {
-              const label = localize(link.label);
-              if (!label && !link.url) return null;
-              return (
+          <h2 className="font-display text-lg text-gold mb-4">
+            {lang === "fr" ? "Liens utiles" : "Useful links"}
+          </h2>
+          <ul className="space-y-2">
+            {content.links.map((link, index) => (
+              <li key={index}>
                 <a
-                  key={index}
-                  href={link.url || "#"}
+                  href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-3 p-3 rounded-xl border border-gold/10 bg-black/20 hover:bg-gold/10 hover:border-gold/30 transition-all"
+                  className="text-gold hover:underline"
                 >
-                  <Globe className="w-4 h-4 text-gold/60" />
-                  <span className="text-sm text-foreground/80">{label || link.url}</span>
+                  {localize(link.label) || link.url}
                 </a>
-              );
-            })}
-          </div>
+              </li>
+            ))}
+          </ul>
         </Card>
       )}
     </div>

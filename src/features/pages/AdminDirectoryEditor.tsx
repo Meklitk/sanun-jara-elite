@@ -9,6 +9,7 @@ function emptyDirectoryItem(): DirectoryItem {
   return {
     name: { en: "" },
     description: { en: "" },
+    url: "",
   };
 }
 
@@ -102,6 +103,21 @@ function DirectoryGroup({ icon: Icon, title, description, items, addLabel, onCha
                     className="min-h-[6.5rem] border-gold/20 bg-black/20 resize-y focus:border-gold/50 focus:ring-gold/20"
                   />
                 </div>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                <Label>Link (optional)</Label>
+                <Input
+                  value={item.url ?? ""}
+                  onChange={(e) =>
+                    updateItem(index, {
+                      ...item,
+                      url: e.target.value,
+                    })
+                  }
+                  placeholder="/niani or https://..."
+                  className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
+                />
               </div>
             </div>
           ))}

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0806"/>
+      <stop offset="55%" stop-color="#14100a"/>
+      <stop offset="100%" stop-color="#1f180f"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f5cd56"/>
+      <stop offset="100%" stop-color="#a67c00"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="#d4a843" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#d4a843" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#bg)"/>
+  <ellipse cx="400" cy="220" rx="320" ry="180" fill="url(#glow)"/>
+  <rect x="24" y="24" width="752" height="452" rx="28" fill="none" stroke="#d4a843" stroke-opacity="0.22" stroke-width="2"/>
+  
+    
+      <g transform="translate(280,120) scale(1.4)">
+        <ellipse cx="0" cy="95" rx="55" ry="12" fill="#000" opacity="0.35"/>
+        <path d="M-15 40 Q-40 70 -55 95 L-35 98 Q-20 75 5 55 Z" fill="#5c3d1e"/>
+        <circle cx="25" cy="18" r="22" fill="#6b4423"/>
+        <path d="M5 38 L45 38 L50 95 L0 95 Z" fill="#5c3d1e"/>
+        <path d="M-5 45 L-25 75" stroke="#6b4423" stroke-width="8" stroke-linecap="round"/>
+        <path d="M15 42 L5 58" stroke="#6b4423" stroke-width="7" stroke-linecap="round"/>
+        <ellipse cx="55" cy="88" rx="18" ry="8" fill="#3d2914"/>
+      </g>
+    <g transform="translate(480,100) scale(1.5)">
+      <rect x="-30" y="55" width="60" height="70" rx="8" fill="url(#gold)" opacity="0.9"/>
+      <circle cx="0" cy="25" r="28" fill="url(#gold)"/>
+      <text x="0" y="32" text-anchor="middle" font-size="22" font-family="Georgia,serif" fill="#1a1008">♛</text>
+      <path d="M-50 0 L-35 -25 L-20 0 Z" fill="url(#gold)"/>
+      <path d="M50 0 L35 -25 L20 0 Z" fill="url(#gold)"/>
+    </g>
+    <text x="400" y="420" text-anchor="middle" font-size="20" font-family="Georgia,serif" fill="#d4a843" opacity="0.85">Affiliation</text>
+</svg>

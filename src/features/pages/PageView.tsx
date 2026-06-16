@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import SectionHeroImage from "@/components/SectionHeroImage";
-import { CARD_IMAGES } from "@/lib/card-images";
+import { useCardImages } from "@/lib/card-images-context";
 
 function Paragraphs({ text }: { text: string }) {
   const parts = text.split(/\n\s*\n/g).map((p) => p.trim()).filter(Boolean);
@@ -20,6 +20,7 @@ function Paragraphs({ text }: { text: string }) {
 
 export default function PageView({ pageKey }: { pageKey: string }) {
   const { localize, t } = useI18n();
+  const { resolve } = useCardImages();
   const { data, isLoading, error } = usePages();
 
   const page = useMemo(() => data?.pages.find((p) => p.key === pageKey), [data, pageKey]);
@@ -111,7 +112,7 @@ export default function PageView({ pageKey }: { pageKey: string }) {
 
         {pageKey === "commerce" ? (
           <SectionHeroImage
-            src={CARD_IMAGES.commerceMarket}
+            src={resolve("commerceMarket")}
             alt={title || t.commerce}
             className="mb-8"
           />

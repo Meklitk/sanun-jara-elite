@@ -1,9 +1,9 @@
 import { useEffect, type KeyboardEvent } from "react";
 import { motion } from "framer-motion";
-import { Clock3, ScrollText } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { resolveCoatOfArmsImage } from "@/components/SiteCoatOfArms";
+import { SECTION_EMOJIS } from "@/lib/section-emojis";
 import { usePages } from "@/api/pages";
 import {
   PageErrorState,
@@ -135,7 +135,7 @@ export default function HistoryPage() {
               transition={{ delay: index * 0.05 }}
               className="rounded-[1.5rem] border border-gold/12 bg-black/30 p-6 shadow-[0_18px_55px_rgba(0,0,0,0.2)]"
             >
-              <ScrollText className="mb-3 h-5 w-5 text-gold/70" />
+              <span className="mb-3 text-xl" aria-hidden>{SECTION_EMOJIS.historyScroll}</span>
               <p className="text-base leading-8 text-foreground/76">{paragraph}</p>
             </motion.article>
           ))}
@@ -146,7 +146,7 @@ export default function HistoryPage() {
         <section id="timeline" className="scroll-mt-28">
           <div className="mb-8 flex flex-col items-center gap-3 text-center sm:mb-10">
             <div className="inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">
-              <Clock3 className="h-3.5 w-3.5" />
+              <span aria-hidden>{SECTION_EMOJIS.historyTimeline}</span>
               {t.historyTimeline}
             </div>
             <div className="h-px w-24 bg-gradient-to-r from-transparent via-gold/50 to-transparent" />

@@ -1,18 +1,22 @@
-import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+
+import { SectionEmojiVisual } from "@/components/SectionEmojiVisual";
 
 type UtilityCard = {
   id: string;
-  icon: LucideIcon;
+  icon?: LucideIcon;
   title: string;
   description: string;
   ctaLabel: string;
   accent?: "gold" | "crimson";
   href?: string;
+  emoji?: string;
   imageUrl?: string;
+  imageAlt?: string;
 };
 
 type UtilityLandingPageProps = {
@@ -34,32 +38,35 @@ function isExternalHref(href: string) {
 }
 
 function UtilityCardVisual({
-  card,
-  accentClass,
+  emoji,
+  imageUrl,
+  imageAlt,
 }: {
-  card: UtilityCard;
-  accentClass: string;
+  emoji?: string;
+  imageUrl?: string;
+  imageAlt?: string;
 }) {
   const [imageFailed, setImageFailed] = useState(false);
+  const showImage = Boolean(imageUrl) && !imageFailed;
 
-  if (card.imageUrl && !imageFailed) {
+  if (showImage) {
     return (
-      <div className="mb-4 sm:mb-6 overflow-hidden rounded-xl sm:rounded-2xl border border-gold/15 bg-black/30">
+      <div
+        className="mb-4 sm:mb-6 h-24 w-full sm:h-28 overflow-hidden rounded-xl sm:rounded-2xl border border-gold/15 bg-black/30 shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
+      >
         <img
-          src={card.imageUrl}
-          alt={card.title}
+          src={imageUrl}
+          alt={imageAlt || ""}
+          className="h-full w-full object-cover"
           onError={() => setImageFailed(true)}
-          className="aspect-[16/10] w-full object-cover"
         />
       </div>
     );
   }
 
-  return (
-    <div className={`mb-4 sm:mb-6 inline-flex h-10 sm:h-14 w-10 sm:w-14 items-center justify-center rounded-xl sm:rounded-2xl ${accentClass}`}>
-      <card.icon className="h-5 sm:h-6 w-5 sm:w-6" />
-    </div>
-  );
+  if (!emoji) return null;
+
+  return <SectionEmojiVisual emoji={emoji} size="card" />;
 }
 
 export default function UtilityLandingPage({
@@ -87,11 +94,6 @@ export default function UtilityLandingPage({
       {cards.length ? (
         <section className="grid gap-3 sm:gap-5 md:grid-cols-2 xl:grid-cols-3">
         {cards.map((card, index) => {
-          const accentClass =
-            card.accent === "crimson"
-              ? "border-primary/25 bg-primary/10 text-foreground"
-              : "border-gold/20 bg-gold/10 text-secondary-foreground";
-
           const CardContent = (
             <motion.article
               key={card.id}
@@ -101,7 +103,7 @@ export default function UtilityLandingPage({
               transition={{ delay: index * 0.08, duration: 0.45 }}
               className="group rounded-[1.25rem] sm:rounded-[1.75rem] border border-gold/15 bg-black/30 p-4 sm:p-7 shadow-[0_22px_80px_rgba(0,0,0,0.28)] transition duration-300 hover:border-gold/30 hover:bg-black/40 block"
             >
-              <UtilityCardVisual card={card} accentClass={accentClass} />
+              <UtilityCardVisual emoji={card.emoji} imageUrl={card.imageUrl} imageAlt={card.imageAlt || card.title} />
               <h2 className="text-lg sm:text-2xl font-semibold text-foreground">{card.title}</h2>
               <p className="mt-2 sm:mt-4 text-xs sm:text-sm leading-6 sm:leading-7 text-foreground/72">{card.description}</p>
               <div className="mt-4 sm:mt-7 inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-gold">

@@ -1,8 +1,5 @@
-import { Building, Globe, Handshake, type LucideIcon } from "lucide-react";
-
 import FederationDirectoryList from "@/components/FederationDirectoryList";
 import MandenFederationMap from "@/components/MandenFederationMap";
-import SectionHeroImage from "@/components/SectionHeroImage";
 import {
   PageErrorState,
   PageLoadingState,
@@ -10,28 +7,36 @@ import {
   splitParagraphs,
   useCmsPage,
 } from "@/features/pages/page-content";
-import { CARD_IMAGES } from "@/lib/card-images";
+import { SECTION_EMOJIS } from "@/lib/section-emojis";
+import { resolveDefaultFederationEntries } from "@/lib/federation-entries";
 import { resolveFederationMapSrc } from "@/lib/federation-map";
 import { useI18n } from "@/lib/i18n";
 
 type VisualSectionProps = {
   id: string;
-  icon: LucideIcon;
+  emoji?: string;
   title: string;
   description: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 };
 
-function VisualSection({ id, icon: Icon, title, description, children }: VisualSectionProps) {
+function VisualSection({ id, emoji, title, description, children }: VisualSectionProps) {
   return (
     <section id={id} className="scroll-mt-28 space-y-6">
-      <div className="flex items-start gap-4 rounded-[1.7rem] border border-gold/15 bg-black/24 p-6 shadow-[0_18px_60px_rgba(0,0,0,0.18)]">
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl gold-gradient-bg">
-          <Icon className="h-6 w-6 text-black" />
-        </div>
-        <div>
-          <h2 className="text-2xl font-semibold text-foreground">{title}</h2>
-          <p className="mt-2 max-w-3xl text-sm leading-7 text-foreground/72">{description}</p>
+      <div className="space-y-4 rounded-[1.7rem] border border-gold/15 bg-black/24 p-6 shadow-[0_18px_60px_rgba(0,0,0,0.18)]">
+        <div className="flex items-start gap-4">
+          {emoji ? (
+            <div
+              className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-gold/20 bg-black/40 text-3xl shadow-[0_8px_30px_rgba(0,0,0,0.35)] sm:h-16 sm:w-16 sm:text-4xl"
+              aria-hidden
+            >
+              {emoji}
+            </div>
+          ) : null}
+          <div>
+            <h2 className="text-2xl font-semibold text-foreground">{title}</h2>
+            <p className="mt-2 max-w-3xl text-sm leading-7 text-foreground/72">{description}</p>
+          </div>
         </div>
       </div>
       {children}
@@ -53,7 +58,7 @@ export default function GlobalPerspectivesPage({ section }: GlobalPerspectivesPa
 
   const paragraphs = splitParagraphs(content);
   const federationMapSrc = resolveFederationMapSrc(page.featuredImage, page.images);
-  const federationEntries = page.directory?.countries ?? [];
+  const federationEntries = resolveDefaultFederationEntries(page.directory?.countries ?? []);
 
   return (
     <div className="w-full space-y-8 sm:space-y-10">
@@ -76,7 +81,12 @@ export default function GlobalPerspectivesPage({ section }: GlobalPerspectivesPa
       )}
 
       {(!section || section === "country") && (
-        <VisualSection id="federation" icon={Globe} title={t.byCountry} description={t.byCountryDesc}>
+        <VisualSection
+          id="federation"
+          emoji={SECTION_EMOJIS.federation}
+          title={t.byCountry}
+          description={t.byCountryDesc}
+        >
           <MandenFederationMap mapSrc={federationMapSrc} />
           <FederationDirectoryList items={federationEntries} />
         </VisualSection>
@@ -85,23 +95,19 @@ export default function GlobalPerspectivesPage({ section }: GlobalPerspectivesPa
       {(!section || section === "organization") && (
         <VisualSection
           id="organization"
-          icon={Building}
+          emoji={SECTION_EMOJIS.organization}
           title={t.byOrganization}
           description={t.byOrganizationDesc}
-        >
-          <SectionHeroImage src={CARD_IMAGES.organizationHero} alt={t.byOrganization} />
-        </VisualSection>
+        />
       )}
 
       {(!section || section === "affiliation") && (
         <VisualSection
           id="affiliation"
-          icon={Handshake}
+          emoji={SECTION_EMOJIS.affiliation}
           title={t.byAffiliation}
           description={t.byAffiliationDesc}
-        >
-          <SectionHeroImage src={CARD_IMAGES.affiliationHero} alt={t.byAffiliation} />
-        </VisualSection>
+        />
       )}
     </div>
   );

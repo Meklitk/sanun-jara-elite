@@ -93,9 +93,6 @@ export const adminTranslations = {
     loginMissingFields: "Veuillez saisir votre identifiant et mot de passe.",
     loginFailed: "Identifiants incorrects. Vérifiez votre nom d'utilisateur et mot de passe.",
     backToSite: "Retour au site",
-    loginDockerHint:
-      "En local avec Docker : identifiant admin, mot de passe défini dans docker-compose.yml.",
-    loginFooter: "Tableau de bord Sanun Jara",
     bioDocsTitle: "Profils /gouvernement/",
     bioDocsDesc:
       "Photo, texte de présentation et PDF pour chaque page publique /gouvernement/…. Enregistrez le texte puis téléversez la photo et les PDF.",
@@ -141,7 +138,7 @@ export const adminTranslations = {
     federationRegionUploadFailed: "Échec du téléversement de la région",
     cardImagesTitle: "Illustrations des cartes",
     cardImagesDesc:
-      "Téléversez, remplacez ou supprimez les images de chaque carte. Après suppression, l'image disparaît du site public jusqu'à un nouvel envoi.",
+      "Les images sont enregistrées dans la base de données et sur Cloudinary en production — elles restent visibles après chaque déploiement.",
     cardImageUploaded: "Image enregistrée ({label})",
     cardImageUploadFailed: "Échec du téléversement de l'image",
     cardImageDeleted: "Image supprimée ({label})",
@@ -289,7 +286,7 @@ export const adminTranslations = {
     federationRegionUploadFailed: "Region upload failed",
     cardImagesTitle: "Card illustrations",
     cardImagesDesc:
-      "Upload, replace, or delete images for each card. After deletion, the image is hidden on the public site until you upload a new one.",
+      "Images are saved to the database and Cloudinary in production — they stay visible after every deploy.",
     cardImageUploaded: "Image saved ({label})",
     cardImageUploadFailed: "Image upload failed",
     cardImageDeleted: "Image deleted ({label})",
