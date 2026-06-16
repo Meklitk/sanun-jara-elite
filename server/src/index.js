@@ -14,6 +14,7 @@ import { Page } from "./models/Page.js";
 import { Media } from "./models/Media.js";
 import { Content } from "./models/Content.js";
 import { CardImage } from "./models/CardImage.js";
+import { Submission } from "./models/Submission.js";
 import nodemailer from "nodemailer";
 import { requireAdmin, signAdminToken } from "./auth.js";
 import { seedAdminIfNeeded, seedPagesIfNeeded, ensureDefaultPages } from "./seed.js";
