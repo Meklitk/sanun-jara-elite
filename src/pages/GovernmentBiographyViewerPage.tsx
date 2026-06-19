@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { ArrowLeft, User } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
@@ -13,13 +13,14 @@ import {
 } from "@/features/pages/page-content";
 import { resolveGovernanceLeaderBySlug } from "@/features/governance/resolve-governance-leader";
 import { useI18n } from "@/lib/i18n";
-
 import {
   biographyDocumentBasePath,
   isBiographyImageUrl,
   isBiographyPdfUrl,
   resolveBiographyDocumentUrl,
 } from "@/lib/biography-document";
+
+const InlinePdfViewer = lazy(() => import("@/components/InlinePdfViewer"));
 
 type DocumentLanguage = "fr" | "en";
 
@@ -237,22 +238,32 @@ export default function GovernmentBiographyViewerPage() {
                 </div>
               </div>
 
-              <div className="overflow-hidden rounded-[1.25rem] border border-gold/15 bg-black/30 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:rounded-[1.5rem]">
-                {documentUrl && isBiographyPdfUrl(documentUrl) ? (
-                  <iframe
+              {documentUrl && isBiographyPdfUrl(documentUrl) ? (
+                <Suspense
+                  fallback={
+                    <div className="overflow-hidden rounded-[1.25rem] border border-gold/15 bg-black/30 p-6 text-sm text-foreground/72 sm:rounded-[1.5rem]">
+                      {lang === "fr" ? "Chargement du document..." : "Loading document..."}
+                    </div>
+                  }
+                >
+                  <InlinePdfViewer
                     key={`${slug}-${documentLanguage}`}
-                    src={`${documentUrl}#view=FitH&toolbar=1`}
+                    src={documentUrl}
                     title={displayName}
-                    className="h-[min(1200px,92vh)] min-h-[640px] w-full border-0"
+                    lang={lang}
                   />
-                ) : documentUrl && isBiographyImageUrl(documentUrl) ? (
+                </Suspense>
+              ) : documentUrl && isBiographyImageUrl(documentUrl) ? (
+                <div className="overflow-hidden rounded-[1.25rem] border border-gold/15 bg-black/30 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:rounded-[1.5rem]">
                   <img
                     key={`${slug}-${documentLanguage}`}
                     src={documentUrl}
                     alt={displayName}
-                    className="mx-auto max-h-[70vh] w-full object-contain"
+                    className="mx-auto w-full object-contain"
                   />
-                ) : documentUrl ? (
+                </div>
+              ) : documentUrl ? (
+                <div className="overflow-hidden rounded-[1.25rem] border border-gold/15 bg-black/30 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:rounded-[1.5rem]">
                   <object
                     key={`${slug}-${documentLanguage}`}
                     data={documentUrl}
@@ -266,12 +277,12 @@ export default function GovernmentBiographyViewerPage() {
                           : "This document cannot be displayed directly in the browser."}
                       </p>
                       <a href={documentUrl} className="text-gold transition hover:text-gold/80">
-                        {lang === "fr" ? "Télécharger le document" : "Download document"}
+                        {lang === "fr" ? "Ouvrir le document" : "Open document"}
                       </a>
                     </div>
                   </object>
-                ) : null}
-              </div>
+                </div>
+              ) : null}
             </>
           ) : isCheckingDocument ? (
             <div className="rounded-[1.25rem] border border-gold/15 bg-black/25 p-6 text-sm text-foreground/72 sm:rounded-[1.5rem]">

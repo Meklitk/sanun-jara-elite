@@ -32,7 +32,6 @@ export const utilityNavItems: UtilityNavItem[] = [
     key: "globalPerspectives",
     path: "/global-perspectives",
     children: [
-      { id: "overview", key: "overview", path: "/global-perspectives" },
       { id: "country", key: "byCountry", path: "/global-perspectives/country" },
       { id: "organization", key: "byOrganization", path: "/global-perspectives/organization" },
       { id: "affiliation", key: "byAffiliation", path: "/global-perspectives/affiliation" },
