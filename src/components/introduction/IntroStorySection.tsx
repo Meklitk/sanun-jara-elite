@@ -1,4 +1,5 @@
 import ImageLightbox from "@/components/ImageLightbox";
+import { SectionEmojiVisual } from "@/components/SectionEmojiVisual";
 import GoldDivider from "@/components/introduction/GoldDivider";
 import StoryCard from "@/components/introduction/StoryCard";
 import type { IntroSection } from "@/features/introduction/intro-sections";
@@ -12,12 +13,17 @@ type IntroStorySectionProps = {
   imageAlt: string;
 };
 
-function VisualFallback({ emoji }: { emoji: string }) {
+function VisualFallback({ visual, lang }: { visual: ReturnType<typeof resolveSectionVisual>; lang: "en" | "fr" }) {
+  const imageAlt = lang === "fr" ? visual.imageAltFr : visual.imageAltEn;
+
   return (
     <div className="flex h-full min-h-[240px] items-center justify-center bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.14),rgba(5,5,5,0.95))] sm:min-h-[320px]">
-      <div className="flex h-20 w-20 items-center justify-center rounded-[24px] border border-gold/25 bg-black/40 text-4xl shadow-[0_0_40px_rgba(212,175,55,0.15)]">
-        {emoji}
-      </div>
+      <SectionEmojiVisual
+        imageSrc={visual.imageSrc}
+        imageAlt={imageAlt}
+        size="header"
+        className="h-24 w-24 border-gold/25 bg-black/40 shadow-[0_0_40px_rgba(212,175,55,0.15)]"
+      />
     </div>
   );
 }
@@ -46,7 +52,7 @@ export default function IntroStorySection({
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#050505]/50 via-transparent to-transparent" />
         </div>
       ) : (
-        <VisualFallback emoji={visual.emoji} />
+        <VisualFallback visual={visual} lang={lang} />
       )}
     </StoryCard>
   );

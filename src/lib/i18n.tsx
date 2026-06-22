@@ -8,7 +8,7 @@ const translations = {
   en: {
     introduction: "Introduction",
     introHeroEyebrow: "Sanun Jara Reborn",
-    introSectionsLead: "The golden thread of Manden",
+    introSectionsLead: "The golden lion of Manden",
     introSectionsSubtitle: "Unity, heritage, and purpose — six pillars that guide our empire.",
     introTimelineTitle: "Heritage timeline",
     introGalleryTitle: "Visual archive",
@@ -266,7 +266,7 @@ const translations = {
   fr: {
     introduction: "Introduction",
     introHeroEyebrow: "Sanun Jara Réincarne",
-    introSectionsLead: "Le fil d'or du Manden",
+    introSectionsLead: "Le lion d'or du Manden",
     introSectionsSubtitle: "Unité, patrimoine et mission — six piliers qui guident notre empire.",
     introTimelineTitle: "Chronologie du patrimoine",
     introGalleryTitle: "Archives visuelles",

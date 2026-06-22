@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 
 import ImageLightbox from "@/components/ImageLightbox";
+import { SectionEmojiVisual } from "@/components/SectionEmojiVisual";
 import {
   PageErrorState,
   PageLoadingState,
@@ -50,6 +51,7 @@ function IntroductionSectionCard({
   const visual = resolveSectionVisual(section.heading, index);
   const styles = accentStyles[visual.accent];
   const tagline = lang === "fr" ? visual.taglineFr : visual.taglineEn;
+  const imageAlt = lang === "fr" ? visual.imageAltFr : visual.imageAltEn;
   const number = String(index + 1).padStart(2, "0");
   const layout =
     index === 0 ? "featured" : index === 3 ? "wide" : ("standard" as const);
@@ -74,12 +76,12 @@ function IntroductionSectionCard({
         </span>
 
         <div className="relative flex flex-col sm:flex-row sm:items-start sm:gap-5">
-          <div
-            className="mb-4 flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-gold/20 bg-black/40 text-3xl shadow-[0_8px_24px_rgba(0,0,0,0.25)] sm:mb-0"
-            aria-hidden
-          >
-            {visual.emoji}
-          </div>
+          <SectionEmojiVisual
+            imageSrc={visual.imageSrc}
+            imageAlt={imageAlt}
+            size="card"
+            className="mb-4 h-14 w-14 shrink-0 rounded-2xl border-gold/20 bg-black/40 p-0 sm:mb-0"
+          />
           <div className="min-w-0 flex-1">
             {section.heading ? (
               <div className="mb-3 space-y-1">
@@ -199,7 +201,12 @@ export default function IntroductionPage() {
           className="flex flex-col items-center text-center"
         >
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">
-            <span aria-hidden>✨</span>
+            <img
+              src="/images/emblem-sanunjara.png"
+              alt=""
+              aria-hidden
+              className="h-5 w-5 rounded-full object-cover"
+            />
             {t.introSectionsLead}
           </div>
           <p className="max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">

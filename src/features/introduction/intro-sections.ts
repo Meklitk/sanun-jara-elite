@@ -23,7 +23,9 @@ export const introductionFallbackSections = {
 } as const;
 
 export type SectionVisual = {
-  emoji: string;
+  imageSrc: string;
+  imageAltEn: string;
+  imageAltFr: string;
   taglineEn: string;
   taglineFr: string;
   accent: "gold" | "crimson" | "amber";
@@ -31,43 +33,57 @@ export type SectionVisual = {
 
 const SECTION_VISUALS: Record<string, SectionVisual> = {
   "sanun jara": {
-    emoji: "🦁",
+    imageSrc: "/images/emblem-sanunjara.png",
+    imageAltEn: "Golden lion emblem of Sanun Jara",
+    imageAltFr: "Emblème du lion d'or de Sanun Jara",
     taglineEn: "The golden lion administration",
     taglineFr: "L'administration du lion d'or",
     accent: "gold",
   },
   menden: {
-    emoji: "🌍",
+    imageSrc: "/images/maps/manden-federation-map.jpg",
+    imageAltEn: "Medieval map of the Manden federation",
+    imageAltFr: "Carte médiévale de la fédération du Manden",
     taglineEn: "Union of all peoples",
     taglineFr: "L'union de tous les peuples",
     accent: "amber",
   },
   vision: {
-    emoji: "✨",
+    imageSrc: "/images/manden-hero-wide.png",
+    imageAltEn: "Panoramic view of Manden heritage",
+    imageAltFr: "Vue panoramique du patrimoine du Manden",
     taglineEn: "Where we are headed",
     taglineFr: "L'horizon que nous visons",
     accent: "gold",
   },
   mission: {
-    emoji: "🎯",
+    imageSrc: "/images/coat-of-arms-manden.png",
+    imageAltEn: "Coat of arms of the Manden Empire",
+    imageAltFr: "Armoiries de l'Empire Manden",
     taglineEn: "What we do every day",
     taglineFr: "Ce que nous accomplissons",
     accent: "crimson",
   },
   "fundamental values": {
-    emoji: "📖",
+    imageSrc: "/images/coat-of-arms-mandenbB.jpeg",
+    imageAltEn: "Heraldic lions of Manden",
+    imageAltFr: "Lions héraldiques du Manden",
     taglineEn: "Principles we never bend",
     taglineFr: "Les principes que nous honorons",
     accent: "gold",
   },
   "valeurs fondamentales": {
-    emoji: "📖",
+    imageSrc: "/images/coat-of-arms-mandenbB.jpeg",
+    imageAltEn: "Heraldic lions of Manden",
+    imageAltFr: "Lions héraldiques du Manden",
     taglineEn: "Principles we never bend",
     taglineFr: "Les principes que nous honorons",
     accent: "gold",
   },
   culture: {
-    emoji: "🎭",
+    imageSrc: "/images/cards/niani-tv.jpg",
+    imageAltEn: "Cultural scene from Niani",
+    imageAltFr: "Scène culturelle de Niani",
     taglineEn: "Living heritage in motion",
     taglineFr: "Un patrimoine vivant",
     accent: "amber",
@@ -75,12 +91,54 @@ const SECTION_VISUALS: Record<string, SectionVisual> = {
 };
 
 const DEFAULT_VISUALS: SectionVisual[] = [
-  { emoji: "🦁", taglineEn: "Foundation", taglineFr: "Fondation", accent: "gold" },
-  { emoji: "🌍", taglineEn: "Our world", taglineFr: "Notre monde", accent: "amber" },
-  { emoji: "✨", taglineEn: "Forward look", taglineFr: "Regard vers l'avenir", accent: "gold" },
-  { emoji: "🎯", taglineEn: "In action", taglineFr: "En action", accent: "crimson" },
-  { emoji: "📖", taglineEn: "Our compass", taglineFr: "Notre boussole", accent: "gold" },
-  { emoji: "🎭", taglineEn: "Soul of Manden", taglineFr: "L'âme du Manden", accent: "amber" },
+  {
+    imageSrc: "/images/emblem-sanunjara.png",
+    imageAltEn: "Golden lion emblem",
+    imageAltFr: "Emblème du lion d'or",
+    taglineEn: "Foundation",
+    taglineFr: "Fondation",
+    accent: "gold",
+  },
+  {
+    imageSrc: "/images/maps/manden-federation-map.jpg",
+    imageAltEn: "Map of Manden",
+    imageAltFr: "Carte du Manden",
+    taglineEn: "Our world",
+    taglineFr: "Notre monde",
+    accent: "amber",
+  },
+  {
+    imageSrc: "/images/manden-hero-wide.png",
+    imageAltEn: "Manden heritage panorama",
+    imageAltFr: "Panorama du patrimoine manden",
+    taglineEn: "Forward look",
+    taglineFr: "Regard vers l'avenir",
+    accent: "gold",
+  },
+  {
+    imageSrc: "/images/coat-of-arms-manden.png",
+    imageAltEn: "Manden coat of arms",
+    imageAltFr: "Armoiries du Manden",
+    taglineEn: "In action",
+    taglineFr: "En action",
+    accent: "crimson",
+  },
+  {
+    imageSrc: "/images/coat-of-arms-mandenbB.jpeg",
+    imageAltEn: "Heraldic lions",
+    imageAltFr: "Lions héraldiques",
+    taglineEn: "Our compass",
+    taglineFr: "Notre boussole",
+    accent: "gold",
+  },
+  {
+    imageSrc: "/images/cards/niani-tv.jpg",
+    imageAltEn: "Living culture",
+    imageAltFr: "Culture vivante",
+    taglineEn: "Soul of Manden",
+    taglineFr: "L'âme du Manden",
+    accent: "amber",
+  },
 ];
 
 function normalizeHeading(value: string) {
