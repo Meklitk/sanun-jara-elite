@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type MutableRefObject } from "react";
 import { motion } from "framer-motion";
 import { Volume2 } from "lucide-react";
 
-import { countExpectedRecordings, getNkoAudioSources, NKO_ALPHABET } from "@/features/academy/nko-alphabet";
+import { countExpectedRecordings, getNkoAudioSources, getNkoSpeakText, NKO_ALPHABET } from "@/features/academy/nko-alphabet";
 import SectionEmojiHeader from "@/components/SectionEmojiHeader";
 import {
   PageErrorState,
@@ -128,7 +128,7 @@ export default function NkoAlphabetLesson() {
     }
 
     setUsingFallback(true);
-    speakRomanization(letter.romanization, lang);
+    speakRomanization(getNkoSpeakText(letter), lang);
   }
 
   function hasRecording(index: number) {

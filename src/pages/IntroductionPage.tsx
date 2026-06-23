@@ -1,7 +1,6 @@
 import { motion } from "framer-motion";
 
 import ImageLightbox from "@/components/ImageLightbox";
-import { SectionEmojiVisual } from "@/components/SectionEmojiVisual";
 import {
   PageErrorState,
   PageLoadingState,
@@ -18,17 +17,14 @@ import { useI18n } from "@/lib/i18n";
 
 const accentStyles = {
   gold: {
-    icon: "border-gold/30 bg-gold/15 text-gold shadow-[0_0_30px_rgba(255,205,86,0.15)]",
     ring: "from-gold/40 via-gold/5 to-transparent",
     glow: "group-hover:shadow-[0_28px_80px_rgba(255,205,86,0.12)]",
   },
   crimson: {
-    icon: "border-primary/30 bg-primary/15 text-primary shadow-[0_0_30px_rgba(220,38,38,0.12)]",
     ring: "from-primary/35 via-primary/5 to-transparent",
     glow: "group-hover:shadow-[0_28px_80px_rgba(220,38,38,0.1)]",
   },
   amber: {
-    icon: "border-amber-400/25 bg-amber-500/10 text-amber-200 shadow-[0_0_30px_rgba(245,158,11,0.1)]",
     ring: "from-amber-400/30 via-amber-500/5 to-transparent",
     glow: "group-hover:shadow-[0_28px_80px_rgba(245,158,11,0.1)]",
   },
@@ -51,7 +47,6 @@ function IntroductionSectionCard({
   const visual = resolveSectionVisual(section.heading, index);
   const styles = accentStyles[visual.accent];
   const tagline = lang === "fr" ? visual.taglineFr : visual.taglineEn;
-  const imageAlt = lang === "fr" ? visual.imageAltFr : visual.imageAltEn;
   const number = String(index + 1).padStart(2, "0");
   const layout =
     index === 0 ? "featured" : index === 3 ? "wide" : ("standard" as const);
@@ -75,14 +70,7 @@ function IntroductionSectionCard({
           {number}
         </span>
 
-        <div className="relative flex flex-col sm:flex-row sm:items-start sm:gap-5">
-          <SectionEmojiVisual
-            imageSrc={visual.imageSrc}
-            imageAlt={imageAlt}
-            size="card"
-            className="mb-4 h-14 w-14 shrink-0 rounded-2xl border-gold/20 bg-black/40 p-0 sm:mb-0"
-          />
-          <div className="min-w-0 flex-1">
+        <div className="relative min-w-0">
             {section.heading ? (
               <div className="mb-3 space-y-1">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.32em] text-gold/65">
@@ -97,7 +85,6 @@ function IntroductionSectionCard({
             <p className="text-base leading-7 text-foreground/82 whitespace-pre-line sm:text-[1.05rem] sm:leading-8">
               {section.body}
             </p>
-          </div>
         </div>
 
         <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/25 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
@@ -200,13 +187,7 @@ export default function IntroductionPage() {
           transition={{ duration: 0.5 }}
           className="flex flex-col items-center text-center"
         >
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">
-            <img
-              src="/images/emblem-sanunjara.png"
-              alt=""
-              aria-hidden
-              className="h-5 w-5 rounded-full object-cover"
-            />
+          <div className="mb-4 inline-flex items-center rounded-full border border-gold/20 bg-gold/10 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.28em] text-gold">
             {t.introSectionsLead}
           </div>
           <p className="max-w-2xl text-sm leading-7 text-muted-foreground sm:text-base">

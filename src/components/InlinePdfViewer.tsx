@@ -11,6 +11,11 @@ type InlinePdfViewerProps = {
   className?: string;
 };
 
+function getDevicePixelRatio() {
+  if (typeof window === "undefined") return 1;
+  return Math.min(window.devicePixelRatio || 1, 2.5);
+}
+
 function PdfPageCanvas({
   pdf,
   pageNumber,
@@ -34,15 +39,24 @@ function PdfPageCanvas({
       if (cancelled) return;
 
       const baseViewport = page.getViewport({ scale: 1 });
-      const scale = containerWidth / baseViewport.width;
-      const viewport = page.getViewport({ scale });
-      const context = canvas.getContext("2d");
+      const cssScale = containerWidth / baseViewport.width;
+      const pixelRatio = getDevicePixelRatio();
+      const renderViewport = page.getViewport({ scale: cssScale * pixelRatio });
+      const context = canvas.getContext("2d", { alpha: false });
       if (!context) return;
 
-      canvas.width = viewport.width;
-      canvas.height = viewport.height;
+      const cssWidth = Math.floor(containerWidth);
+      const cssHeight = Math.floor(renderViewport.height / pixelRatio);
 
-      await page.render({ canvasContext: context, viewport }).promise;
+      canvas.width = Math.floor(renderViewport.width);
+      canvas.height = Math.floor(renderViewport.height);
+      canvas.style.width = `${cssWidth}px`;
+      canvas.style.height = `${cssHeight}px`;
+
+      context.setTransform(1, 0, 0, 1, 0, 0);
+      context.clearRect(0, 0, canvas.width, canvas.height);
+
+      await page.render({ canvasContext: context, viewport: renderViewport }).promise;
     })();
 
     return () => {
@@ -53,7 +67,7 @@ function PdfPageCanvas({
   return (
     <canvas
       ref={canvasRef}
-      className="block h-auto w-full bg-white"
+      className="block max-w-full bg-white"
       aria-label={`${title} — page ${pageNumber}`}
     />
   );
@@ -77,7 +91,11 @@ export default function InlinePdfViewer({ src, title, lang = "fr", className }: 
     updateWidth();
     const observer = new ResizeObserver(updateWidth);
     observer.observe(element);
-    return () => observer.disconnect();
+    window.addEventListener("orientationchange", updateWidth);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("orientationchange", updateWidth);
+    };
   }, []);
 
   useEffect(() => {
@@ -121,6 +139,18 @@ export default function InlinePdfViewer({ src, title, lang = "fr", className }: 
       ref={containerRef}
       className={`overflow-hidden rounded-[1.25rem] border border-gold/15 bg-black/30 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:rounded-[1.5rem] ${className ?? ""}`}
     >
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gold/10 px-3 py-2.5 sm:px-4">
+        <p className="min-w-0 truncate text-[11px] uppercase tracking-[0.18em] text-gold/70">{title}</p>
+        <a
+          href={src}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="shrink-0 rounded-full border border-gold/25 bg-gold/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-gold transition hover:border-gold/40"
+        >
+          {openLabel}
+        </a>
+      </div>
+
       {status === "loading" ? (
         <div className="flex min-h-[280px] items-center justify-center p-6 text-sm text-foreground/72">
           {loadingLabel}
@@ -142,7 +172,7 @@ export default function InlinePdfViewer({ src, title, lang = "fr", className }: 
       ) : null}
 
       {status === "ready" && pdf && containerWidth > 0 ? (
-        <div className="space-y-0">
+        <div className="touch-pan-y overflow-x-auto">
           {Array.from({ length: pageCount }, (_, index) => (
             <div key={`${src}-page-${index + 1}`} className="border-b border-gold/10 last:border-b-0">
               <PdfPageCanvas

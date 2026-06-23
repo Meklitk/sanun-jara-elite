@@ -1,5 +1,5 @@
 import ImageLightbox from "@/components/ImageLightbox";
-import { SectionEmojiVisual } from "@/components/SectionEmojiVisual";
+import { IntroSectionIcon } from "@/components/introduction/IntroSectionIcon";
 import GoldDivider from "@/components/introduction/GoldDivider";
 import StoryCard from "@/components/introduction/StoryCard";
 import type { IntroSection } from "@/features/introduction/intro-sections";
@@ -14,16 +14,11 @@ type IntroStorySectionProps = {
 };
 
 function VisualFallback({ visual, lang }: { visual: ReturnType<typeof resolveSectionVisual>; lang: "en" | "fr" }) {
-  const imageAlt = lang === "fr" ? visual.imageAltFr : visual.imageAltEn;
+  const iconAlt = lang === "fr" ? visual.iconAltFr : visual.iconAltEn;
 
   return (
     <div className="flex h-full min-h-[240px] items-center justify-center bg-[radial-gradient(circle_at_center,rgba(212,175,55,0.14),rgba(5,5,5,0.95))] sm:min-h-[320px]">
-      <SectionEmojiVisual
-        imageSrc={visual.imageSrc}
-        imageAlt={imageAlt}
-        size="header"
-        className="h-24 w-24 border-gold/25 bg-black/40 shadow-[0_0_40px_rgba(212,175,55,0.15)]"
-      />
+      <IntroSectionIcon src={visual.iconSrc} alt={iconAlt} size="header" />
     </div>
   );
 }
