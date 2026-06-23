@@ -6,6 +6,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
 import { CardImagesProvider } from "@/lib/card-images-context";
 import MainLayout from "@/components/MainLayout";
+import Footer from "@/components/Footer";
+import BackToTop from "@/components/BackToTop";
 import IntroductionPage from "./pages/IntroductionPage";
 import HistoryPage from "./pages/HistoryPage";
 import HistoryTimelineEventPage from "./pages/HistoryTimelineEventPage";
@@ -39,7 +41,9 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <Routes>
+          <div className="flex min-h-screen flex-col">
+            <div className="flex flex-1 flex-col">
+              <Routes>
             <Route path="/admin/login" element={<AdminLoginPage />} />
             <Route path="/admin" element={<AdminDashboardPage />} />
             <Route element={<MainLayout />}>
@@ -82,7 +86,11 @@ const App = () => (
               <Route path="/content/:slug" element={<ContentPage />} />
               <Route path="*" element={<NotFound />} />
             </Route>
-          </Routes>
+              </Routes>
+            </div>
+            <Footer />
+            <BackToTop />
+          </div>
         </BrowserRouter>
         </CardImagesProvider>
       </I18nProvider>

@@ -73,6 +73,11 @@ export const utilityNavItems: UtilityNavItem[] = [
   },
 ];
 
+export const footerNavItems: CoreNavItem[] = [
+  ...coreNavItems,
+  ...utilityNavItems.map((item) => ({ key: item.key, path: item.path })),
+];
+
 export function buildQuickNavItems(labels: Record<TranslationKey, string>) {
   return [
     ...coreNavItems.map((item) => ({

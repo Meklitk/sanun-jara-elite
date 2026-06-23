@@ -36,7 +36,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <div className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: "url('/images/hero-landscape.jpg')" }}

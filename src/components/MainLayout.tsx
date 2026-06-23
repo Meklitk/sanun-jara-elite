@@ -4,7 +4,6 @@ import SiteCoatOfArms from "@/components/SiteCoatOfArms";
 import SidebarNav from "@/components/SidebarNav";
 import TopBar from "@/components/TopBar";
 import CotiserCta from "@/components/CotiserCta";
-import Footer from "@/components/Footer";
 
 export default function MainLayout() {
   const location = useLocation();
@@ -15,7 +14,7 @@ export default function MainLayout() {
     !isGovernancePage && !location.pathname.startsWith("/gouvernement/") && !isHistoryPage;
 
   return (
-    <div className="relative min-h-screen bg-background">
+    <div className="relative flex flex-1 flex-col bg-background">
       <div
         className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center opacity-[0.2]"
         style={{ backgroundImage: "url(/images/manden-texture-dark.png)" }}
@@ -26,10 +25,10 @@ export default function MainLayout() {
         aria-hidden
       />
 
-      <div className="relative z-10">
+      <div className="relative z-10 flex flex-1 flex-col">
         <TopBar />
 
-        <div className="mx-auto flex max-w-[1700px] gap-4 px-4 pb-10 pt-4 sm:px-6 lg:px-8 xl:gap-6">
+        <div className="mx-auto flex w-full max-w-[1700px] flex-1 gap-4 px-4 pb-10 pt-4 sm:px-6 lg:px-8 xl:gap-6">
           <SidebarNav mode="desktop" />
 
           <main className="relative min-w-0 flex-1 w-full overflow-x-hidden">
@@ -48,7 +47,6 @@ export default function MainLayout() {
           ) : null}
         </div>
 
-        <Footer />
         <CotiserCta />
       </div>
     </div>

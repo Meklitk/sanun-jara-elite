@@ -567,7 +567,7 @@ export default function AdminDashboardPage() {
   const contentHasChanges = Boolean(contentDraft);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-black/95 to-amber-950/20 p-4 sm:p-6">
+    <div className="min-h-0 flex-1 bg-gradient-to-br from-black via-black/95 to-amber-950/20 p-4 sm:p-6">
       <div className="mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-[340px_1fr] gap-6 items-start">
         {/* Sticky Sidebar */}
         <div className="lg:sticky lg:top-6 space-y-4">
