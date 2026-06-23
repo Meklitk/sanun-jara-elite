@@ -31,7 +31,7 @@ export const NKO_ALPHABET: NkoLetter[] = [
   { char: "ߙ", romanization: "ra", speakAs: "ra" },
   { char: "ߚ", romanization: "rara", speakAs: "rara" },
   { char: "ߛ", romanization: "sa", speakAs: "sa" },
-  { char: "ߜ", romanization: "gwa", speakAs: "gwa" },
+  { char: "ߜ", romanization: "gba", speakAs: "gba" },
   { char: "ߝ", romanization: "fa", speakAs: "fa" },
   { char: "ߞ", romanization: "ka", speakAs: "ka" },
   { char: "ߟ", romanization: "la", speakAs: "la" },
