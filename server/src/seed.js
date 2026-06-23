@@ -121,8 +121,8 @@ const DEFAULT_PAGES = [
         {
           name: { en: "Hamana", fr: "Hamana" },
           description: {
-            en: "Content for Hamana will be added in a future contract.",
-            fr: "Le contenu pour Hamana sera ajouté dans un contrat futur."
+            en: "Explore Hamana, a historic Manden heartland in Guinea — oral traditions, local institutions, and living heritage.",
+            fr: "Découvrez Hamana, un foyer historique du Manden en Guinée — traditions orales, institutions locales et patrimoine vivant."
           },
           url: ""
         },
