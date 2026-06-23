@@ -6,8 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { I18nProvider } from "@/lib/i18n";
 import { CardImagesProvider } from "@/lib/card-images-context";
 import MainLayout from "@/components/MainLayout";
-import Footer from "@/components/Footer";
-import BackToTop from "@/components/BackToTop";
+import SiteChrome from "@/components/SiteChrome";
 import IntroductionPage from "./pages/IntroductionPage";
 import HistoryPage from "./pages/HistoryPage";
 import HistoryTimelineEventPage from "./pages/HistoryTimelineEventPage";
@@ -88,8 +87,7 @@ const App = () => (
             </Route>
               </Routes>
             </div>
-            <Footer />
-            <BackToTop />
+            <SiteChrome />
           </div>
         </BrowserRouter>
         </CardImagesProvider>
