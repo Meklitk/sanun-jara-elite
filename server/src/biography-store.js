@@ -24,6 +24,9 @@ function toBuffer(value) {
   if (!value) return Buffer.alloc(0);
   if (Buffer.isBuffer(value)) return value;
   if (value instanceof Uint8Array) return Buffer.from(value);
+  if (typeof value === "object" && value.buffer) {
+    return Buffer.from(value.buffer);
+  }
   return Buffer.from(value);
 }
 

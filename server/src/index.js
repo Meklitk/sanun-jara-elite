@@ -226,9 +226,10 @@ app.get("/biographies/:filename", async (req, res) => {
     }
 
     const asset = await getBiographyAssetBuffer(filename, BIOGRAPHIES_DIR);
-    if (!asset) return res.status(404).json({ error: "not_found" });
+    if (!asset || !asset.buffer?.length) return res.status(404).json({ error: "not_found" });
 
     res.set("Content-Type", asset.mimeType);
+    res.set("Content-Length", String(asset.buffer.length));
     res.set("Content-Disposition", `inline; filename="${filename}"`);
     res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     res.set("Access-Control-Allow-Origin", "*");
@@ -301,6 +302,10 @@ app.post(
       }
       if (!req.file) {
         return res.status(400).json({ error: "missing_file" });
+      }
+
+      if (!req.file?.buffer?.length) {
+        return res.status(400).json({ error: "empty_file" });
       }
 
       const ext = biographyDocumentExtension(req.file);
@@ -401,6 +406,10 @@ app.post(
       }
       if (!req.file) {
         return res.status(400).json({ error: "missing_file" });
+      }
+
+      if (!req.file?.buffer?.length) {
+        return res.status(400).json({ error: "empty_file" });
       }
 
       const ext = path.extname(req.file.originalname).toLowerCase() || ".jpg";
