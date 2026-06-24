@@ -274,8 +274,13 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
       const res = await deleteBiographyPortrait(slug, token);
       setProfiles((current) => ({
         ...current,
-        [slug]: res.profile,
+        [slug]: {
+          ...(current[slug] ?? {}),
+          portrait: undefined,
+          summary: res.profile.summary ?? current[slug]?.summary,
+        },
       }));
+      await refreshProfiles();
       toast.success(at.bioPortraitDeleteSuccess);
     } catch {
       toast.error(at.bioDeleteFailed);
@@ -400,7 +405,12 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
                     {profile?.portrait ? (
 
-                      <img src={profile.portrait} alt={entry.nameFR} className="h-full w-full object-cover" />
+                      <img
+                        key={profile.portrait}
+                        src={profile.portrait}
+                        alt={entry.nameFR}
+                        className="h-full w-full object-cover"
+                      />
 
                     ) : (
 

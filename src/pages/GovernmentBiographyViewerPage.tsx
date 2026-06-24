@@ -43,7 +43,7 @@ export default function GovernmentBiographyViewerPage() {
   const documentUrl = resolvedDocuments[documentLanguage];
 
   useEffect(() => {
-    if (!documentEntry) return;
+    if (!resolveBiographySlug(slug)) return;
 
     let cancelled = false;
 
@@ -62,7 +62,7 @@ export default function GovernmentBiographyViewerPage() {
     return () => {
       cancelled = true;
     };
-  }, [canonicalSlug, documentEntry]);
+  }, [canonicalSlug, slug]);
 
   useEffect(() => {
     if (documentAvailability[documentLanguage] !== false) return;
@@ -124,12 +124,10 @@ export default function GovernmentBiographyViewerPage() {
     lang === "fr" ? profile?.summary?.en?.trim() : profile?.summary?.fr?.trim();
   const summaryParagraphs = splitParagraphs(summaryText || summaryFallback || "");
 
-  const hasConfiguredDocument = Boolean(documentEntry);
+  const hasAnyDocument = Boolean(documentAvailability.fr || documentAvailability.en);
+  const isCheckingDocument = documentAvailability.fr === null && documentAvailability.en === null;
   const isDocumentAvailable = documentAvailability[documentLanguage] === true;
-  const isCheckingDocument =
-    hasConfiguredDocument &&
-    (documentAvailability.fr === null || documentAvailability.en === null);
-  const showDocumentViewer = hasConfiguredDocument && (isCheckingDocument || isDocumentAvailable);
+  const showDocumentViewer = hasAnyDocument || isCheckingDocument;
 
   return (
     <div className="space-y-6 sm:space-y-8">
@@ -146,6 +144,7 @@ export default function GovernmentBiographyViewerPage() {
           <div className="mx-auto flex h-48 w-48 items-center justify-center overflow-hidden rounded-[1.5rem] border border-gold/20 bg-gold/10 text-gold md:mx-0 md:h-56 md:w-full">
             {profile?.portrait ? (
               <img
+                key={profile.portrait}
                 src={profile.portrait}
                 alt={displayName}
                 className="h-full w-full object-cover"

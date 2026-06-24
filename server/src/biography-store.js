@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 
 import { BiographyAsset } from "./models/BiographyAsset.js";
+import { BiographyAssetTombstone } from "./models/BiographyAssetTombstone.js";
 import { BiographyProfile } from "./models/BiographyProfile.js";
 
 export function isValidBiographySlug(slug) {
@@ -81,6 +82,48 @@ function sanitizeMimeType(mimeType, filename) {
   return "application/octet-stream";
 }
 
+export function biographyPublicUrl(filename, updatedAt) {
+  const base = `/biographies/${filename}`;
+  if (!updatedAt) return base;
+  const version = updatedAt instanceof Date ? updatedAt.getTime() : Number(updatedAt);
+  return Number.isFinite(version) ? `${base}?v=${version}` : base;
+}
+
+export function biographyFilenameFromUrl(url) {
+  if (!url) return "";
+  return path.basename(String(url).split("?")[0]);
+}
+
+function deleteDiskMatches(biographiesDir, matcher) {
+  if (!biographiesDir || !fs.existsSync(biographiesDir)) return [];
+  const removed = [];
+  for (const name of fs.readdirSync(biographiesDir)) {
+    if (!matcher(name)) continue;
+    try {
+      fs.unlinkSync(path.join(biographiesDir, name));
+      removed.push(name);
+    } catch {
+      // ignore missing files
+    }
+  }
+  return removed;
+}
+
+async function markBiographyAssetsDeleted(filenames) {
+  const unique = [...new Set(filenames.filter(Boolean))];
+  if (unique.length === 0) return;
+
+  await Promise.all(
+    unique.map((filename) =>
+      BiographyAssetTombstone.findOneAndUpdate(
+        { filename },
+        { filename, deletedAt: new Date() },
+        { upsert: true, setDefaultsOnInsert: true },
+      ),
+    ),
+  );
+}
+
 function profileToMap(profiles) {
   return Object.fromEntries(
     profiles.map((profile) => [
@@ -98,7 +141,34 @@ function profileToMap(profiles) {
 
 export async function readBiographyProfiles() {
   const profiles = await BiographyProfile.find().lean();
-  return profileToMap(profiles);
+  const entries = await Promise.all(
+    profiles.map(async (profile) => {
+      let portrait = profile.portrait?.trim() || "";
+      if (portrait) {
+        const filename = biographyFilenameFromUrl(portrait);
+        const asset = await getBiographyAsset(filename);
+        if (!asset) {
+          portrait = "";
+          await BiographyProfile.updateOne({ slug: profile.slug }, { $set: { portrait: "" } });
+        } else {
+          portrait = biographyPublicUrl(filename, asset.updatedAt);
+        }
+      }
+
+      return [
+        profile.slug,
+        {
+          portrait: portrait || undefined,
+          summary: {
+            fr: profile.summary?.fr ?? "",
+            en: profile.summary?.en ?? "",
+          },
+        },
+      ];
+    }),
+  );
+
+  return Object.fromEntries(entries);
 }
 
 export async function upsertBiographyProfile(slug, updates) {
@@ -136,7 +206,7 @@ export async function listBiographyDocumentFilenames() {
 
 export async function saveBiographyAsset({ filename, slug, kind, lang, mimeType, buffer }) {
   const normalized = normalizeBinaryAssetBuffer(buffer);
-  await BiographyAsset.findOneAndUpdate(
+  const asset = await BiographyAsset.findOneAndUpdate(
     { filename },
     {
       filename,
@@ -148,14 +218,42 @@ export async function saveBiographyAsset({ filename, slug, kind, lang, mimeType,
     },
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );
+
+  await BiographyAssetTombstone.deleteOne({ filename });
+
+  return asset;
 }
 
-export async function deleteBiographyDocuments(slug, lang) {
+export async function deleteBiographyDocuments(slug, lang, biographiesDir) {
+  const assets = await BiographyAsset.find({ slug, kind: "document", lang })
+    .select("filename")
+    .lean();
   await BiographyAsset.deleteMany({ slug, kind: "document", lang });
+  const removedFromDisk = deleteDiskMatches(
+    biographiesDir,
+    (name) => new RegExp(`^${slug}-${lang}\\.(pdf|png)$`, "i").test(name),
+  );
+  await markBiographyAssetsDeleted([
+    ...assets.map((asset) => asset.filename),
+    ...removedFromDisk,
+  ]);
 }
 
-export async function deleteBiographyPortrait(slug) {
+export async function purgeBiographyPortraitFiles(slug, biographiesDir) {
+  const assets = await BiographyAsset.find({ slug, kind: "portrait" }).select("filename").lean();
   await BiographyAsset.deleteMany({ slug, kind: "portrait" });
+  const removedFromDisk = deleteDiskMatches(
+    biographiesDir,
+    (name) => new RegExp(`^${slug}-portrait\\.[a-z0-9]+$`, "i").test(name),
+  );
+  await markBiographyAssetsDeleted([
+    ...assets.map((asset) => asset.filename),
+    ...removedFromDisk,
+  ]);
+}
+
+export async function deleteBiographyPortrait(slug, biographiesDir) {
+  await purgeBiographyPortraitFiles(slug, biographiesDir);
   const profile = await upsertBiographyProfile(slug, { portrait: "" });
   return profile;
 }
@@ -171,13 +269,7 @@ export async function getBiographyAssetBuffer(filename, biographiesDir) {
     return { buffer, mimeType: sanitizeMimeType(asset.mimeType, filename) };
   }
 
-  const diskPath = path.join(biographiesDir, filename);
-  if (!fs.existsSync(diskPath)) return null;
-
-  return {
-    buffer: normalizeBinaryAssetBuffer(fs.readFileSync(diskPath)),
-    mimeType: sanitizeMimeType(null, filename),
-  };
+  return null;
 }
 
 export async function repairCorruptBiographyAssets() {
@@ -240,6 +332,9 @@ async function importAssetsFromDisk(biographiesDir) {
     const existing = await BiographyAsset.findOne({ filename: name }).lean();
     if (existing) continue;
 
+    const tombstone = await BiographyAssetTombstone.findOne({ filename: name }).lean();
+    if (tombstone) continue;
+
     const portraitMatch = name.match(/^([a-z0-9-]+)-portrait(\.[a-z0-9]+)$/i);
     const documentMatch = name.match(/^([a-z0-9-]+)-(fr|en)\.(pdf|png)$/i);
     if (!portraitMatch && !documentMatch) continue;
@@ -287,25 +382,13 @@ async function importAssetsFromDisk(biographiesDir) {
   }
 }
 
-export async function getBiographyDocumentsForSlug(slug, biographiesDir) {
+export async function getBiographyDocumentsForSlug(slug) {
   const documents = { fr: null, en: null };
-  const assets = await BiographyAsset.find({ slug, kind: "document" }).select("filename lang").lean();
+  const assets = await BiographyAsset.find({ slug, kind: "document" }).select("filename lang updatedAt").lean();
 
   for (const asset of assets) {
     if (asset.lang === "fr" || asset.lang === "en") {
-      documents[asset.lang] = `/biographies/${asset.filename}`;
-    }
-  }
-
-  for (const lang of ["fr", "en"]) {
-    if (documents[lang]) continue;
-    for (const ext of [".pdf", ".png"]) {
-      const filename = `${slug}-${lang}${ext}`;
-      const diskPath = path.join(biographiesDir, filename);
-      if (fs.existsSync(diskPath)) {
-        documents[lang] = `/biographies/${filename}`;
-        break;
-      }
+      documents[asset.lang] = biographyPublicUrl(asset.filename, asset.updatedAt);
     }
   }
 

@@ -15,12 +15,12 @@ import { Media } from "./models/Media.js";
 import { Content } from "./models/Content.js";
 import { CardImage } from "./models/CardImage.js";
 import { Submission } from "./models/Submission.js";
-import { BiographyAsset } from "./models/BiographyAsset.js";
 import nodemailer from "nodemailer";
 import { requireAdmin, signAdminToken } from "./auth.js";
 import { seedAdminIfNeeded, seedPagesIfNeeded, ensureDefaultPages } from "./seed.js";
 import {
   biographyDocumentExtension,
+  biographyPublicUrl,
   deleteBiographyDocuments,
   deleteBiographyPortrait,
   getBiographyAssetBuffer,
@@ -28,6 +28,7 @@ import {
   isValidBiographySlug,
   listBiographyDocumentFilenames,
   migrateBiographyStoreFromDisk,
+  purgeBiographyPortraitFiles,
   readBiographyProfiles,
   saveBiographyAsset,
   upsertBiographyProfile,
@@ -229,7 +230,7 @@ app.get("/biographies/:filename", async (req, res) => {
 
     res.set("Content-Type", asset.mimeType);
     res.set("Content-Disposition", `inline; filename="${filename}"`);
-    res.set("Cache-Control", "public, max-age=31536000, immutable");
+    res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     res.set("Access-Control-Allow-Origin", "*");
     return res.send(asset.buffer);
   } catch (err) {
@@ -250,7 +251,7 @@ app.head("/biographies/:filename", async (req, res) => {
 
     res.set("Content-Type", asset.mimeType);
     res.set("Content-Length", String(asset.buffer.length));
-    res.set("Cache-Control", "public, max-age=31536000, immutable");
+    res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
     return res.status(200).end();
   } catch (err) {
     console.error(err);
@@ -265,7 +266,7 @@ app.get("/api/biography-documents/:slug", async (req, res) => {
       return res.status(400).json({ error: "invalid_slug" });
     }
 
-    const documents = await getBiographyDocumentsForSlug(slug, BIOGRAPHIES_DIR);
+    const documents = await getBiographyDocumentsForSlug(slug);
     res.json({ documents });
   } catch (err) {
     console.error(err);
@@ -308,8 +309,8 @@ app.post(
       }
 
       const filename = `${slug}-${lang}${ext}`;
-      await deleteBiographyDocuments(slug, lang);
-      await saveBiographyAsset({
+      await deleteBiographyDocuments(slug, lang, BIOGRAPHIES_DIR);
+      const asset = await saveBiographyAsset({
         filename,
         slug,
         kind: "document",
@@ -321,7 +322,7 @@ app.post(
       res.json({
         ok: true,
         filename,
-        url: `/biographies/${filename}`,
+        url: biographyPublicUrl(filename, asset.updatedAt),
       });
     } catch (err) {
       console.error(err);
@@ -339,7 +340,7 @@ app.delete("/api/admin/biography-file", requireAdmin(JWT_SECRET), async (req, re
       return res.status(400).json({ error: "invalid_params" });
     }
 
-    await deleteBiographyDocuments(slug, lang);
+    await deleteBiographyDocuments(slug, lang, BIOGRAPHIES_DIR);
     res.json({ ok: true });
   } catch (err) {
     console.error(err);
@@ -405,8 +406,8 @@ app.post(
       const ext = path.extname(req.file.originalname).toLowerCase() || ".jpg";
       const filename = `${slug}-portrait${ext}`;
 
-      await BiographyAsset.deleteMany({ slug, kind: "portrait" });
-      await saveBiographyAsset({
+      await purgeBiographyPortraitFiles(slug, BIOGRAPHIES_DIR);
+      const asset = await saveBiographyAsset({
         filename,
         slug,
         kind: "portrait",
@@ -415,7 +416,7 @@ app.post(
         buffer: req.file.buffer,
       });
 
-      const portraitUrl = `/biographies/${filename}`;
+      const portraitUrl = biographyPublicUrl(filename, asset.updatedAt);
       const profile = await upsertBiographyProfile(slug, { portrait: portraitUrl });
 
       res.json({ ok: true, portrait: portraitUrl, profile });
@@ -433,7 +434,7 @@ app.delete("/api/admin/biography-portrait", requireAdmin(JWT_SECRET), async (req
       return res.status(400).json({ error: "invalid_slug" });
     }
 
-    const profile = await deleteBiographyPortrait(slug);
+    const profile = await deleteBiographyPortrait(slug, BIOGRAPHIES_DIR);
     res.json({ ok: true, profile });
   } catch (err) {
     console.error(err);
