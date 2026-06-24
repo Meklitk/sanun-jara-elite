@@ -141,9 +141,10 @@ const DEFAULT_PAGES = [
   },
   {
     key: "reference-bureau",
-    title: { en: "Reference Bureau" },
+    title: { en: "Reference Bureau", fr: "Bureau de Référence" },
     content: {
-      en: "The Reference Bureau helps visitors join the network, ask questions, or contribute through Cotiser.\n\nMembership applications and questions are forwarded to info@sanunjara.com."
+      en: "You can join the Manden community, ask questions about our mission and governance, or connect as an entrepreneur. Choose one of the options below to get started.",
+      fr: "Vous pouvez rejoindre la communauté du Manden, poser vos questions sur notre mission et notre gouvernance, ou vous connecter en tant qu'entrepreneur. Choisissez une des options ci-dessous pour commencer."
     },
     images: [],
     links: [],
@@ -329,7 +330,37 @@ export async function ensureDefaultPages() {
   if (added > 0) console.log(`✅ Added ${added} missing pages`);
   if (updated > 0) console.log(`✅ Updated ${updated} pages with missing fields`);
   await migrateReferenceBureauCards();
+  await migrateReferenceBureauContent();
   await migrateStarterContent();
+}
+
+const REFERENCE_BUREAU_PLACEHOLDER_MARKERS = [
+  "begin as placeholders",
+  "become more detailed over time",
+  "register entrepreneurial interest",
+  "contribute through Cotiser",
+  "forwarded to info@sanunjara.com",
+  "peuvent commencer comme des espaces réservés",
+  "deviennent plus détaillés au fil du temps",
+];
+
+async function migrateReferenceBureauContent() {
+  const refDefault = DEFAULT_PAGES.find((page) => page.key === "reference-bureau");
+  if (!refDefault) return;
+
+  const refPage = await Page.findOne({ key: "reference-bureau" });
+  if (!refPage) return;
+
+  const en = refPage.content?.en ?? "";
+  const fr = refPage.content?.fr ?? "";
+  const shouldUpdate =
+    contentHasPlaceholder(en, REFERENCE_BUREAU_PLACEHOLDER_MARKERS) ||
+    contentHasPlaceholder(fr, REFERENCE_BUREAU_PLACEHOLDER_MARKERS);
+
+  if (!shouldUpdate) return;
+
+  await Page.updateOne({ key: "reference-bureau" }, { $set: { content: refDefault.content } });
+  console.log("✅ Updated Reference Bureau intro copy");
 }
 
 const INTRO_PLACEHOLDER_MARKERS = [

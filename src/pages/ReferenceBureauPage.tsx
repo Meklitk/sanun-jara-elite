@@ -13,6 +13,7 @@ import {
   referenceBureauCardDefinitions,
   referenceBureauDefaultPaths,
 } from "@/features/pages/utility-page-config";
+import { resolveReferenceBureauIntro } from "@/features/pages/reference-bureau-intro";
 import { sectionEmoji } from "@/lib/section-emojis";
 import { useI18n } from "@/lib/i18n";
 import { MembershipForm, QuestionsForm, CotiserSection, EntrepreneurSection } from "@/components/forms/ReferenceBureauForms";
@@ -78,9 +79,7 @@ export default function ReferenceBureauPage({ section }: ReferenceBureauPageProp
     <UtilityLandingPage
       eyebrow={t.referenceBureau}
       title={title || t.referenceBureau}
-      intro={
-        content || "The Reference Bureau helps visitors join the network, ask questions, or register entrepreneurial interest."
-      }
+      intro={resolveReferenceBureauIntro(content, t.referenceBureauIntro)}
       cards={allCards}
     />
   );

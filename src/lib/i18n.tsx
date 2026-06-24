@@ -24,6 +24,8 @@ const translations = {
     resources: "Resources",
     globalPerspectives: "Global Perspectives",
     referenceBureau: "Reference Bureau",
+    referenceBureauIntro:
+      "You can join the Manden community, ask questions about our mission and governance, or connect as an entrepreneur. Choose one of the options below to get started.",
     niani: "Niani",
     institutions: "Institutions",
     institutionsDesc: "Different institutions and their pictures and videos.",
@@ -298,6 +300,8 @@ const translations = {
     resources: "Ressources",
     globalPerspectives: "Perspectives Globales",
     referenceBureau: "Bureau de Référence",
+    referenceBureauIntro:
+      "Vous pouvez rejoindre la communauté du Manden, poser vos questions sur notre mission et notre gouvernance, ou vous connecter en tant qu'entrepreneur. Choisissez une des options ci-dessous pour commencer.",
     niani: "Niani",
     institutions: "Institutions",
     institutionsDesc: "Différentes institutions et leurs photos et vidéos.",
