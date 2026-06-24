@@ -11,9 +11,25 @@ type InlinePdfViewerProps = {
   className?: string;
 };
 
+function useIsMobilePdfViewer() {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return window.matchMedia("(max-width: 768px)").matches;
+  });
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 768px)");
+    const onChange = () => setIsMobile(media.matches);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
+
+  return isMobile;
+}
+
 function getDevicePixelRatio() {
   if (typeof window === "undefined") return 1;
-  return Math.min(window.devicePixelRatio || 1, 2.5);
+  return Math.min(window.devicePixelRatio || 1, 2);
 }
 
 function PdfPageCanvas({
@@ -21,18 +37,37 @@ function PdfPageCanvas({
   pageNumber,
   containerWidth,
   title,
+  enabled,
 }: {
   pdf: PDFDocumentProxy;
   pageNumber: number;
   containerWidth: number;
   title: string;
+  enabled: boolean;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(pageNumber === 1);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setVisible(true);
+      },
+      { rootMargin: "240px 0px" },
+    );
+
+    observer.observe(root);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
     const canvas = canvasRef.current;
-    if (!canvas || containerWidth <= 0) return;
+    if (!canvas || !enabled || !visible || containerWidth <= 0) return;
 
     (async () => {
       const page = await pdf.getPage(pageNumber);
@@ -62,14 +97,35 @@ function PdfPageCanvas({
     return () => {
       cancelled = true;
     };
-  }, [pdf, pageNumber, containerWidth, title]);
+  }, [pdf, pageNumber, containerWidth, title, enabled, visible]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="block max-w-full bg-white"
-      aria-label={`${title} — page ${pageNumber}`}
-    />
+    <div ref={rootRef} className="border-b border-gold/10 last:border-b-0">
+      {visible ? (
+        <canvas
+          ref={canvasRef}
+          className="block max-w-full bg-white"
+          aria-label={`${title} — page ${pageNumber}`}
+        />
+      ) : (
+        <div className="flex min-h-[320px] items-center justify-center bg-white/95 text-xs text-black/45">
+          …
+        </div>
+      )}
+    </div>
+  );
+}
+
+function NativePdfEmbed({ src, title }: { src: string; title: string }) {
+  return (
+    <div className="touch-pan-y overflow-hidden bg-white">
+      <iframe
+        src={src}
+        title={title}
+        className="h-[min(78vh,920px)] w-full border-0 bg-white"
+        loading="lazy"
+      />
+    </div>
   );
 }
 
@@ -79,6 +135,7 @@ export default function InlinePdfViewer({ src, title, lang = "fr", className }: 
   const [pageCount, setPageCount] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const isMobile = useIsMobilePdfViewer();
 
   useEffect(() => {
     const element = containerRef.current;
@@ -99,6 +156,13 @@ export default function InlinePdfViewer({ src, title, lang = "fr", className }: 
   }, []);
 
   useEffect(() => {
+    if (isMobile) {
+      setStatus("ready");
+      setPdf(null);
+      setPageCount(0);
+      return;
+    }
+
     let cancelled = false;
     let activePdf: PDFDocumentProxy | null = null;
 
@@ -106,32 +170,41 @@ export default function InlinePdfViewer({ src, title, lang = "fr", className }: 
     setPageCount(0);
     setStatus("loading");
 
-    getDocument(src)
-      .promise.then((doc) => {
+    (async () => {
+      try {
+        const response = await fetch(src, { credentials: "same-origin" });
+        if (!response.ok) throw new Error("fetch_failed");
+
+        const contentType = response.headers.get("content-type") ?? "";
+        if (contentType.includes("text/html") || contentType.includes("application/json")) {
+          throw new Error("invalid_content_type");
+        }
+
+        const data = await response.arrayBuffer();
+        if (cancelled) return;
+
+        const doc = await getDocument({ data, disableAutoFetch: true, disableStream: true }).promise;
         if (cancelled) {
           doc.destroy();
           return;
         }
+
         activePdf = doc;
         setPdf(doc);
         setPageCount(doc.numPages);
         setStatus("ready");
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) setStatus("error");
-      });
+      }
+    })();
 
     return () => {
       cancelled = true;
       activePdf?.destroy();
     };
-  }, [src]);
+  }, [src, isMobile]);
 
   const loadingLabel = lang === "fr" ? "Chargement du document..." : "Loading document...";
-  const errorLabel =
-    lang === "fr"
-      ? "Impossible d'afficher ce document dans le navigateur."
-      : "Unable to display this document in the browser.";
   const openLabel = lang === "fr" ? "Ouvrir le PDF" : "Open PDF";
 
   return (
@@ -151,37 +224,29 @@ export default function InlinePdfViewer({ src, title, lang = "fr", className }: 
         </a>
       </div>
 
-      {status === "loading" ? (
+      {isMobile ? (
+        <NativePdfEmbed src={src} title={title} />
+      ) : status === "loading" ? (
         <div className="flex min-h-[280px] items-center justify-center p-6 text-sm text-foreground/72">
           {loadingLabel}
         </div>
       ) : null}
 
-      {status === "error" ? (
-        <div className="flex min-h-[280px] flex-col items-center justify-center gap-4 p-6 text-center text-sm text-foreground/76">
-          <p>{errorLabel}</p>
-          <a
-            href={src}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-full border border-gold/25 bg-gold/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-gold transition hover:border-gold/40"
-          >
-            {openLabel}
-          </a>
-        </div>
+      {!isMobile && status === "error" ? (
+        <NativePdfEmbed src={src} title={title} />
       ) : null}
 
-      {status === "ready" && pdf && containerWidth > 0 ? (
+      {!isMobile && status === "ready" && pdf && containerWidth > 0 ? (
         <div className="touch-pan-y overflow-x-auto">
           {Array.from({ length: pageCount }, (_, index) => (
-            <div key={`${src}-page-${index + 1}`} className="border-b border-gold/10 last:border-b-0">
-              <PdfPageCanvas
-                pdf={pdf}
-                pageNumber={index + 1}
-                containerWidth={containerWidth}
-                title={title}
-              />
-            </div>
+            <PdfPageCanvas
+              key={`${src}-page-${index + 1}`}
+              pdf={pdf}
+              pageNumber={index + 1}
+              containerWidth={containerWidth}
+              title={title}
+              enabled
+            />
           ))}
         </div>
       ) : null}

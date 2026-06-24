@@ -201,6 +201,31 @@ async function importAssetsFromDisk(biographiesDir) {
   }
 }
 
+export async function getBiographyDocumentsForSlug(slug, biographiesDir) {
+  const documents = { fr: null, en: null };
+  const assets = await BiographyAsset.find({ slug, kind: "document" }).select("filename lang").lean();
+
+  for (const asset of assets) {
+    if (asset.lang === "fr" || asset.lang === "en") {
+      documents[asset.lang] = `/biographies/${asset.filename}`;
+    }
+  }
+
+  for (const lang of ["fr", "en"]) {
+    if (documents[lang]) continue;
+    for (const ext of [".pdf", ".png"]) {
+      const filename = `${slug}-${lang}${ext}`;
+      const diskPath = path.join(biographiesDir, filename);
+      if (fs.existsSync(diskPath)) {
+        documents[lang] = `/biographies/${filename}`;
+        break;
+      }
+    }
+  }
+
+  return documents;
+}
+
 export async function migrateBiographyStoreFromDisk(biographiesDir, profilesFile) {
   await importProfileFromDisk(profilesFile);
   await importAssetsFromDisk(biographiesDir);

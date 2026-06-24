@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, User } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 
@@ -14,13 +14,12 @@ import {
 import { resolveGovernanceLeaderBySlug } from "@/features/governance/resolve-governance-leader";
 import { useI18n } from "@/lib/i18n";
 import {
-  biographyDocumentBasePath,
+  fetchBiographyDocuments,
   isBiographyImageUrl,
   isBiographyPdfUrl,
-  resolveBiographyDocumentUrl,
 } from "@/lib/biography-document";
 
-const InlinePdfViewer = lazy(() => import("@/components/InlinePdfViewer"));
+import InlinePdfViewer from "@/components/InlinePdfViewer";
 
 type DocumentLanguage = "fr" | "en";
 
@@ -49,17 +48,14 @@ export default function GovernmentBiographyViewerPage() {
     let cancelled = false;
 
     (async () => {
-      const [frUrl, enUrl] = await Promise.all([
-        resolveBiographyDocumentUrl(biographyDocumentBasePath(canonicalSlug, "fr")),
-        resolveBiographyDocumentUrl(biographyDocumentBasePath(canonicalSlug, "en")),
-      ]);
+      const documents = await fetchBiographyDocuments(canonicalSlug);
 
       if (cancelled) return;
 
-      setResolvedDocuments({ fr: frUrl, en: enUrl });
+      setResolvedDocuments(documents);
       setDocumentAvailability({
-        fr: Boolean(frUrl),
-        en: Boolean(enUrl),
+        fr: Boolean(documents.fr),
+        en: Boolean(documents.en),
       });
     })();
 
@@ -239,20 +235,12 @@ export default function GovernmentBiographyViewerPage() {
               </div>
 
               {documentUrl && isBiographyPdfUrl(documentUrl) ? (
-                <Suspense
-                  fallback={
-                    <div className="overflow-hidden rounded-[1.25rem] border border-gold/15 bg-black/30 p-6 text-sm text-foreground/72 sm:rounded-[1.5rem]">
-                      {lang === "fr" ? "Chargement du document..." : "Loading document..."}
-                    </div>
-                  }
-                >
-                  <InlinePdfViewer
-                    key={`${slug}-${documentLanguage}`}
-                    src={documentUrl}
-                    title={displayName}
-                    lang={lang}
-                  />
-                </Suspense>
+                <InlinePdfViewer
+                  key={`${slug}-${documentLanguage}`}
+                  src={documentUrl}
+                  title={displayName}
+                  lang={lang}
+                />
               ) : documentUrl && isBiographyImageUrl(documentUrl) ? (
                 <div className="overflow-hidden rounded-[1.25rem] border border-gold/15 bg-black/30 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:rounded-[1.5rem]">
                   <img

@@ -24,6 +24,7 @@ import {
   deleteBiographyDocuments,
   deleteBiographyPortrait,
   getBiographyAssetBuffer,
+  getBiographyDocumentsForSlug,
   isValidBiographySlug,
   listBiographyDocumentFilenames,
   migrateBiographyStoreFromDisk,
@@ -227,11 +228,48 @@ app.get("/biographies/:filename", async (req, res) => {
     if (!asset) return res.status(404).json({ error: "not_found" });
 
     res.set("Content-Type", asset.mimeType);
+    res.set("Content-Disposition", `inline; filename="${filename}"`);
     res.set("Cache-Control", "public, max-age=31536000, immutable");
+    res.set("Access-Control-Allow-Origin", "*");
     return res.send(asset.buffer);
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "read_failed" });
+  }
+});
+
+app.head("/biographies/:filename", async (req, res) => {
+  try {
+    const filename = path.basename(req.params.filename);
+    if (!filename || filename.includes("..")) {
+      return res.status(400).end();
+    }
+
+    const asset = await getBiographyAssetBuffer(filename, BIOGRAPHIES_DIR);
+    if (!asset) return res.status(404).end();
+
+    res.set("Content-Type", asset.mimeType);
+    res.set("Content-Length", String(asset.buffer.length));
+    res.set("Cache-Control", "public, max-age=31536000, immutable");
+    return res.status(200).end();
+  } catch (err) {
+    console.error(err);
+    return res.status(500).end();
+  }
+});
+
+app.get("/api/biography-documents/:slug", async (req, res) => {
+  try {
+    const slug = String(req.params.slug ?? "").trim();
+    if (!isValidBiographySlug(slug)) {
+      return res.status(400).json({ error: "invalid_slug" });
+    }
+
+    const documents = await getBiographyDocumentsForSlug(slug, BIOGRAPHIES_DIR);
+    res.json({ documents });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "read_failed" });
   }
 });
 
