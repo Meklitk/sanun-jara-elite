@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { CheckCircle2, ExternalLink, FileText, ImagePlus, Upload, AlertCircle } from "lucide-react";
+import { CheckCircle2, ExternalLink, FileText, ImagePlus, Trash2, Upload, AlertCircle } from "lucide-react";
 
 
 
@@ -17,6 +17,10 @@ import {
   uploadBiographyPdf,
 
   uploadBiographyPortrait,
+
+  deleteBiographyPdf,
+
+  deleteBiographyPortrait,
 
   type BiographyProfilesMap,
 
@@ -262,6 +266,40 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
   }
 
+  async function onDeletePortrait(slug: string) {
+    if (!window.confirm(at.bioPortraitDeleteConfirm)) return;
+
+    setUploadingKey(`${slug}-portrait-delete`);
+    try {
+      const res = await deleteBiographyPortrait(slug, token);
+      setProfiles((current) => ({
+        ...current,
+        [slug]: res.profile,
+      }));
+      toast.success(at.bioPortraitDeleteSuccess);
+    } catch {
+      toast.error(at.bioDeleteFailed);
+    } finally {
+      setUploadingKey(null);
+    }
+  }
+
+  async function onDeletePdf(slug: string, lang: Lang) {
+    if (!window.confirm(at.bioDeleteFileConfirm)) return;
+
+    const key = `${slug}-${lang}-delete`;
+    setUploadingKey(key);
+    try {
+      await deleteBiographyPdf(slug, lang, token);
+      toast.success(at.bioDeleteFileSuccess);
+      await refreshFiles();
+    } catch {
+      toast.error(at.bioDeleteFailed);
+    } finally {
+      setUploadingKey(null);
+    }
+  }
+
 
 
   return (
@@ -400,6 +438,20 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
                   </p>
 
+                  {profile?.portrait ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="w-full border-red-500/25 text-xs text-red-300 hover:bg-red-500/10"
+                      disabled={portraitBusy || uploadingKey === `${slug}-portrait-delete`}
+                      onClick={() => void onDeletePortrait(slug)}
+                    >
+                      <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                      {at.bioPortraitDelete}
+                    </Button>
+                  ) : null}
+
                 </div>
 
 
@@ -509,6 +561,8 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
                         const exists = Boolean(filename);
 
                         const busy = uploadingKey === `${slug}-${lang}`;
+
+                        const deleteBusy = uploadingKey === `${slug}-${lang}-delete`;
 
 
 
@@ -621,6 +675,20 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
                                 </p>
 
                               )}
+
+                              {exists ? (
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="mt-3 w-full border-red-500/25 text-xs text-red-300 hover:bg-red-500/10"
+                                  disabled={busy || deleteBusy}
+                                  onClick={() => void onDeletePdf(slug, lang)}
+                                >
+                                  <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                                  {at.bioDeleteFile}
+                                </Button>
+                              ) : null}
 
                             </div>
 

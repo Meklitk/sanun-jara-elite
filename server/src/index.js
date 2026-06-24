@@ -15,9 +15,22 @@ import { Media } from "./models/Media.js";
 import { Content } from "./models/Content.js";
 import { CardImage } from "./models/CardImage.js";
 import { Submission } from "./models/Submission.js";
+import { BiographyAsset } from "./models/BiographyAsset.js";
 import nodemailer from "nodemailer";
 import { requireAdmin, signAdminToken } from "./auth.js";
 import { seedAdminIfNeeded, seedPagesIfNeeded, ensureDefaultPages } from "./seed.js";
+import {
+  biographyDocumentExtension,
+  deleteBiographyDocuments,
+  deleteBiographyPortrait,
+  getBiographyAssetBuffer,
+  isValidBiographySlug,
+  listBiographyDocumentFilenames,
+  migrateBiographyStoreFromDisk,
+  readBiographyProfiles,
+  saveBiographyAsset,
+  upsertBiographyProfile,
+} from "./biography-store.js";
 
 dotenv.config();
 
@@ -169,7 +182,7 @@ app.post("/api/upload", requireAdmin(JWT_SECRET), upload.single("file"), async (
 });
 
 //
-// BIOGRAPHY PDFs — saved to public/biographies/ for inline viewing on profile pages
+// BIOGRAPHY FILES — persisted in MongoDB (survives Railway redeploys)
 //
 const BIOGRAPHIES_DIR = resolveContentDir("BIOGRAPHIES_DIR", ["../public/biographies"], ["biographies"]);
 
@@ -179,6 +192,8 @@ try {
 } catch (err) {
   console.error("Failed to create biographies directory:", err);
 }
+
+const PROFILES_FILE = path.join(BIOGRAPHIES_DIR, "profiles.json");
 
 const biographyUpload = multer({
   storage: multer.memoryStorage(),
@@ -201,44 +216,28 @@ const biographyPortraitUpload = multer({
   },
 });
 
-const PROFILES_FILE = path.join(BIOGRAPHIES_DIR, "profiles.json");
-
-function readBiographyProfiles() {
+app.get("/biographies/:filename", async (req, res) => {
   try {
-    const raw = fs.readFileSync(PROFILES_FILE, "utf8");
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
-  } catch {
-    return {};
+    const filename = path.basename(req.params.filename);
+    if (!filename || filename.includes("..")) {
+      return res.status(400).json({ error: "invalid_filename" });
+    }
+
+    const asset = await getBiographyAssetBuffer(filename, BIOGRAPHIES_DIR);
+    if (!asset) return res.status(404).json({ error: "not_found" });
+
+    res.set("Content-Type", asset.mimeType);
+    res.set("Cache-Control", "public, max-age=31536000, immutable");
+    return res.send(asset.buffer);
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ error: "read_failed" });
   }
-}
+});
 
-function writeBiographyProfiles(profiles) {
-  fs.writeFileSync(PROFILES_FILE, JSON.stringify(profiles, null, 2));
-}
-
-function isValidBiographySlug(slug) {
-  return /^[a-z0-9-]+$/.test(slug);
-}
-
-app.use("/biographies", express.static(BIOGRAPHIES_DIR));
-
-function isBiographyDocumentFilename(name) {
-  return /-(fr|en)\.(pdf|png)$/i.test(name);
-}
-
-function biographyDocumentExtension(file) {
-  const name = file.originalname.toLowerCase();
-  if (file.mimetype === "application/pdf" || name.endsWith(".pdf")) return ".pdf";
-  if (file.mimetype === "image/png" || name.endsWith(".png")) return ".png";
-  return null;
-}
-
-app.get("/api/admin/biography-files", requireAdmin(JWT_SECRET), (_req, res) => {
+app.get("/api/admin/biography-files", requireAdmin(JWT_SECRET), async (_req, res) => {
   try {
-    const files = fs
-      .readdirSync(BIOGRAPHIES_DIR)
-      .filter((name) => isBiographyDocumentFilename(name));
+    const files = await listBiographyDocumentFilenames();
     res.json({ files });
   } catch (err) {
     console.error(err);
@@ -250,7 +249,7 @@ app.post(
   "/api/admin/biography-file",
   requireAdmin(JWT_SECRET),
   biographyUpload.single("file"),
-  (req, res) => {
+  async (req, res) => {
     try {
       const slug = String(req.body.slug ?? "").trim();
       const lang = String(req.body.lang ?? "").trim();
@@ -258,7 +257,7 @@ app.post(
       if (!slug || !["fr", "en"].includes(lang)) {
         return res.status(400).json({ error: "invalid_params" });
       }
-      if (!/^[a-z0-9-]+$/.test(slug)) {
+      if (!isValidBiographySlug(slug)) {
         return res.status(400).json({ error: "invalid_slug" });
       }
       if (!req.file) {
@@ -271,13 +270,15 @@ app.post(
       }
 
       const filename = `${slug}-${lang}${ext}`;
-      for (const altExt of [".pdf", ".png"]) {
-        if (altExt === ext) continue;
-        const altPath = path.join(BIOGRAPHIES_DIR, `${slug}-${lang}${altExt}`);
-        if (fs.existsSync(altPath)) fs.unlinkSync(altPath);
-      }
-
-      fs.writeFileSync(path.join(BIOGRAPHIES_DIR, filename), req.file.buffer);
+      await deleteBiographyDocuments(slug, lang);
+      await saveBiographyAsset({
+        filename,
+        slug,
+        kind: "document",
+        lang,
+        mimeType: req.file.mimetype,
+        buffer: req.file.buffer,
+      });
 
       res.json({
         ok: true,
@@ -288,19 +289,37 @@ app.post(
       console.error(err);
       res.status(500).json({ error: "upload_failed" });
     }
-  }
+  },
 );
 
-app.get("/api/biography-profiles", (_req, res) => {
+app.delete("/api/admin/biography-file", requireAdmin(JWT_SECRET), async (req, res) => {
   try {
-    res.json({ profiles: readBiographyProfiles() });
+    const slug = String(req.body.slug ?? "").trim();
+    const lang = String(req.body.lang ?? "").trim();
+
+    if (!slug || !["fr", "en"].includes(lang) || !isValidBiographySlug(slug)) {
+      return res.status(400).json({ error: "invalid_params" });
+    }
+
+    await deleteBiographyDocuments(slug, lang);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "delete_failed" });
+  }
+});
+
+app.get("/api/biography-profiles", async (_req, res) => {
+  try {
+    const profiles = await readBiographyProfiles();
+    res.json({ profiles });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "read_failed" });
   }
 });
 
-app.put("/api/admin/biography-profile", requireAdmin(JWT_SECRET), (req, res) => {
+app.put("/api/admin/biography-profile", requireAdmin(JWT_SECRET), async (req, res) => {
   try {
     const parsed = z
       .object({
@@ -317,18 +336,14 @@ app.put("/api/admin/biography-profile", requireAdmin(JWT_SECRET), (req, res) => 
       return res.status(400).json({ error: "invalid_slug" });
     }
 
-    const profiles = readBiographyProfiles();
-    const current = profiles[parsed.data.slug] ?? {};
-    profiles[parsed.data.slug] = {
-      ...current,
+    const profile = await upsertBiographyProfile(parsed.data.slug, {
       summary: {
         fr: parsed.data.summary.fr ?? "",
         en: parsed.data.summary.en ?? "",
       },
-    };
-    writeBiographyProfiles(profiles);
+    });
 
-    res.json({ ok: true, profile: profiles[parsed.data.slug] });
+    res.json({ ok: true, profile });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "save_failed" });
@@ -339,7 +354,7 @@ app.post(
   "/api/admin/biography-portrait",
   requireAdmin(JWT_SECRET),
   biographyPortraitUpload.single("file"),
-  (req, res) => {
+  async (req, res) => {
     try {
       const slug = String(req.body.slug ?? "").trim();
       if (!slug || !isValidBiographySlug(slug)) {
@@ -351,24 +366,42 @@ app.post(
 
       const ext = path.extname(req.file.originalname).toLowerCase() || ".jpg";
       const filename = `${slug}-portrait${ext}`;
-      fs.writeFileSync(path.join(BIOGRAPHIES_DIR, filename), req.file.buffer);
+
+      await BiographyAsset.deleteMany({ slug, kind: "portrait" });
+      await saveBiographyAsset({
+        filename,
+        slug,
+        kind: "portrait",
+        lang: null,
+        mimeType: req.file.mimetype,
+        buffer: req.file.buffer,
+      });
 
       const portraitUrl = `/biographies/${filename}`;
-      const profiles = readBiographyProfiles();
-      const current = profiles[slug] ?? {};
-      profiles[slug] = {
-        ...current,
-        portrait: portraitUrl,
-      };
-      writeBiographyProfiles(profiles);
+      const profile = await upsertBiographyProfile(slug, { portrait: portraitUrl });
 
-      res.json({ ok: true, portrait: portraitUrl, profile: profiles[slug] });
+      res.json({ ok: true, portrait: portraitUrl, profile });
     } catch (err) {
       console.error(err);
       res.status(500).json({ error: "upload_failed" });
     }
-  }
+  },
 );
+
+app.delete("/api/admin/biography-portrait", requireAdmin(JWT_SECRET), async (req, res) => {
+  try {
+    const slug = String(req.body.slug ?? "").trim();
+    if (!slug || !isValidBiographySlug(slug)) {
+      return res.status(400).json({ error: "invalid_slug" });
+    }
+
+    const profile = await deleteBiographyPortrait(slug);
+    res.json({ ok: true, profile });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "delete_failed" });
+  }
+});
 
 //
 // CARD ILLUSTRATIONS — saved to public/images/cards/ for section cards
@@ -1121,6 +1154,7 @@ async function main() {
     });
     await seedPagesIfNeeded();
     await ensureDefaultPages();
+    await migrateBiographyStoreFromDisk(BIOGRAPHIES_DIR, PROFILES_FILE);
     console.log("✅ DB connected and seeded");
   } catch (err) {
     console.error("❌ DB connection failed:", err.message);
