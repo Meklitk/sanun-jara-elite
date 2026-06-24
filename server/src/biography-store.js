@@ -19,6 +19,68 @@ export function biographyDocumentExtension(file) {
   return null;
 }
 
+function toBuffer(value) {
+  if (!value) return Buffer.alloc(0);
+  if (Buffer.isBuffer(value)) return value;
+  if (value instanceof Uint8Array) return Buffer.from(value);
+  return Buffer.from(value);
+}
+
+function isRawPdf(buffer) {
+  return buffer.length >= 4 && buffer[0] === 0x25 && buffer[1] === 0x50 && buffer[2] === 0x44 && buffer[3] === 0x46;
+}
+
+function isRawPng(buffer) {
+  return (
+    buffer.length >= 8 &&
+    buffer[0] === 0x89 &&
+    buffer[1] === 0x50 &&
+    buffer[2] === 0x4e &&
+    buffer[3] === 0x47
+  );
+}
+
+export function normalizeBinaryAssetBuffer(buffer) {
+  const raw = toBuffer(buffer);
+  if (!raw.length) return raw;
+  if (isRawPdf(raw) || isRawPng(raw)) return raw;
+
+  let text = raw.toString("utf8").trim();
+  if (text.startsWith("data:") && text.includes("base64,")) {
+    text = text.slice(text.indexOf("base64,") + 7);
+  }
+  if (
+    (text.startsWith('"') && text.endsWith('"')) ||
+    (text.startsWith("'") && text.endsWith("'"))
+  ) {
+    text = text.slice(1, -1);
+  }
+
+  const compact = text.replace(/\s/g, "");
+  if (/^[A-Za-z0-9+/=]+$/.test(compact) && compact.length > 32) {
+    try {
+      const decoded = Buffer.from(compact, "base64");
+      if (decoded.length > 0) return decoded;
+    } catch {
+      // keep raw bytes
+    }
+  }
+
+  return raw;
+}
+
+function sanitizeMimeType(mimeType, filename) {
+  const base = String(mimeType || "").split(";")[0].trim();
+  if (base) return base;
+
+  const ext = path.extname(filename).toLowerCase();
+  if (ext === ".pdf") return "application/pdf";
+  if (ext === ".png") return "image/png";
+  if (ext === ".jpg" || ext === ".jpeg") return "image/jpeg";
+  if (ext === ".webp") return "image/webp";
+  return "application/octet-stream";
+}
+
 function profileToMap(profiles) {
   return Object.fromEntries(
     profiles.map((profile) => [
@@ -73,9 +135,17 @@ export async function listBiographyDocumentFilenames() {
 }
 
 export async function saveBiographyAsset({ filename, slug, kind, lang, mimeType, buffer }) {
+  const normalized = normalizeBinaryAssetBuffer(buffer);
   await BiographyAsset.findOneAndUpdate(
     { filename },
-    { filename, slug, kind, lang: lang ?? null, mimeType, data: buffer },
+    {
+      filename,
+      slug,
+      kind,
+      lang: lang ?? null,
+      mimeType: sanitizeMimeType(mimeType, filename),
+      data: normalized,
+    },
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );
 }
@@ -96,24 +166,40 @@ export async function getBiographyAsset(filename) {
 
 export async function getBiographyAssetBuffer(filename, biographiesDir) {
   const asset = await getBiographyAsset(filename);
-  if (asset?.data) return { buffer: asset.data, mimeType: asset.mimeType };
+  if (asset?.data) {
+    const buffer = normalizeBinaryAssetBuffer(asset.data);
+    return { buffer, mimeType: sanitizeMimeType(asset.mimeType, filename) };
+  }
 
   const diskPath = path.join(biographiesDir, filename);
   if (!fs.existsSync(diskPath)) return null;
 
-  const ext = path.extname(filename).toLowerCase();
-  const mimeType =
-    ext === ".pdf"
-      ? "application/pdf"
-      : ext === ".png"
-        ? "image/png"
-        : ext === ".jpg" || ext === ".jpeg"
-          ? "image/jpeg"
-          : ext === ".webp"
-            ? "image/webp"
-            : "application/octet-stream";
+  return {
+    buffer: normalizeBinaryAssetBuffer(fs.readFileSync(diskPath)),
+    mimeType: sanitizeMimeType(null, filename),
+  };
+}
 
-  return { buffer: fs.readFileSync(diskPath), mimeType };
+export async function repairCorruptBiographyAssets() {
+  const assets = await BiographyAsset.find().select("filename mimeType data");
+  let repaired = 0;
+
+  for (const asset of assets) {
+    if (!asset.data) continue;
+    const current = toBuffer(asset.data);
+    const normalized = normalizeBinaryAssetBuffer(current);
+    if (normalized.equals(current)) continue;
+
+    await BiographyAsset.updateOne(
+      { _id: asset._id },
+      { $set: { data: normalized, mimeType: sanitizeMimeType(asset.mimeType, asset.filename) } },
+    );
+    repaired += 1;
+  }
+
+  if (repaired > 0) {
+    console.log(`✅ Repaired ${repaired} biography asset(s) with invalid binary encoding`);
+  }
 }
 
 async function importProfileFromDisk(profilesFile) {
@@ -229,4 +315,5 @@ export async function getBiographyDocumentsForSlug(slug, biographiesDir) {
 export async function migrateBiographyStoreFromDisk(biographiesDir, profilesFile) {
   await importProfileFromDisk(profilesFile);
   await importAssetsFromDisk(biographiesDir);
+  await repairCorruptBiographyAssets();
 }

@@ -11,22 +11,6 @@ type InlinePdfViewerProps = {
   className?: string;
 };
 
-function useIsMobilePdfViewer() {
-  const [isMobile, setIsMobile] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return window.matchMedia("(max-width: 768px)").matches;
-  });
-
-  useEffect(() => {
-    const media = window.matchMedia("(max-width: 768px)");
-    const onChange = () => setIsMobile(media.matches);
-    media.addEventListener("change", onChange);
-    return () => media.removeEventListener("change", onChange);
-  }, []);
-
-  return isMobile;
-}
-
 function getDevicePixelRatio() {
   if (typeof window === "undefined") return 1;
   return Math.min(window.devicePixelRatio || 1, 2);
@@ -116,15 +100,10 @@ function PdfPageCanvas({
   );
 }
 
-function NativePdfEmbed({ src, title }: { src: string; title: string }) {
+function BlobPdfEmbed({ blobUrl, title }: { blobUrl: string; title: string }) {
   return (
     <div className="touch-pan-y overflow-hidden bg-white">
-      <iframe
-        src={src}
-        title={title}
-        className="h-[min(78vh,920px)] w-full border-0 bg-white"
-        loading="lazy"
-      />
+      <iframe src={blobUrl} title={title} className="h-[min(78vh,920px)] w-full border-0 bg-white" />
     </div>
   );
 }
@@ -135,7 +114,7 @@ export default function InlinePdfViewer({ src, title, lang = "fr", className }: 
   const [pageCount, setPageCount] = useState(0);
   const [containerWidth, setContainerWidth] = useState(0);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
-  const isMobile = useIsMobilePdfViewer();
+  const [fallbackBlobUrl, setFallbackBlobUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const element = containerRef.current;
@@ -156,19 +135,14 @@ export default function InlinePdfViewer({ src, title, lang = "fr", className }: 
   }, []);
 
   useEffect(() => {
-    if (isMobile) {
-      setStatus("ready");
-      setPdf(null);
-      setPageCount(0);
-      return;
-    }
-
     let cancelled = false;
     let activePdf: PDFDocumentProxy | null = null;
+    let objectUrl: string | null = null;
 
     setPdf(null);
     setPageCount(0);
     setStatus("loading");
+    setFallbackBlobUrl(null);
 
     (async () => {
       try {
@@ -183,6 +157,15 @@ export default function InlinePdfViewer({ src, title, lang = "fr", className }: 
         const data = await response.arrayBuffer();
         if (cancelled) return;
 
+        const bytes = new Uint8Array(data);
+        const looksLikePdf =
+          bytes.length >= 4 &&
+          bytes[0] === 0x25 &&
+          bytes[1] === 0x50 &&
+          bytes[2] === 0x44 &&
+          bytes[3] === 0x46;
+        if (!looksLikePdf) throw new Error("invalid_pdf_bytes");
+
         const doc = await getDocument({ data, disableAutoFetch: true, disableStream: true }).promise;
         if (cancelled) {
           doc.destroy();
@@ -194,18 +177,34 @@ export default function InlinePdfViewer({ src, title, lang = "fr", className }: 
         setPageCount(doc.numPages);
         setStatus("ready");
       } catch {
-        if (!cancelled) setStatus("error");
+        if (cancelled) return;
+
+        try {
+          const response = await fetch(src, { credentials: "same-origin" });
+          if (!response.ok) throw new Error("fetch_failed");
+          const blob = await response.blob();
+          objectUrl = URL.createObjectURL(blob);
+          setFallbackBlobUrl(objectUrl);
+          setStatus("error");
+        } catch {
+          if (!cancelled) setStatus("error");
+        }
       }
     })();
 
     return () => {
       cancelled = true;
       activePdf?.destroy();
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [src, isMobile]);
+  }, [src]);
 
   const loadingLabel = lang === "fr" ? "Chargement du document..." : "Loading document...";
   const openLabel = lang === "fr" ? "Ouvrir le PDF" : "Open PDF";
+  const errorLabel =
+    lang === "fr"
+      ? "Impossible d'afficher ce document dans le navigateur."
+      : "Unable to display this document in the browser.";
 
   return (
     <div
@@ -215,7 +214,7 @@ export default function InlinePdfViewer({ src, title, lang = "fr", className }: 
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gold/10 px-3 py-2.5 sm:px-4">
         <p className="min-w-0 truncate text-[11px] uppercase tracking-[0.18em] text-gold/70">{title}</p>
         <a
-          href={src}
+          href={fallbackBlobUrl ?? src}
           target="_blank"
           rel="noopener noreferrer"
           className="shrink-0 rounded-full border border-gold/25 bg-gold/10 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-gold transition hover:border-gold/40"
@@ -224,19 +223,31 @@ export default function InlinePdfViewer({ src, title, lang = "fr", className }: 
         </a>
       </div>
 
-      {isMobile ? (
-        <NativePdfEmbed src={src} title={title} />
-      ) : status === "loading" ? (
+      {status === "loading" ? (
         <div className="flex min-h-[280px] items-center justify-center p-6 text-sm text-foreground/72">
           {loadingLabel}
         </div>
       ) : null}
 
-      {!isMobile && status === "error" ? (
-        <NativePdfEmbed src={src} title={title} />
+      {status === "error" && fallbackBlobUrl ? (
+        <BlobPdfEmbed blobUrl={fallbackBlobUrl} title={title} />
       ) : null}
 
-      {!isMobile && status === "ready" && pdf && containerWidth > 0 ? (
+      {status === "error" && !fallbackBlobUrl ? (
+        <div className="flex min-h-[280px] flex-col items-center justify-center gap-4 p-6 text-center text-sm text-foreground/76">
+          <p>{errorLabel}</p>
+          <a
+            href={src}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded-full border border-gold/25 bg-gold/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-gold transition hover:border-gold/40"
+          >
+            {openLabel}
+          </a>
+        </div>
+      ) : null}
+
+      {status === "ready" && pdf && containerWidth > 0 ? (
         <div className="touch-pan-y overflow-x-auto">
           {Array.from({ length: pageCount }, (_, index) => (
             <PdfPageCanvas
