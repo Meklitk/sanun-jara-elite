@@ -11,6 +11,7 @@
     "docker:logs": "docker compose logs -f",
     "backup:local": "powershell -ExecutionPolicy Bypass -File scripts/backup-mongo.ps1",
     "dev:docker": "docker compose up -d && npm run dev",
+    "dev:docker:logs": "docker compose logs -f api mongo",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
