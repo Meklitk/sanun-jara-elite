@@ -221,7 +221,7 @@ const translations = {
     iAmEntrepreneur: "I Am an Entrepreneur",
     iAmEntrepreneurDesc:
       "Discover opportunities for entrepreneurs within the Manden network.",
-    cotiser: "Cotiser",
+    cotiser: "Donate",
     cotiserDesc: "Support the Manden Empire with your contribution.",
     tombouctou: "Tombouctou",
     tombouctouDesc: "Discover Tombouctou, the city of 333 saints and a pillar of Manden heritage.",
