@@ -36,6 +36,7 @@ export default function TopBar() {
   }
 
   const toggleLang = () => setLang(lang === "en" ? "fr" : "en");
+  const cotiserLabel = lang === "en" ? t.donate : t.cotiser;
 
   return (
     <header className="sticky top-0 z-50 overflow-visible border-b border-gold/10 bg-background/95 backdrop-blur-2xl">
@@ -92,7 +93,7 @@ export default function TopBar() {
                   }}
                   className="w-full rounded-xl border border-gold/30 bg-gold/15 text-gold hover:bg-gold/25"
                 >
-                  {t.cotiser}
+                  {cotiserLabel}
                 </Button>
                 <div className="grid grid-cols-2 gap-2">
                   <Button
@@ -106,7 +107,7 @@ export default function TopBar() {
                     className="rounded-xl border-gold/20 bg-black/20 text-gold hover:bg-gold/10"
                   >
                     <Languages className="mr-2 h-4 w-4" />
-                    {lang === "en" ? "FR" : "EN"}
+                    {lang === "en" ? "EN" : "FR"}
                   </Button>
                   <Button
                     type="button"
@@ -221,7 +222,7 @@ export default function TopBar() {
             onClick={() => navigate("/bureau/cotiser")}
             className="hidden rounded-xl border border-gold/30 bg-gold/15 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gold hover:bg-gold/25 hover:text-gold sm:inline-flex"
           >
-            {t.cotiser}
+            {cotiserLabel}
           </Button>
           <button
             type="button"
@@ -243,7 +244,7 @@ export default function TopBar() {
               className="rounded-xl border border-gold/15 bg-black/20 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-gold/80 hover:bg-gold/10 hover:text-gold"
             >
               <Languages className="mr-2 h-4 w-4" />
-              {lang === "en" ? "FR" : "EN"}
+              {lang === "en" ? "EN" : "FR"}
             </Button>
             <button
               type="button"

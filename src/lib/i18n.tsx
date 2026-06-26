@@ -617,9 +617,29 @@ async function translateText(text: string, from: string, to: string): Promise<st
   }
 }
 
+const LANG_STORAGE_KEY = "sanunjara-lang";
+
+function readStoredLang(): Lang {
+  try {
+    const stored = localStorage.getItem(LANG_STORAGE_KEY);
+    if (stored === "en" || stored === "fr") return stored;
+  } catch {
+    // localStorage may be unavailable
+  }
+  return "fr";
+}
+
 export function I18nProvider({ children }: { children: ReactNode }) {
-  const [lang, setLang] = useState<Lang>("fr");
-  const [autoTranslations, setAutoTranslations] = useState<Record<string, string>>({});
+  const [lang, setLangState] = useState<Lang>(readStoredLang);
+
+  const setLang = useCallback((next: Lang) => {
+    setLangState(next);
+    try {
+      localStorage.setItem(LANG_STORAGE_KEY, next);
+    } catch {
+      // localStorage may be unavailable
+    }
+  }, []);
 
   const localize = useCallback((value: { en?: string; fr?: string } | undefined) => {
     if (!value) return "";
@@ -644,7 +664,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     setLang,
     t: translations[lang],
     localize,
-  }), [lang, localize]);
+  }), [lang, setLang, localize]);
 
   return (
     <I18nContext.Provider value={contextValue}>
