@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Mail, Youtube } from "lucide-react";
+import { Facebook, Linkedin, Mail, Youtube } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -122,20 +122,24 @@ export default function Footer() {
                 >
                   <Facebook className="h-4 w-4" />
                 </a>
-                <span
-                  className={cn(socialButtonClass, "cursor-not-allowed opacity-35")}
-                  title={t.footerSocialSoon}
-                  aria-hidden
-                >
-                  <Instagram className="h-4 w-4" />
-                </span>
-                <span
-                  className={cn(socialButtonClass, "cursor-not-allowed opacity-35")}
-                  title={t.footerSocialSoon}
-                  aria-hidden
+                <a
+                  href="https://www.youtube.com/@Sanun_Jara/playlists"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={socialButtonClass}
+                  aria-label={t.youtube}
                 >
                   <Youtube className="h-4 w-4" />
-                </span>
+                </a>
+                <a
+                  href="https://www.linkedin.com/company/sanun-jara-west-africa/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={socialButtonClass}
+                  aria-label={t.linkedin}
+                >
+                  <Linkedin className="h-4 w-4" />
+                </a>
               </div>
 
               <Button
