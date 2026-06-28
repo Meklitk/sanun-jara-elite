@@ -22,7 +22,7 @@ import {
 } from "@/features/governance/governance-links";
 import {
   getBiographyDocumentUrl,
-  resolveBiographySlug,
+  resolveBiographyPublicSlug,
   resolveBiographySlugFromGovernanceKey,
   resolveBiographySlugFromName,
 } from "@/data/biographies";
@@ -34,8 +34,7 @@ const biographyLinkClassName =
 function resolveBiographyUrl(value: string, governanceKey?: string, url?: string) {
   const slugFromUrl = extractBiographySlug(url);
   if (slugFromUrl) {
-    const resolved = resolveBiographySlug(slugFromUrl) ?? slugFromUrl;
-    return toGouvernementBiographyUrl(resolved);
+    return toGouvernementBiographyUrl(resolveBiographyPublicSlug(slugFromUrl));
   }
 
   const mappedSlug =

@@ -1,10 +1,11 @@
 import type { Page } from "@/api/types";
-import { biographies, resolveBiographySlug, type BiographySlug } from "@/data/biographies";
+import { biographies, resolveBiographySlug, resolveBiographyStorageSlug, type BiographySlug, biographyPublicSlugOverrides } from "@/data/biographies";
 import { resolveGovernanceData } from "@/features/governance/governance-content";
 import { extractBiographySlug } from "@/features/governance/governance-links";
 
 export type GovernanceBiographyEntry = {
   slug: string;
+  storageSlug: string;
   nameFR: string;
   nameEN: string;
   roleFR: string;
@@ -19,6 +20,7 @@ type RoleLabels = {
   govName: string;
   constitution: string;
   branch: string;
+  legislativeCommittee: string;
 };
 
 function readLocalized(value: Partial<{ en?: string; fr?: string }> | undefined) {
@@ -31,18 +33,22 @@ function readLocalized(value: Partial<{ en?: string; fr?: string }> | undefined)
 function upsertEntry(
   map: Map<string, GovernanceBiographyEntry>,
   rawSlug: string,
-  entry: Omit<GovernanceBiographyEntry, "slug">
+  entry: Omit<GovernanceBiographyEntry, "slug" | "storageSlug">
 ) {
-  const slug = resolveBiographySlug(rawSlug) ?? rawSlug.trim();
-  if (!slug || !/^[a-z0-9-]+$/.test(slug)) return;
+  const trimmed = rawSlug.trim();
+  if (!trimmed || !/^[a-z0-9-]+$/.test(trimmed)) return;
 
-  const known = biographies[slug as BiographySlug];
-  const existing = map.get(slug);
+  const storageSlug = resolveBiographyStorageSlug(trimmed) ?? trimmed;
+  const publicSlug = biographyPublicSlugOverrides[storageSlug as BiographySlug] ?? trimmed;
 
-  map.set(slug, {
-    slug,
-    nameFR: entry.nameFR || known?.nameFR || existing?.nameFR || slug,
-    nameEN: entry.nameEN || known?.nameEN || existing?.nameEN || slug,
+  const known = biographies[storageSlug as BiographySlug];
+  const existing = map.get(publicSlug);
+
+  map.set(publicSlug, {
+    slug: publicSlug,
+    storageSlug,
+    nameFR: entry.nameFR || known?.nameFR || existing?.nameFR || publicSlug,
+    nameEN: entry.nameEN || known?.nameEN || existing?.nameEN || publicSlug,
     roleFR: entry.roleFR || existing?.roleFR || "",
     roleEN: entry.roleEN || existing?.roleEN || "",
   });
@@ -55,6 +61,8 @@ export function collectGovernanceBiographyEntries(
   const map = new Map<string, GovernanceBiographyEntry>();
 
   for (const [slug, entry] of Object.entries(biographies)) {
+    if (biographyPublicSlugOverrides[slug as BiographySlug]) continue;
+
     upsertEntry(map, slug, {
       nameFR: entry.nameFR,
       nameEN: entry.nameEN,
@@ -89,11 +97,14 @@ export function collectGovernanceBiographyEntries(
     const slug = extractBiographySlug(row.url);
     if (!slug) continue;
     const name = readLocalized(row.name);
+    const isLegislative = slug === "legislative-committee";
+    const sitan = biographies["sitan-foune-diakite"];
+
     upsertEntry(map, slug, {
-      nameFR: name.fr,
-      nameEN: name.en,
-      roleFR: row.roleFR,
-      roleEN: row.roleEN,
+      nameFR: isLegislative ? sitan?.nameFR || name.fr : name.fr,
+      nameEN: isLegislative ? sitan?.nameEN || name.en : name.en,
+      roleFR: isLegislative ? roleLabels.legislativeCommittee : row.roleFR,
+      roleEN: isLegislative ? roleLabels.legislativeCommittee : row.roleEN,
     });
   }
 
@@ -119,12 +130,18 @@ export function mergeBiographyProfileSlugs(
   const map = new Map(entries.map((entry) => [entry.slug, entry]));
 
   for (const slug of profileSlugs) {
-    if (!slug || map.has(slug)) continue;
-    const known = biographies[slug as BiographySlug];
-    map.set(slug, {
-      slug,
-      nameFR: known?.nameFR ?? slug,
-      nameEN: known?.nameEN ?? slug,
+    if (!slug) continue;
+
+    const storageSlug = resolveBiographyStorageSlug(slug) ?? slug;
+    const publicSlug = biographyPublicSlugOverrides[storageSlug as BiographySlug] ?? storageSlug;
+    if (map.has(publicSlug)) continue;
+
+    const known = biographies[storageSlug as BiographySlug];
+    map.set(publicSlug, {
+      slug: publicSlug,
+      storageSlug,
+      nameFR: known?.nameFR ?? publicSlug,
+      nameEN: known?.nameEN ?? publicSlug,
       roleFR: "",
       roleEN: "",
     });

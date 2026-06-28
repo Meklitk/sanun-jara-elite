@@ -106,6 +106,7 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
       govName: t.govName,
       constitution: t.constitution,
       branch: t.branch,
+      legislativeCommittee: t.legislativeCommittee,
     });
     return mergeBiographyProfileSlugs(fromGovernance, Object.keys(profiles));
   }, [governancePage, profiles, t]);
@@ -141,7 +142,7 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
         const next = { ...current };
 
         for (const entry of entries) {
-          const slug = entry.slug;
+          const slug = entry.storageSlug;
           const summary = res.profiles?.[slug]?.summary;
 
           next[slug] = {
@@ -344,14 +345,14 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
       <div className="space-y-4">
 
         {entries.map((entry) => {
-          const slug = entry.slug;
-          const profile = profiles[slug];
+          const { slug, storageSlug } = entry;
+          const profile = profiles[storageSlug];
 
-          const summary = summaryDrafts[slug] ?? emptySummary();
+          const summary = summaryDrafts[storageSlug] ?? emptySummary();
 
-          const portraitBusy = uploadingKey === `${slug}-portrait`;
+          const portraitBusy = uploadingKey === `${storageSlug}-portrait`;
 
-          const summaryBusy = savingSlug === slug;
+          const summaryBusy = savingSlug === storageSlug;
 
 
 
@@ -447,7 +448,7 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
                       const file = e.target.files?.[0];
 
-                      void onUploadPortrait(slug, file);
+                      void onUploadPortrait(storageSlug, file);
 
                       e.currentTarget.value = "";
 
@@ -467,8 +468,8 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
                       variant="outline"
                       size="sm"
                       className="w-full border-red-500/25 text-xs text-red-300 hover:bg-red-500/10"
-                      disabled={portraitBusy || uploadingKey === `${slug}-portrait-delete`}
-                      onClick={() => void onDeletePortrait(slug)}
+                      disabled={portraitBusy || uploadingKey === `${storageSlug}-portrait-delete`}
+                      onClick={() => void onDeletePortrait(storageSlug)}
                     >
                       <Trash2 className="mr-1.5 h-3.5 w-3.5" />
                       {at.bioPortraitDelete}
@@ -511,7 +512,7 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
                               ...current,
 
-                              [slug]: { ...summary, fr: e.target.value },
+                              [storageSlug]: { ...summary, fr: e.target.value },
 
                             }))
 
@@ -539,7 +540,7 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
                               ...current,
 
-                              [slug]: { ...summary, en: e.target.value },
+                              [storageSlug]: { ...summary, en: e.target.value },
 
                             }))
 
@@ -551,9 +552,9 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
                     </div>
 
-                    {isSummaryDirty(slug) ? (
+                    {isSummaryDirty(storageSlug) ? (
                       <p className="text-xs text-amber-400">{at.bioSummaryUnsaved}</p>
-                    ) : profiles[slug]?.summary?.fr || profiles[slug]?.summary?.en ? (
+                    ) : profiles[storageSlug]?.summary?.fr || profiles[storageSlug]?.summary?.en ? (
                       <p className="text-xs text-green-400">{at.bioSummarySaved}</p>
                     ) : null}
 
@@ -562,7 +563,7 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
                       size="sm"
                       className="gold-gradient-bg text-secondary-foreground"
                       disabled={summaryBusy}
-                      onClick={() => void onSaveSummary(slug)}
+                      onClick={() => void onSaveSummary(storageSlug)}
                     >
                       {summaryBusy ? at.bioSummarySaving : at.bioSummarySave}
                     </Button>
@@ -579,13 +580,13 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
                       {(["fr", "en"] as Lang[]).map((lang) => {
 
-                        const filename = findUploadedDocument(uploadedSet, slug, lang);
+                        const filename = findUploadedDocument(uploadedSet, storageSlug, lang);
 
                         const exists = Boolean(filename);
 
-                        const busy = uploadingKey === `${slug}-${lang}`;
+                        const busy = uploadingKey === `${storageSlug}-${lang}`;
 
-                        const deleteBusy = uploadingKey === `${slug}-${lang}-delete`;
+                        const deleteBusy = uploadingKey === `${storageSlug}-${lang}-delete`;
 
 
 
@@ -636,7 +637,7 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
                             </div>
 
                             <p className="mt-2 font-mono text-[11px] text-foreground/70">
-                              {filename ?? `${slug}-${lang}.pdf`}
+                              {filename ?? `${storageSlug}-${lang}.pdf`}
                             </p>
 
                             {exists && filename ? (
@@ -675,7 +676,7 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
                                   const file = e.target.files?.[0];
 
-                                  void onUploadPdf(slug, lang, file);
+                                  void onUploadPdf(storageSlug, lang, file);
 
                                   e.currentTarget.value = "";
 
@@ -706,7 +707,7 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
                                   size="sm"
                                   className="mt-3 w-full border-red-500/25 text-xs text-red-300 hover:bg-red-500/10"
                                   disabled={busy || deleteBusy}
-                                  onClick={() => void onDeletePdf(slug, lang)}
+                                  onClick={() => void onDeletePdf(storageSlug, lang)}
                                 >
                                   <Trash2 className="mr-1.5 h-3.5 w-3.5" />
                                   {at.bioDeleteFile}

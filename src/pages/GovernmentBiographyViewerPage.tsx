@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { ArrowLeft, User } from "lucide-react";
-import { Link, useParams } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 
-import { getBiographyEntry, resolveBiographySlug } from "@/data/biographies";
+import { getBiographyEntry, resolveBiographyPublicSlug, resolveBiographyStorageSlug } from "@/data/biographies";
 import { listBiographyProfiles, type BiographyProfile } from "@/api/biographies";
 import {
   PageErrorState,
@@ -38,15 +38,16 @@ export default function GovernmentBiographyViewerPage() {
   });
   const [profile, setProfile] = useState<BiographyProfile | null>(null);
 
-  const canonicalSlug = resolveBiographySlug(slug) ?? slug;
-  const documentEntry = getBiographyEntry(slug);
+  const publicSlug = resolveBiographyPublicSlug(slug);
+  const storageSlug = resolveBiographyStorageSlug(slug) ?? slug;
+  const documentEntry = getBiographyEntry(storageSlug);
   const documentUrl = resolvedDocuments[documentLanguage];
 
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
-      const documents = await fetchBiographyDocuments(canonicalSlug);
+      const documents = await fetchBiographyDocuments(storageSlug);
 
       if (cancelled) return;
 
@@ -60,7 +61,7 @@ export default function GovernmentBiographyViewerPage() {
     return () => {
       cancelled = true;
     };
-  }, [canonicalSlug]);
+  }, [storageSlug]);
 
   useEffect(() => {
     if (documentAvailability[documentLanguage] !== false) return;
@@ -82,7 +83,7 @@ export default function GovernmentBiographyViewerPage() {
       try {
         const res = await listBiographyProfiles();
         if (cancelled) return;
-        setProfile(res.profiles?.[canonicalSlug] ?? res.profiles?.[slug] ?? null);
+        setProfile(res.profiles?.[storageSlug] ?? res.profiles?.[slug] ?? null);
       } catch {
         if (!cancelled) setProfile(null);
       }
@@ -91,13 +92,16 @@ export default function GovernmentBiographyViewerPage() {
     return () => {
       cancelled = true;
     };
-  }, [canonicalSlug, slug]);
+  }, [storageSlug, slug]);
 
   if (isLoading) return <PageLoadingState />;
   if (error) return <PageErrorState />;
   if (!page) return <PageNotFoundState />;
+  if (publicSlug !== slug) {
+    return <Navigate to={`/gouvernement/${publicSlug}`} replace />;
+  }
 
-  const leader = resolveGovernanceLeaderBySlug(slug, page, (value) => {
+  const leader = resolveGovernanceLeaderBySlug(publicSlug, page, (value) => {
     if (!value) return "";
     return lang === "fr" ? value.fr ?? value.en ?? "" : value.en ?? value.fr ?? "";
   }, t);

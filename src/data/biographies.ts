@@ -38,6 +38,12 @@ export const biographySlugAliases: Record<string, BiographySlug> = {
   "mari-djata-keita-v": "mansa-mari-diata-v-keita",
   "mabougnata-dibla-ibrahim-diabate": "mabougnata-djeliba-ibrahim-diabate",
   "mabougnata-alpha-omar-kaba": "wana-papa-sylla",
+  "legislative-committee": "sitan-foune-diakite",
+};
+
+/** Storage slugs that publish under a different public URL. */
+export const biographyPublicSlugOverrides: Partial<Record<BiographySlug, string>> = {
+  "sitan-foune-diakite": "legislative-committee",
 };
 
 export const biographySlugByGovernanceKey = {
@@ -72,15 +78,29 @@ export function isBiographySlug(slug: string): slug is BiographySlug {
   return slug in biographies;
 }
 
-export function resolveBiographySlug(slug: string): BiographySlug | null {
+export function resolveBiographyStorageSlug(slug: string): BiographySlug | null {
   if (isBiographySlug(slug)) return slug;
   const alias = biographySlugAliases[slug];
   return alias && isBiographySlug(alias) ? alias : null;
 }
 
+export function resolveBiographySlug(slug: string): BiographySlug | null {
+  return resolveBiographyStorageSlug(slug);
+}
+
+export function resolveBiographyPublicSlug(slug: string): string {
+  if (slug in biographySlugAliases) return slug;
+
+  const storage = resolveBiographyStorageSlug(slug);
+  if (storage && biographyPublicSlugOverrides[storage]) {
+    return biographyPublicSlugOverrides[storage]!;
+  }
+
+  return storage ?? slug;
+}
+
 export function getBiographyDocumentUrl(slug: string) {
-  const resolved = resolveBiographySlug(slug) ?? slug;
-  return `/gouvernement/${resolved}`;
+  return `/gouvernement/${resolveBiographyPublicSlug(slug)}`;
 }
 
 export function resolveBiographySlugFromName(name: string): BiographySlug | null {

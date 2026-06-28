@@ -68,12 +68,27 @@ export function resolveGovernanceLeaderBySlug(
       role: labels.constitution,
       kind: "institution",
     },
-    ...governance.branches.map((branch) => ({
-      slug: extractBiographySlug(branch.url),
-      name: localize(branch.name),
-      role: labels.branch,
-      kind: "institution" as const,
-    })),
+    ...governance.branches.map((branch) => {
+      const branchSlug = extractBiographySlug(branch.url);
+      if (branchSlug === "legislative-committee") {
+        const sitan = biographies["sitan-foune-diakite"];
+        return {
+          slug: "legislative-committee",
+          name: localize(
+            sitan ? { en: sitan.nameEN, fr: sitan.nameFR } : branch.name
+          ),
+          role: labels.legislativeCommittee,
+          kind: "person" as const,
+        };
+      }
+
+      return {
+        slug: branchSlug,
+        name: localize(branch.name),
+        role: labels.branch,
+        kind: "institution" as const,
+      };
+    }),
     ...(page?.biographies ?? []).map((bio) => ({
       slug: bio.slug,
       name: localize(bio.name),
@@ -83,22 +98,22 @@ export function resolveGovernanceLeaderBySlug(
   ].filter((entry) => entry.slug && entry.name);
 
   const match = entries.find(
-    (entry) => entry.slug === slug || entry.slug === canonicalSlug || normalizeSlug(entry.slug) === canonicalSlug
+    (entry) =>
+      entry.slug === slug ||
+      entry.slug === canonicalSlug ||
+      normalizeSlug(entry.slug) === canonicalSlug ||
+      (slug === "legislative-committee" && entry.slug === "legislative-committee")
   );
 
   if (match) return match;
 
   const biographySlug = resolveBiographySlug(canonicalSlug);
-  if (biographySlug) {
+  if (biographySlug && biographySlug !== "sitan-foune-diakite") {
     const entry = biographies[biographySlug];
-    const role =
-      canonicalSlug === "legislative-committee" || slug === "legislative-committee"
-        ? labels.legislativeCommittee
-        : labels.mandenMansa;
     return {
       slug: biographySlug,
       name: entry.nameEN,
-      role,
+      role: labels.mandenMansa,
       kind: "person",
     };
   }
