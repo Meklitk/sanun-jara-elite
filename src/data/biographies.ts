@@ -18,6 +18,12 @@ export const biographies = {
     fr: "/biographies/sitan-foune-diakite-fr.pdf",
     en: "/biographies/sitan-foune-diakite-en.pdf",
   },
+  "mabougnata-djeliba-ibrahim-diabate": {
+    nameFR: "Mabougnata Djeliba Ibrahim Diabate",
+    nameEN: "Mabougnata Djeliba Ibrahim Diabate",
+    fr: "",
+    en: "",
+  },
   "wana-papa-sylla": {
     nameFR: "Wana Papa Sylla",
     nameEN: "Wana Papa Sylla",
@@ -30,14 +36,13 @@ export type BiographySlug = keyof typeof biographies;
 
 export const biographySlugAliases: Record<string, BiographySlug> = {
   "mari-djata-keita-v": "mansa-mari-diata-v-keita",
-  "mabougnata-dibla-ibrahim-diabate": "sitan-foune-diakite",
-  "legislative-committee": "sitan-foune-diakite",
+  "mabougnata-dibla-ibrahim-diabate": "mabougnata-djeliba-ibrahim-diabate",
   "mabougnata-alpha-omar-kaba": "wana-papa-sylla",
 };
 
 export const biographySlugByGovernanceKey = {
   mandenMansa: "mansa-mari-diata-v-keita",
-  mandenDjeliba: "sitan-foune-diakite",
+  mandenDjeliba: "mabougnata-djeliba-ibrahim-diabate",
   mandenMory: "wana-papa-sylla",
 } as const satisfies Record<string, BiographySlug>;
 
@@ -47,6 +52,8 @@ const normalizedNameToSlug: Record<string, BiographySlug> = {
   "sitan foune diakite": "sitan-foune-diakite",
   "son excellence sitan foune diakite": "sitan-foune-diakite",
   "her excellency sitan foune diakite": "sitan-foune-diakite",
+  "mabougnata djeliba ibrahim diabate": "mabougnata-djeliba-ibrahim-diabate",
+  "mabougnata dibla ibrahim diabate": "mabougnata-djeliba-ibrahim-diabate",
   "wana papa sylla": "wana-papa-sylla",
   "manden mory papa sylla": "wana-papa-sylla",
   "mabougnata alpha omar kaba": "wana-papa-sylla",

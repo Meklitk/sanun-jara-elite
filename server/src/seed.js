@@ -49,7 +49,7 @@ const DEFAULT_PAGES = [
       mandenMansa: { en: "Mari Djata Keita V" },
       mandenMansaUrl: "/governance/biographies/mari-djata-keita-v",
       mandenDjeliba: { en: "Mabougnata Dibla Ibrahim Diabate" },
-      mandenDjelibaUrl: "/governance/biographies/mabougnata-dibla-ibrahim-diabate",
+      mandenDjelibaUrl: "/governance/biographies/mabougnata-djeliba-ibrahim-diabate",
       mandenMory: { en: "Mabougnata Alpha Omar Kaba" },
       mandenMoryUrl: "/governance/biographies/mabougnata-alpha-omar-kaba",
       governmentName: { en: "Manden Empire" },

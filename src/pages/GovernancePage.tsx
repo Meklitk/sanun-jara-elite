@@ -22,6 +22,7 @@ import {
 } from "@/features/governance/governance-links";
 import {
   getBiographyDocumentUrl,
+  resolveBiographySlug,
   resolveBiographySlugFromGovernanceKey,
   resolveBiographySlugFromName,
 } from "@/data/biographies";
@@ -31,14 +32,17 @@ const biographyLinkClassName =
   "no-underline transition hover:text-gold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40";
 
 function resolveBiographyUrl(value: string, governanceKey?: string, url?: string) {
+  const slugFromUrl = extractBiographySlug(url);
+  if (slugFromUrl) {
+    const resolved = resolveBiographySlug(slugFromUrl) ?? slugFromUrl;
+    return toGouvernementBiographyUrl(resolved);
+  }
+
   const mappedSlug =
     (governanceKey && resolveBiographySlugFromGovernanceKey(governanceKey)) ||
     resolveBiographySlugFromName(value);
 
   if (mappedSlug) return getBiographyDocumentUrl(mappedSlug);
-
-  const slugFromUrl = extractBiographySlug(url);
-  if (slugFromUrl) return toGouvernementBiographyUrl(slugFromUrl);
 
   return undefined;
 }
