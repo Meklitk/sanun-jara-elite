@@ -97,7 +97,7 @@ export const adminTranslations = {
     backToSite: "Retour au site",
     bioDocsTitle: "Profils /gouvernement/",
     bioDocsDesc:
-      "Photo, texte de présentation et PDF pour chaque page publique /gouvernement/…. Enregistrez le texte puis téléversez la photo et les PDF.",
+      "Photo, texte de présentation et PDF/PNG pour chaque profil du gouvernement (Mansa, Djeliba, Manden Mory, branches, etc.). Enregistrez le texte puis téléversez la photo et les documents.",
     bioPortrait: "Photo de profil",
     bioPortraitHint: "JPG ou PNG. Affichée en haut de la page publique.",
     bioPortraitUploading: "Téléversement de la photo…",
@@ -253,7 +253,7 @@ export const adminTranslations = {
     backToSite: "Back to website",
     bioDocsTitle: "/gouvernement/ profiles",
     bioDocsDesc:
-      "Portrait, summary text, and PDF for each public /gouvernement/ page. Save the text, then upload the photo and PDF files.",
+      "Portrait, summary text, and PDF/PNG for each government profile (Mansa, Djeliba, Manden Mory, branches, etc.). Save the text, then upload the photo and documents.",
     bioPortrait: "Profile photo",
     bioPortraitHint: "JPG or PNG. Shown at the top of the public page.",
     bioPortraitUploading: "Uploading photo…",

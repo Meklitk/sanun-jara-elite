@@ -43,8 +43,6 @@ export default function GovernmentBiographyViewerPage() {
   const documentUrl = resolvedDocuments[documentLanguage];
 
   useEffect(() => {
-    if (!resolveBiographySlug(slug)) return;
-
     let cancelled = false;
 
     (async () => {
@@ -62,7 +60,7 @@ export default function GovernmentBiographyViewerPage() {
     return () => {
       cancelled = true;
     };
-  }, [canonicalSlug, slug]);
+  }, [canonicalSlug]);
 
   useEffect(() => {
     if (documentAvailability[documentLanguage] !== false) return;

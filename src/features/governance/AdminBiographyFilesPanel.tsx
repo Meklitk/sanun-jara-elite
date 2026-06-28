@@ -4,7 +4,7 @@ import { CheckCircle2, ExternalLink, FileText, ImagePlus, Trash2, Upload, AlertC
 
 
 
-import { biographies } from "@/data/biographies";
+import { usePages } from "@/api/pages";
 
 import {
 
@@ -37,6 +37,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 
 import { formatAdmin, useAdminT } from "@/features/admin/admin-i18n";
+import {
+  collectGovernanceBiographyEntries,
+  mergeBiographyProfileSlugs,
+} from "@/features/governance/governance-biography-entries";
+import { useI18n } from "@/lib/i18n";
 import { biographyDocumentFilenames } from "@/lib/biography-document";
 
 
@@ -74,8 +79,9 @@ function emptySummary(): { fr: string; en: string } {
 export default function AdminBiographyFilesPanel({ token }: Props) {
 
   const at = useAdminT();
-
-  const entries = Object.entries(biographies);
+  const { t } = useI18n();
+  const { data: pagesData } = usePages();
+  const governancePage = pagesData?.pages.find((page) => page.key === "governance");
 
   const [uploadedFiles, setUploadedFiles] = useState<string[]>([]);
 
@@ -91,7 +97,18 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
   const uploadedSet = useMemo(() => new Set(uploadedFiles), [uploadedFiles]);
 
-
+  const entries = useMemo(() => {
+    const fromGovernance = collectGovernanceBiographyEntries(governancePage, {
+      chiefdom: t.chiefdom,
+      mandenMansa: t.mandenMansa,
+      mandenDjeliba: t.mandenDjeliba,
+      mandenMory: t.mandenMory,
+      govName: t.govName,
+      constitution: t.constitution,
+      branch: t.branch,
+    });
+    return mergeBiographyProfileSlugs(fromGovernance, Object.keys(profiles));
+  }, [governancePage, profiles, t]);
 
   async function refreshFiles() {
 
@@ -123,18 +140,14 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
         const next = { ...current };
 
-        for (const [slug] of entries) {
-
+        for (const entry of entries) {
+          const slug = entry.slug;
           const summary = res.profiles?.[slug]?.summary;
 
           next[slug] = {
-
             fr: summary?.fr ?? current[slug]?.fr ?? "",
-
             en: summary?.en ?? current[slug]?.en ?? "",
-
           };
-
         }
 
         return next;
@@ -152,12 +165,9 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
 
   useEffect(() => {
-
     void refreshFiles();
-
     void refreshProfiles();
-
-  }, [token]);
+  }, [token, entries.length]);
 
 
 
@@ -333,8 +343,8 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
 
       <div className="space-y-4">
 
-        {entries.map(([slug, entry]) => {
-
+        {entries.map((entry) => {
+          const slug = entry.slug;
           const profile = profiles[slug];
 
           const summary = summaryDrafts[slug] ?? emptySummary();
@@ -354,6 +364,9 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
                 <div>
 
                   <p className="text-sm font-semibold text-foreground">{entry.nameFR}</p>
+                  {entry.roleFR ? (
+                    <p className="mt-1 text-xs uppercase tracking-[0.16em] text-gold/70">{entry.roleFR}</p>
+                  ) : null}
 
                   <p className="mt-1 text-xs text-muted-foreground">
 
