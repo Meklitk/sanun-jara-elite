@@ -21,6 +21,7 @@ const TombouctouGalleryItemSchema = new mongoose.Schema(
       enum: ["small", "medium", "large", "tall", "wide"],
       default: "medium",
     },
+    cloudinaryPublicId: { type: String, default: "" },
   },
   { timestamps: true }
 );

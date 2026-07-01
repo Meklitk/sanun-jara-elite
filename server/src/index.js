@@ -516,6 +516,24 @@ function uploadCardImageBuffer(buffer, slot) {
   });
 }
 
+function uploadTombouctouGalleryBuffer(buffer, publicId) {
+  if (!cloudinaryConfigured()) {
+    return Promise.reject(new Error("cloudinary_not_configured"));
+  }
+
+  return new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        resource_type: "image",
+        folder: "sanunjara/tombouctou-gallery",
+        public_id: publicId,
+      },
+      (error, result) => (error ? reject(error) : resolve(result))
+    );
+    stream.end(buffer);
+  });
+}
+
 async function buildCardImagesPayload() {
   const records = await CardImage.find().lean();
   const bySlot = Object.fromEntries(records.map((record) => [record.slot, record]));
@@ -674,16 +692,36 @@ app.post(
         return res.status(400).json({ error: "invalid_file_type" });
       }
 
-      const base64Data = file.buffer.toString("base64");
-      const dataUri = `data:${file.mimetype};base64,${base64Data}`;
+      let url;
+      let cloudinaryPublicId = "";
 
-      await Media.create({
-        originalName: file.originalname,
-        mimeType: file.mimetype,
-        size: file.size,
-        data: base64Data,
-        url: dataUri,
-      });
+      if (cloudinaryConfigured()) {
+        const publicId = `item-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+        const result = await uploadTombouctouGalleryBuffer(file.buffer, publicId);
+        url = result.secure_url;
+        cloudinaryPublicId = result.public_id;
+
+        await Media.create({
+          originalName: file.originalname,
+          mimeType: file.mimetype,
+          size: file.size,
+          data: null,
+          url,
+          cloudinaryPublicId,
+        });
+      } else {
+        const base64Data = file.buffer.toString("base64");
+        const dataUri = `data:${file.mimetype};base64,${base64Data}`;
+
+        await Media.create({
+          originalName: file.originalname,
+          mimeType: file.mimetype,
+          size: file.size,
+          data: base64Data,
+          url: dataUri,
+        });
+        url = dataUri;
+      }
 
       const count = await TombouctouGalleryItem.countDocuments();
       const title = parseLocalizedField(req.body.title, file.originalname.replace(/\.[^.]+$/, ""));
@@ -697,19 +735,20 @@ app.post(
       }
 
       const item = await TombouctouGalleryItem.create({
-        url: dataUri,
+        url,
         title,
         caption,
         altText,
         displayOrder: count,
         isFeatured: isFeatured || count === 0,
         size,
+        cloudinaryPublicId,
       });
 
       res.json({ item });
     } catch (err) {
       console.error(err);
-      res.status(500).json({ error: "create_failed" });
+      res.status(500).json({ error: "create_failed", message: err.message });
     }
   }
 );
@@ -770,6 +809,14 @@ app.delete("/api/admin/tombouctou-gallery/:id", requireAdmin(JWT_SECRET), async 
     const { id } = req.params;
     const item = await TombouctouGalleryItem.findByIdAndDelete(id);
     if (!item) return res.status(404).json({ error: "not_found" });
+
+    if (item.cloudinaryPublicId && cloudinaryConfigured()) {
+      try {
+        await cloudinary.uploader.destroy(item.cloudinaryPublicId, { resource_type: "image" });
+      } catch (err) {
+        console.error("Cloudinary delete failed:", err);
+      }
+    }
 
     const remaining = await TombouctouGalleryItem.find()
       .sort({ displayOrder: 1, createdAt: 1 })

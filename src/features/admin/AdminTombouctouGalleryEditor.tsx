@@ -16,6 +16,7 @@ import {
   reorderTombouctouGallery,
   updateTombouctouGalleryItem,
 } from "@/api/tombouctou-gallery";
+import { getErrorMessage } from "@/api/upload";
 import type { TombouctouGalleryItem, TombouctouGallerySize } from "@/api/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,8 +78,9 @@ export default function AdminTombouctouGalleryEditor({ token }: Props) {
       }
       toast.success(`${success} image${success > 1 ? "s" : ""} uploaded`);
       await refresh();
-    } catch {
-      toast.error("Upload failed");
+    } catch (err) {
+      const message = getErrorMessage(err, "Upload failed");
+      toast.error(message.includes("not_found") ? "Gallery API not available — redeploy the Railway backend, then try again." : message);
     } finally {
       setUploading(false);
     }

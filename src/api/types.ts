@@ -168,6 +168,7 @@ export type TombouctouGalleryItem = {
   displayOrder: number;
   isFeatured: boolean;
   size: TombouctouGallerySize;
+  cloudinaryPublicId?: string;
   createdAt?: string;
   updatedAt?: string;
 };
