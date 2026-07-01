@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 
+import TombouctouGallery from "@/components/tombouctou/TombouctouGallery";
 import {
   PageErrorState,
   PageLoadingState,
@@ -18,10 +19,9 @@ export default function TombouctouPage() {
   if (!page) return <PageNotFoundState />;
 
   const paragraphs = splitParagraphs(content);
-  const featuredImage = page.featuredImage || page.images?.[0];
 
   return (
-    <div className="min-h-[calc(100vh-3.5rem)] space-y-8 sm:space-y-12 pb-12 sm:pb-16">
+    <div className="min-h-[calc(100vh-3.5rem)] space-y-8 sm:space-y-12 pb-12 sm:pb-16 bg-[#050505]">
       <section className="relative mx-auto max-w-7xl px-3 sm:px-4 lg:px-6 pt-4 sm:pt-10">
         <div className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2.5rem] border border-gold/10 bg-black shadow-[0_30px_100px_rgba(0,0,0,0.7)]">
           <div className="absolute inset-0 bg-gradient-to-br from-gold/10 via-black/50 to-black" />
@@ -61,23 +61,7 @@ export default function TombouctouPage() {
         </div>
       </section>
 
-      {featuredImage && (
-        <section className="mx-auto max-w-4xl px-3 sm:px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="relative overflow-hidden rounded-[1.5rem] sm:rounded-[2rem] border border-gold/15 bg-black shadow-[0_30px_100px_rgba(0,0,0,0.5)]"
-          >
-            <img
-              src={featuredImage}
-              alt={title || t.tombouctou}
-              className="h-auto w-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-          </motion.div>
-        </section>
-      )}
+      <TombouctouGallery />
 
       <section className="mx-auto max-w-5xl space-y-4 sm:space-y-6 px-3 sm:px-6">
         {paragraphs.length ? (

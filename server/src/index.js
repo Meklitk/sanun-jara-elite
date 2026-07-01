@@ -14,6 +14,7 @@ import { Page } from "./models/Page.js";
 import { Media } from "./models/Media.js";
 import { Content } from "./models/Content.js";
 import { CardImage } from "./models/CardImage.js";
+import { TombouctouGalleryItem } from "./models/TombouctouGalleryItem.js";
 import { Submission } from "./models/Submission.js";
 import nodemailer from "nodemailer";
 import { requireAdmin, signAdminToken } from "./auth.js";
@@ -625,6 +626,166 @@ app.delete("/api/admin/card-image/:slot", requireAdmin(JWT_SECRET), async (req, 
     await CardImage.deleteOne({ slot });
 
     res.json({ ok: true, slot, filename });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "delete_failed" });
+  }
+});
+
+//
+// TOMBOUCTOU GALLERY
+//
+const MASONRY_SIZES = ["small", "medium", "large", "tall", "wide"];
+
+function parseLocalizedField(raw, fallback = "") {
+  if (!raw) return { en: fallback, fr: fallback };
+  try {
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    return {
+      en: String(parsed?.en ?? fallback),
+      fr: String(parsed?.fr ?? parsed?.en ?? fallback),
+    };
+  } catch {
+    return { en: String(raw), fr: String(raw) };
+  }
+}
+
+app.get("/api/tombouctou-gallery", async (_req, res) => {
+  try {
+    const items = await TombouctouGalleryItem.find()
+      .sort({ displayOrder: 1, createdAt: 1 })
+      .lean();
+    res.json({ items });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "list_failed" });
+  }
+});
+
+app.post(
+  "/api/admin/tombouctou-gallery",
+  requireAdmin(JWT_SECRET),
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const file = req.file;
+      if (!file) return res.status(400).json({ error: "missing_file" });
+      if (!file.mimetype.startsWith("image/")) {
+        return res.status(400).json({ error: "invalid_file_type" });
+      }
+
+      const base64Data = file.buffer.toString("base64");
+      const dataUri = `data:${file.mimetype};base64,${base64Data}`;
+
+      await Media.create({
+        originalName: file.originalname,
+        mimeType: file.mimetype,
+        size: file.size,
+        data: base64Data,
+        url: dataUri,
+      });
+
+      const count = await TombouctouGalleryItem.countDocuments();
+      const title = parseLocalizedField(req.body.title, file.originalname.replace(/\.[^.]+$/, ""));
+      const caption = parseLocalizedField(req.body.caption);
+      const altText = parseLocalizedField(req.body.altText, title.en);
+      const size = MASONRY_SIZES.includes(req.body.size) ? req.body.size : "medium";
+      const isFeatured = req.body.isFeatured === "true" || req.body.isFeatured === true;
+
+      if (isFeatured) {
+        await TombouctouGalleryItem.updateMany({}, { $set: { isFeatured: false } });
+      }
+
+      const item = await TombouctouGalleryItem.create({
+        url: dataUri,
+        title,
+        caption,
+        altText,
+        displayOrder: count,
+        isFeatured: isFeatured || count === 0,
+        size,
+      });
+
+      res.json({ item });
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "create_failed" });
+    }
+  }
+);
+
+app.put("/api/admin/tombouctou-gallery/:id", requireAdmin(JWT_SECRET), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const existing = await TombouctouGalleryItem.findById(id);
+    if (!existing) return res.status(404).json({ error: "not_found" });
+
+    const patch = {};
+    if (req.body.title !== undefined) patch.title = parseLocalizedField(req.body.title);
+    if (req.body.caption !== undefined) patch.caption = parseLocalizedField(req.body.caption);
+    if (req.body.altText !== undefined) patch.altText = parseLocalizedField(req.body.altText);
+    if (req.body.size !== undefined && MASONRY_SIZES.includes(req.body.size)) {
+      patch.size = req.body.size;
+    }
+    if (req.body.displayOrder !== undefined) {
+      patch.displayOrder = Number(req.body.displayOrder);
+    }
+    if (req.body.isFeatured === true || req.body.isFeatured === "true") {
+      await TombouctouGalleryItem.updateMany({}, { $set: { isFeatured: false } });
+      patch.isFeatured = true;
+    } else if (req.body.isFeatured === false || req.body.isFeatured === "false") {
+      patch.isFeatured = false;
+    }
+
+    const item = await TombouctouGalleryItem.findByIdAndUpdate(id, patch, { new: true }).lean();
+    res.json({ item });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "update_failed" });
+  }
+});
+
+app.put("/api/admin/tombouctou-gallery/reorder", requireAdmin(JWT_SECRET), async (req, res) => {
+  try {
+    const ids = Array.isArray(req.body.ids) ? req.body.ids.map(String) : [];
+    if (ids.length === 0) return res.status(400).json({ error: "invalid_ids" });
+
+    const ops = ids.map((id, index) =>
+      TombouctouGalleryItem.updateOne({ _id: id }, { $set: { displayOrder: index } })
+    );
+    await Promise.all(ops);
+
+    const items = await TombouctouGalleryItem.find()
+      .sort({ displayOrder: 1, createdAt: 1 })
+      .lean();
+    res.json({ items });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "reorder_failed" });
+  }
+});
+
+app.delete("/api/admin/tombouctou-gallery/:id", requireAdmin(JWT_SECRET), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await TombouctouGalleryItem.findByIdAndDelete(id);
+    if (!item) return res.status(404).json({ error: "not_found" });
+
+    const remaining = await TombouctouGalleryItem.find()
+      .sort({ displayOrder: 1, createdAt: 1 })
+      .lean();
+
+    if (remaining.length > 0 && !remaining.some((r) => r.isFeatured)) {
+      await TombouctouGalleryItem.findByIdAndUpdate(remaining[0]._id, { isFeatured: true });
+    }
+
+    await Promise.all(
+      remaining.map((r, index) =>
+        TombouctouGalleryItem.updateOne({ _id: r._id }, { $set: { displayOrder: index } })
+      )
+    );
+
+    res.json({ ok: true });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "delete_failed" });

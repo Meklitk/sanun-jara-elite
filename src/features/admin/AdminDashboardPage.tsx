@@ -35,6 +35,7 @@ import AdminFederationMapPanel from "@/features/pages/AdminFederationMapPanel";
 import AdminDirectoryEditor from "@/features/pages/AdminDirectoryEditor";
 import AdminCardImagesPanel from "@/features/pages/AdminCardImagesPanel";
 import IntroductionSectionsEditor from "./IntroductionSectionsEditor";
+import AdminTombouctouGalleryEditor from "./AdminTombouctouGalleryEditor";
 import { cardImageKeysForSection } from "@/lib/card-images";
 import { academyCardDefinitions, referenceBureauCardDefinitions } from "@/features/pages/utility-page-config";
 import { motion, AnimatePresence } from "framer-motion";
@@ -252,6 +253,7 @@ export default function AdminDashboardPage() {
   const isEconomySection = current?.key === "economy";
   const isNianiSection = current?.key === "niani";
   const isCommerceSection = current?.key === "commerce";
+  const isTombouctouSection = current?.key === "tombouctou";
   const isUtilityCardsSection = isReferenceBureauSection || isAcademySection;
 
   // Section icons mapping
@@ -1413,6 +1415,7 @@ export default function AdminDashboardPage() {
                     )}
                   </div>
 
+                  {!isTombouctouSection ? (
                   <div className="space-y-4 rounded-xl border border-gold/10 bg-gradient-to-br from-gold/5 to-transparent p-5">
                     <div className="flex items-center justify-between gap-3">
                       <div>
@@ -1477,6 +1480,7 @@ export default function AdminDashboardPage() {
                       </div>
                     )}
                   </div>
+                  ) : null}
                 </>
               )}
 
@@ -1530,6 +1534,13 @@ export default function AdminDashboardPage() {
                     onChange={(media) => setDraft({ ...current, media })}
                     token={token}
                   />
+                </>
+              )}
+
+              {isTombouctouSection && (
+                <>
+                  <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
+                  <AdminTombouctouGalleryEditor token={token} />
                 </>
               )}
 

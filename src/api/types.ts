@@ -156,3 +156,18 @@ export type Content = {
   createdAt?: string;
   updatedAt?: string;
 };
+
+export type TombouctouGallerySize = "small" | "medium" | "large" | "tall" | "wide";
+
+export type TombouctouGalleryItem = {
+  _id: string;
+  url: string;
+  title: Partial<LocalizedString>;
+  caption: Partial<LocalizedString>;
+  altText: Partial<LocalizedString>;
+  displayOrder: number;
+  isFeatured: boolean;
+  size: TombouctouGallerySize;
+  createdAt?: string;
+  updatedAt?: string;
+};
