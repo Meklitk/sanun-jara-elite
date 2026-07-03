@@ -1036,10 +1036,10 @@ app.delete("/api/content/:id", requireAdmin(JWT_SECRET), async (req, res) => {
 // SUBMISSIONS & EMAIL APIS (for Membership Questionnaire and Contact/Questions forms)
 //
 async function sendEmailSubmission(sub) {
-  const host = process.env.SMTP_HOST;
-  const port = Number(process.env.SMTP_PORT || 587);
-  const user = process.env.SMTP_USER;
-  const pass = process.env.SMTP_PASS;
+  const host = process.env.SMTP_HOST?.trim();
+  const port = Number((process.env.SMTP_PORT || "587").trim());
+  const user = process.env.SMTP_USER?.trim();
+  const pass = process.env.SMTP_PASS?.trim();
 
   if (!host || !user || !pass) {
     console.log("ℹ️ SMTP configuration is incomplete. Skipping email sending. Submissions are still saved in DB.");
@@ -1054,8 +1054,8 @@ async function sendEmailSubmission(sub) {
       auth: { user, pass },
     });
 
-    const from = process.env.SMTP_FROM || "info@sanunjara.com";
-    const to = process.env.SMTP_TO || "info@sanunjara.com";
+    const from = (process.env.SMTP_FROM || "info@sanunjara.com").trim();
+    const to = (process.env.SMTP_TO || "info@sanunjara.com").trim();
 
     let subject = "";
     let html = "";
@@ -1158,6 +1158,70 @@ app.delete("/api/submissions/:id", requireAdmin(JWT_SECRET), async (req, res) =>
   } catch (error) {
     console.error("Failed to delete submission:", error);
     res.status(500).json({ error: "internal_server_error" });
+  }
+});
+
+// Admin-only: verify SMTP config and send a real test email. Returns the actual
+// SMTP error so misconfiguration (wrong password/host/port) can be diagnosed.
+app.post("/api/test-email", requireAdmin(JWT_SECRET), async (req, res) => {
+  const host = process.env.SMTP_HOST?.trim();
+  const port = Number((process.env.SMTP_PORT || "587").trim());
+  const user = process.env.SMTP_USER?.trim();
+  const pass = process.env.SMTP_PASS?.trim();
+  const from = (process.env.SMTP_FROM || "info@sanunjara.com").trim();
+  const to = (process.env.SMTP_TO || "info@sanunjara.com").trim();
+
+  const missing = [];
+  if (!host) missing.push("SMTP_HOST");
+  if (!user) missing.push("SMTP_USER");
+  if (!pass) missing.push("SMTP_PASS");
+  if (missing.length) {
+    return res.status(400).json({
+      ok: false,
+      stage: "config",
+      error: `Missing SMTP env vars: ${missing.join(", ")}`,
+    });
+  }
+
+  const transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465 || process.env.SMTP_SECURE === "true",
+    auth: { user, pass },
+  });
+
+  try {
+    await transporter.verify();
+  } catch (error) {
+    console.error("❌ SMTP verify (login) failed:", error);
+    return res.status(502).json({
+      ok: false,
+      stage: "verify",
+      host,
+      port,
+      user,
+      error: error?.message || String(error),
+      code: error?.code,
+    });
+  }
+
+  try {
+    const info = await transporter.sendMail({
+      from,
+      to,
+      subject: "Sanun Jara — SMTP test email",
+      text: "If you received this, SMTP is configured correctly and form emails will be delivered.",
+    });
+    console.log(`✉️ Test email sent to ${to}: ${info.messageId}`);
+    res.json({ ok: true, messageId: info.messageId, to });
+  } catch (error) {
+    console.error("❌ SMTP sendMail failed:", error);
+    res.status(502).json({
+      ok: false,
+      stage: "send",
+      error: error?.message || String(error),
+      code: error?.code,
+    });
   }
 });
 
