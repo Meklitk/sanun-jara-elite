@@ -1035,80 +1035,143 @@ app.delete("/api/content/:id", requireAdmin(JWT_SECRET), async (req, res) => {
 //
 // SUBMISSIONS & EMAIL APIS (for Membership Questionnaire and Contact/Questions forms)
 //
-async function sendEmailSubmission(sub) {
+//
+// ✅ FORM SUBMISSIONS APIs
+//
+
+function buildSubmissionEmailContent(sub) {
+  let subject = "";
+  let html = "";
+
+  if (sub.type === "membership") {
+    subject = `New Membership Application from ${sub.name}`;
+    html = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;">
+        <h2 style="color: #d97706; border-bottom: 2px solid #f59e0b; padding-bottom: 10px;">Sanun Jara Membership Application</h2>
+        <p><strong>Name:</strong> ${sub.name}</p>
+        <p><strong>Email:</strong> ${sub.email}</p>
+        <p><strong>Phone:</strong> ${sub.phone || "N/A"}</p>
+        <p><strong>Profession:</strong> ${sub.profession || "N/A"}</p>
+        
+        <h3 style="color: #d97706; margin-top: 25px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">Questionnaire Answers</h3>
+        <ol style="padding-left: 20px; line-height: 1.6;">
+    `;
+
+    if (sub.answers) {
+      for (const [qNum, ans] of Object.entries(sub.answers)) {
+        html += `<li style="margin-bottom: 15px;"><strong>Question ${qNum}:</strong><br/><span style="color: #334155;">${ans}</span></li>`;
+      }
+    }
+
+    html += `
+        </ol>
+      </div>
+    `;
+  } else {
+    subject = `New Question/Contact Request from ${sub.name}`;
+    html = `
+      <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;">
+        <h2 style="color: #b91c1c; border-bottom: 2px solid #ef4444; padding-bottom: 10px;">Sanun Jara Contact Inquiry</h2>
+        <p><strong>Name:</strong> ${sub.name}</p>
+        <p><strong>Email:</strong> ${sub.email}</p>
+        <p><strong>Phone:</strong> ${sub.phone || "N/A"}</p>
+        <div style="margin-top: 20px; background-color: #f8fafc; padding: 15px; border-radius: 6px; border-left: 4px solid #ef4444;">
+          <strong>Message/Question:</strong><br/>
+          <p style="white-space: pre-wrap; line-height: 1.6; color: #334155; margin-top: 5px;">${sub.message}</p>
+        </div>
+      </div>
+    `;
+  }
+
+  return { subject, html };
+}
+
+function getEmailAddresses() {
+  const from = (process.env.SMTP_FROM || process.env.RESEND_FROM || "info@sanunjara.com").trim();
+  const to = (process.env.SMTP_TO || process.env.RESEND_TO || "info@sanunjara.com").trim();
+  return { from, to };
+}
+
+function createSmtpTransporter() {
   const host = process.env.SMTP_HOST?.trim();
   const port = Number((process.env.SMTP_PORT || "587").trim());
   const user = process.env.SMTP_USER?.trim();
   const pass = process.env.SMTP_PASS?.trim();
 
-  if (!host || !user || !pass) {
-    console.log("ℹ️ SMTP configuration is incomplete. Skipping email sending. Submissions are still saved in DB.");
-    return;
-  }
+  if (!host || !user || !pass) return null;
 
-  try {
-    const transporter = nodemailer.createTransport({
+  return {
+    transporter: nodemailer.createTransport({
       host,
       port,
       secure: port === 465 || process.env.SMTP_SECURE === "true",
       auth: { user, pass },
-    });
+      tls: { rejectUnauthorized: false },
+      connectionTimeout: 20000,
+      greetingTimeout: 20000,
+    }),
+    host,
+    port,
+    user,
+  };
+}
 
-    const from = (process.env.SMTP_FROM || "info@sanunjara.com").trim();
-    const to = (process.env.SMTP_TO || "info@sanunjara.com").trim();
+async function sendViaResend({ from, to, subject, html }) {
+  const apiKey = process.env.RESEND_API_KEY?.trim();
+  if (!apiKey) return null;
 
-    let subject = "";
-    let html = "";
-
-    if (sub.type === "membership") {
-      subject = `New Membership Application from ${sub.name}`;
-      html = `
-        <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;">
-          <h2 style="color: #d97706; border-bottom: 2px solid #f59e0b; padding-bottom: 10px;">Sanun Jara Membership Application</h2>
-          <p><strong>Name:</strong> ${sub.name}</p>
-          <p><strong>Email:</strong> ${sub.email}</p>
-          <p><strong>Phone:</strong> ${sub.phone || 'N/A'}</p>
-          <p><strong>Profession:</strong> ${sub.profession || 'N/A'}</p>
-          
-          <h3 style="color: #d97706; margin-top: 25px; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px;">Questionnaire Answers</h3>
-          <ol style="padding-left: 20px; line-height: 1.6;">
-      `;
-      
-      if (sub.answers) {
-        for (const [qNum, ans] of Object.entries(sub.answers)) {
-          html += `<li style="margin-bottom: 15px;"><strong>Question ${qNum}:</strong><br/><span style="color: #334155;">${ans}</span></li>`;
-        }
-      }
-      
-      html += `
-          </ol>
-        </div>
-      `;
-    } else {
-      subject = `New Question/Contact Request from ${sub.name}`;
-      html = `
-        <div style="font-family: sans-serif; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; padding: 20px; border-radius: 8px;">
-          <h2 style="color: #b91c1c; border-bottom: 2px solid #ef4444; padding-bottom: 10px;">Sanun Jara Contact Inquiry</h2>
-          <p><strong>Name:</strong> ${sub.name}</p>
-          <p><strong>Email:</strong> ${sub.email}</p>
-          <p><strong>Phone:</strong> ${sub.phone || 'N/A'}</p>
-          <div style="margin-top: 20px; background-color: #f8fafc; padding: 15px; border-radius: 6px; border-left: 4px solid #ef4444;">
-            <strong>Message/Question:</strong><br/>
-            <p style="white-space: pre-wrap; line-height: 1.6; color: #334155; margin-top: 5px;">${sub.message}</p>
-          </div>
-        </div>
-      `;
-    }
-
-    await transporter.sendMail({
-      from,
-      to,
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: from.includes("<") ? from : `Sanun Jara <${from}>`,
+      to: [to],
       subject,
       html,
-    });
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = data?.message || data?.error || `Resend API error (${response.status})`;
+    throw new Error(message);
+  }
+
+  return data;
+}
+
+async function sendEmailSubmission(sub) {
+  const { from, to } = getEmailAddresses();
+  const { subject, html } = buildSubmissionEmailContent(sub);
+
+  const resendKey = process.env.RESEND_API_KEY?.trim();
+  if (resendKey) {
+    try {
+      const data = await sendViaResend({ from, to, subject, html });
+      console.log(`✉️ Email sent via Resend to ${to} for submission: ${sub._id} (${data?.id || "ok"})`);
+      return;
+    } catch (error) {
+      console.error("❌ Resend failed, falling back to SMTP if configured:", error.message);
+    }
+  }
+
+  const smtp = createSmtpTransporter();
+  if (!smtp) {
+    console.log("ℹ️ No RESEND_API_KEY and SMTP is incomplete. Skipping email. Submissions are still saved in DB.");
+    return;
+  }
+
+  try {
+    await smtp.transporter.sendMail({ from, to, subject, html });
     console.log(`✉️ Email successfully sent to ${to} for submission: ${sub._id}`);
   } catch (error) {
     console.error("❌ Failed to send submission email via SMTP:", error);
+    if (error?.code === "ETIMEDOUT" || error?.code === "ESOCKET") {
+      console.error("ℹ️ Railway Hobby/Free blocks outbound SMTP (ports 465/587). Use RESEND_API_KEY or upgrade Railway to Pro.");
+    }
   }
 }
 
@@ -1161,63 +1224,67 @@ app.delete("/api/submissions/:id", requireAdmin(JWT_SECRET), async (req, res) =>
   }
 });
 
-// Admin-only: verify SMTP config and send a real test email. Returns the actual
-// SMTP error so misconfiguration (wrong password/host/port) can be diagnosed.
+// Admin-only: verify email config and send a real test email.
 app.post("/api/test-email", requireAdmin(JWT_SECRET), async (req, res) => {
-  const host = process.env.SMTP_HOST?.trim();
-  const port = Number((process.env.SMTP_PORT || "587").trim());
-  const user = process.env.SMTP_USER?.trim();
-  const pass = process.env.SMTP_PASS?.trim();
-  const from = (process.env.SMTP_FROM || "info@sanunjara.com").trim();
-  const to = (process.env.SMTP_TO || "info@sanunjara.com").trim();
+  const { from, to } = getEmailAddresses();
+  const subject = "Sanun Jara — test email";
+  const html = "<p>If you received this, email delivery is configured correctly.</p>";
 
-  const missing = [];
-  if (!host) missing.push("SMTP_HOST");
-  if (!user) missing.push("SMTP_USER");
-  if (!pass) missing.push("SMTP_PASS");
-  if (missing.length) {
+  const resendKey = process.env.RESEND_API_KEY?.trim();
+  if (resendKey) {
+    try {
+      const data = await sendViaResend({ from, to, subject, html });
+      return res.json({ ok: true, provider: "resend", id: data?.id, to });
+    } catch (error) {
+      console.error("❌ Resend test email failed:", error);
+      return res.status(502).json({
+        ok: false,
+        provider: "resend",
+        stage: "send",
+        error: error?.message || String(error),
+      });
+    }
+  }
+
+  const smtp = createSmtpTransporter();
+  if (!smtp) {
     return res.status(400).json({
       ok: false,
       stage: "config",
-      error: `Missing SMTP env vars: ${missing.join(", ")}`,
+      error: "No RESEND_API_KEY and SMTP env vars are incomplete. Railway Hobby blocks SMTP — add RESEND_API_KEY.",
     });
   }
 
-  const transporter = nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465 || process.env.SMTP_SECURE === "true",
-    auth: { user, pass },
-  });
-
   try {
-    await transporter.verify();
+    await smtp.transporter.verify();
   } catch (error) {
     console.error("❌ SMTP verify (login) failed:", error);
+    const hint =
+      error?.code === "ETIMEDOUT" || error?.code === "ESOCKET"
+        ? "Railway Hobby/Free blocks outbound SMTP (ports 465/587). Add RESEND_API_KEY instead."
+        : undefined;
     return res.status(502).json({
       ok: false,
+      provider: "smtp",
       stage: "verify",
-      host,
-      port,
-      user,
+      host: smtp.host,
+      port: smtp.port,
+      user: smtp.user,
       error: error?.message || String(error),
       code: error?.code,
+      hint,
     });
   }
 
   try {
-    const info = await transporter.sendMail({
-      from,
-      to,
-      subject: "Sanun Jara — SMTP test email",
-      text: "If you received this, SMTP is configured correctly and form emails will be delivered.",
-    });
+    const info = await smtp.transporter.sendMail({ from, to, subject, html });
     console.log(`✉️ Test email sent to ${to}: ${info.messageId}`);
-    res.json({ ok: true, messageId: info.messageId, to });
+    res.json({ ok: true, provider: "smtp", messageId: info.messageId, to });
   } catch (error) {
     console.error("❌ SMTP sendMail failed:", error);
     res.status(502).json({
       ok: false,
+      provider: "smtp",
       stage: "send",
       error: error?.message || String(error),
       code: error?.code,

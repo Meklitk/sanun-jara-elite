@@ -178,18 +178,18 @@ export default function AdminGovernanceEditor({ governance, onChange }: Props) {
             <Input
               value={governance.mandenMory.en ?? ""}
               onChange={(e) => updateLocalizedField("mandenMory", e.target.value)}
-              placeholder="e.g., Mabougnata Alpha Omar Kaba"
+              placeholder="e.g., Wana Papa Sylla"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
             <Label className="text-[11px] text-muted-foreground mt-1">Biography Page URL</Label>
             <Input
               value={governance.mandenMoryUrl ?? ""}
               onChange={(e) => updateUrlField("mandenMoryUrl", e.target.value)}
-              placeholder="/governance/biographies/mabougnata-alpha-omar-kaba"
+              placeholder="/governance/biographies/wana-papa-sylla"
               className="border-gold/20 bg-black/20 focus:border-gold/50 focus:ring-gold/20"
             />
             <p className="text-[10px] text-muted-foreground">
-              Tip: Create the biography page below using slug "mabougnata-alpha-omar-kaba" to add custom content and images.
+              Tip: Create the biography page below using slug "wana-papa-sylla" to add custom content and images.
             </p>
           </div>
         </section>
