@@ -13,8 +13,7 @@ import HistoryTimelineEventPage from "./pages/HistoryTimelineEventPage";
 import GovernancePage from "./pages/GovernancePage";
 import GovernanceBiographyPage from "./pages/GovernanceBiographyPage";
 import GovernmentBiographyViewerPage from "./pages/GovernmentBiographyViewerPage";
-import GovernmentBranchPage from "./pages/GovernmentBranchPage";
-import GovernmentMemberPage from "./pages/GovernmentMemberPage";
+
 import GlobalPerspectivesPage from "./pages/GlobalPerspectivesPage";
 import ReferenceBureauPage from "./pages/ReferenceBureauPage";
 import NianiPage from "./pages/NianiPage";
@@ -55,8 +54,6 @@ const App = () => (
               <Route path="/governance" element={<GovernancePage />} />
               <Route path="/gouvernement" element={<GovernancePage />} />
               <Route path="/government" element={<GovernancePage />} />
-              <Route path="/government/:branchId" element={<GovernmentBranchPage />} />
-              <Route path="/government/:branchId/:memberSlug" element={<GovernmentMemberPage />} />
               <Route path="/gouvernement/:slug" element={<GovernmentBiographyViewerPage />} />
               <Route path="/governance/biographies/:slug" element={<GovernanceBiographyPage />} />
               <Route path="/economy" element={<EconomyPage />} />
