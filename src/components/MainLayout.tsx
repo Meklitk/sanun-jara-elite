@@ -8,7 +8,9 @@ import CotiserCta from "@/components/CotiserCta";
 export default function MainLayout() {
   const location = useLocation();
   const isGovernancePage =
-    location.pathname === "/governance" || location.pathname === "/gouvernement";
+    location.pathname === "/governance" ||
+    location.pathname === "/gouvernement" ||
+    location.pathname.startsWith("/government");
   const isHistoryPage = location.pathname.startsWith("/history");
   const showCoatOfArms =
     !isGovernancePage && !location.pathname.startsWith("/gouvernement/") && !isHistoryPage;

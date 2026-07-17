@@ -10,7 +10,7 @@ export function extractBiographySlug(url?: string) {
   if (!isInternalAppPath(url)) return "";
 
   const pathname = url.split(/[?#]/, 1)[0];
-  const match = pathname.match(/^\/(?:governance\/biographies|gouvernement)\/([^/]+)$/);
+  const match = pathname.match(/^\/(?:governance\/biographies|gouvernement|government)\/([^/]+)$/);
   return match?.[1] ?? "";
 }
 

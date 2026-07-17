@@ -82,6 +82,15 @@ export function resolveGovernanceLeaderBySlug(
         };
       }
 
+      if (branchSlug === "disciplinary-committee" || branchSlug === "disciplinary") {
+        return {
+          slug: branchSlug,
+          name: localize(branch.name),
+          role: labels.disciplinaryCommittee,
+          kind: "institution" as const,
+        };
+      }
+
       return {
         slug: branchSlug,
         name: localize(branch.name),

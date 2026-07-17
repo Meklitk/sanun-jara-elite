@@ -107,6 +107,7 @@ export default function AdminBiographyFilesPanel({ token }: Props) {
       constitution: t.constitution,
       branch: t.branch,
       legislativeCommittee: t.legislativeCommittee,
+      disciplinaryCommittee: t.disciplinaryCommittee,
     });
     return mergeBiographyProfileSlugs(fromGovernance, Object.keys(profiles));
   }, [governancePage, profiles, t]);

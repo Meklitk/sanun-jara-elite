@@ -53,7 +53,8 @@ export default function SidebarNav({
     const current = location.pathname;
     if (path === current) return true;
     if (path === "/introduction" && current === "/") return true;
-    if (path === "/gouvernement" && current === "/governance") return true;
+    if ((path === "/gouvernement" || path === "/governance") && 
+        (current === "/governance" || current === "/gouvernement" || current.startsWith("/government"))) return true;
     if (path === "/bureau/cotiser" && current === "/reference-bureau/cotiser") return true;
     return false;
   }

@@ -21,6 +21,7 @@ type RoleLabels = {
   constitution: string;
   branch: string;
   legislativeCommittee: string;
+  disciplinaryCommittee: string;
 };
 
 function readLocalized(value: Partial<{ en?: string; fr?: string }> | undefined) {
@@ -98,13 +99,29 @@ export function collectGovernanceBiographyEntries(
     if (!slug) continue;
     const name = readLocalized(row.name);
     const isLegislative = slug === "legislative-committee";
+    const isDisciplinary = slug === "disciplinary-committee" || slug === "disciplinary";
     const sitan = biographies["sitan-foune-diakite"];
 
+    let finalNameFR = name.fr;
+    let finalNameEN = name.en;
+    let finalRoleFR = row.roleFR;
+    let finalRoleEN = row.roleEN;
+
+    if (isLegislative) {
+      finalNameFR = sitan?.nameFR || name.fr;
+      finalNameEN = sitan?.nameEN || name.en;
+      finalRoleFR = roleLabels.legislativeCommittee;
+      finalRoleEN = roleLabels.legislativeCommittee;
+    } else if (isDisciplinary) {
+      finalRoleFR = roleLabels.disciplinaryCommittee;
+      finalRoleEN = roleLabels.disciplinaryCommittee;
+    }
+
     upsertEntry(map, slug, {
-      nameFR: isLegislative ? sitan?.nameFR || name.fr : name.fr,
-      nameEN: isLegislative ? sitan?.nameEN || name.en : name.en,
-      roleFR: isLegislative ? roleLabels.legislativeCommittee : row.roleFR,
-      roleEN: isLegislative ? roleLabels.legislativeCommittee : row.roleEN,
+      nameFR: finalNameFR,
+      nameEN: finalNameEN,
+      roleFR: finalRoleFR,
+      roleEN: finalRoleEN,
     });
   }
 

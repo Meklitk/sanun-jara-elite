@@ -11,7 +11,7 @@ const defaultGovernanceBranches: GovernanceBranch[] = [
       fr: "Filtre les idées selon leur alignement avec les principes du Manden.",
     },
     selection: { en: "Meritocratic", fr: "Méritocratique" },
-    url: "/governance/biographies/reflection-committee",
+    url: "/government/reflection",
   },
   {
     name: { en: "General Assembly", fr: "Assemblée générale" },
@@ -20,7 +20,7 @@ const defaultGovernanceBranches: GovernanceBranch[] = [
       fr: "Obtient le consensus au sein de la communauté du Manden.",
     },
     selection: { en: "Meritocratic", fr: "Méritocratique" },
-    url: "/governance/biographies/general-assembly",
+    url: "/government/general-assembly",
   },
   {
     name: { en: "Legislative Committee", fr: "Comité législatif" },
@@ -29,7 +29,34 @@ const defaultGovernanceBranches: GovernanceBranch[] = [
       fr: "Gère la promulgation des protocoles de gouvernance.",
     },
     selection: { en: "Meritocratic", fr: "Méritocratique" },
-    url: "/governance/biographies/legislative-committee",
+    url: "/government/legislative",
+  },
+  {
+    name: { en: "Disciplinary Committee", fr: "Comité de discipline" },
+    powers: {
+      en: "Oversees enforcement of institutional discipline and conduct standards.",
+      fr: "Supervise l'application de la discipline institutionnelle et des normes de conduite.",
+    },
+    selection: { en: "Meritocratic", fr: "Méritocratique" },
+    url: "/government/disciplinary",
+  },
+  {
+    name: { en: "Orientation Committee", fr: "Comité d'orientation" },
+    powers: {
+      en: "Responsible for onboarding new members, education, civic orientation, and institutional training.",
+      fr: "Responsable de l'intégration des nouveaux membres, de l'éducation, de l'orientation civique et de la formation institutionnelle.",
+    },
+    selection: { en: "Meritocratic", fr: "Méritocratique" },
+    url: "/government/orientation",
+  },
+  {
+    name: { en: "Administration Committee", fr: "Comité d'administration" },
+    powers: {
+      en: "Responsible for administration, documentation, records, logistics, and organizational management.",
+      fr: "Responsable de l'administration, de la documentation, des archives, de la logistique et de la gestion organisationnelle.",
+    },
+    selection: { en: "Meritocratic", fr: "Méritocratique" },
+    url: "/government/administration",
   },
 ];
 
@@ -111,15 +138,19 @@ export function resolveGovernanceData(page?: Page): GovernanceData {
     riskIndex: governance?.riskIndex ?? defaultGovernanceData.riskIndex,
     riskSummary: mergeLocalized(defaultGovernanceData.riskSummary, governance?.riskSummary),
     taxInformation: mergeLocalized(defaultGovernanceData.taxInformation, governance?.taxInformation),
-    branches:
-      governance?.branches?.length
-          ? governance.branches.map((branch, index) => ({
-              name: mergeLocalized(defaultGovernanceBranches[index]?.name ?? { en: "" }, branch.name),
-              powers: mergeLocalized(defaultGovernanceBranches[index]?.powers ?? { en: "" }, branch.powers),
-              selection: mergeLocalized(defaultGovernanceBranches[index]?.selection ?? { en: "" }, branch.selection),
-              url: branch.url ?? defaultGovernanceBranches[index]?.url ?? "",
-            }))
-        : defaultGovernanceBranches,
+    branches: (() => {
+      const dbBranches = governance?.branches ?? [];
+      return defaultGovernanceBranches.map((defaultBranch, index) => {
+        const dbBranch = dbBranches[index];
+        if (!dbBranch) return defaultBranch;
+        return {
+          name: mergeLocalized(defaultBranch.name ?? { en: "" }, dbBranch.name),
+          powers: mergeLocalized(defaultBranch.powers ?? { en: "" }, dbBranch.powers),
+          selection: mergeLocalized(defaultBranch.selection ?? { en: "" }, dbBranch.selection),
+          url: dbBranch.url || defaultBranch.url || "",
+        };
+      });
+    })(),
     phone: governance?.phone ?? defaultGovernanceData.phone,
   };
 }
