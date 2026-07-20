@@ -81,7 +81,7 @@ export default function GlobalPerspectivesPage({ section }: GlobalPerspectivesPa
           title={t.byCountry}
           description={t.byCountryDesc}
         >
-          <MandenFederationMap mapSrc={federationMapSrc} />
+          <MandenFederationMap mapSrc={federationMapSrc} hoverImages={page.images} />
           <FederationDirectoryList items={federationEntries} />
         </VisualSection>
       )}

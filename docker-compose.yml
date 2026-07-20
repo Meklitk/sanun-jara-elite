@@ -37,6 +37,22 @@ services:
       mongo:
         condition: service_healthy
 
+  frontend:
+    image: node:20-alpine
+    container_name: sanun-jara-frontend
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host"
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - sanun_jara_frontend_node_modules:/app/node_modules
+    environment:
+      VITE_DEV_API_PROXY: http://api:5050
+    depends_on:
+      - api
+
 volumes:
   sanun_jara_mongo_data:
   sanun_jara_api_node_modules:
+  sanun_jara_frontend_node_modules:

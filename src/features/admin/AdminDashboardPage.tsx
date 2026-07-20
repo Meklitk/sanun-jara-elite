@@ -1303,6 +1303,8 @@ export default function AdminDashboardPage() {
                   <AdminFederationMapPanel
                     mapUrl={current.featuredImage}
                     onChange={(featuredImage) => setDraft({ ...current, featuredImage })}
+                    hoverImages={current.images ?? []}
+                    onChangeHoverImages={(images) => setDraft({ ...current, images })}
                     token={token}
                   />
                   <Separator className="my-6 bg-gradient-to-r from-transparent via-gold/30 to-transparent" />
